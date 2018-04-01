@@ -1,0 +1,23 @@
+language: php
+
+php:
+  - '7.0'
+  - '7.1'
+  - '7.2'
+
+sudo: false
+matrix:
+  fast_finish: true
+
+install:
+  - make ci-build
+script:
+  - make test-technical
+  - make test-functional
+
+cache:
+  files:
+    - composer.lock
+  directories:
+    - $HOME/.composer
+    - vendor
