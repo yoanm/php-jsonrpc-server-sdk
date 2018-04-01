@@ -23,12 +23,12 @@ class JsonRpcInvalidRequestExceptionTest extends TestCase
         $exception = new JsonRpcInvalidRequestException($content);
 
         $this->assertArrayHasKey(
-            JsonRpcInvalidRequestException::CONTENT_KEY,
+            JsonRpcInvalidRequestException::DATA_CONTENT_KEY,
             $exception->getErrorData()
         );
         $this->assertSame(
             $content,
-            $exception->getErrorData()[JsonRpcInvalidRequestException::CONTENT_KEY]
+            $exception->getErrorData()[JsonRpcInvalidRequestException::DATA_CONTENT_KEY]
         );
     }
 
@@ -39,12 +39,12 @@ class JsonRpcInvalidRequestExceptionTest extends TestCase
         $exception = new JsonRpcInvalidRequestException('a-content', $description);
 
         $this->assertArrayHasKey(
-            JsonRpcInvalidRequestException::DESCRIPTION_KEY,
+            JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY,
             $exception->getErrorData()
         );
         $this->assertSame(
             $description,
-            $exception->getErrorData()[JsonRpcInvalidRequestException::DESCRIPTION_KEY]
+            $exception->getErrorData()[JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY]
         );
     }
 }
