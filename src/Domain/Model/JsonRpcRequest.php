@@ -48,7 +48,7 @@ class JsonRpcRequest
     public function setId($id) : JsonRpcRequest
     {
         if (!is_string($id) && !is_int($id)) {
-            throw new InvalidArgumentException('Id must be an int or a string');
+            throw new InvalidArgumentException('Id must be either an int or a string');
         }
 
         $this->id = $id;
