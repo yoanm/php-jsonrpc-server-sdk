@@ -17,11 +17,13 @@ class JsonRpcInvalidParamsException extends JsonRpcException
      */
     public function __construct(string $method, string $message)
     {
-        $data = [
-            self::DATA_METHOD_KEY => $method,
-            self::DATA_MESSAGE_KEY => $message,
-        ];
-
-        parent::__construct(self::CODE, 'Invalid params', $data);
+        parent::__construct(
+            self::CODE,
+            'Invalid params',
+            [
+                self::DATA_METHOD_KEY => $method,
+                self::DATA_MESSAGE_KEY => $message,
+            ]
+        );
     }
 }

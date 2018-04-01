@@ -15,10 +15,12 @@ class JsonRpcMethodNotFoundException extends JsonRpcException
      */
     public function __construct(string $methodName)
     {
-        $data = [
-            self::DATA_METHOD_KEY => $methodName,
-        ];
-
-        parent::__construct(self::CODE, 'Method not found', $data);
+        parent::__construct(
+            self::CODE,
+            'Method not found',
+            [
+                self::DATA_METHOD_KEY => $methodName,
+            ]
+        );
     }
 }
