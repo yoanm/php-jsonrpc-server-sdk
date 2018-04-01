@@ -1,0 +1,38 @@
+{
+    "name": "yoanm/jsonrpc-server-sdk",
+    "description": "Server SDK to convert a json-rpc request string into json-rpc response string",
+    "license": "GPL-3.0-only",
+    "type": "library",
+    "support": {
+        "issues": "https://github.com/yoanm/php-jsonrpc-server-sdk/issues"
+    },
+    "authors": [
+        {
+            "name": "Yoanm",
+            "email": "yoanm@users.noreply.github.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Yoanm\\JsonRpcServer\\App\\": "src/App",
+            "Yoanm\\JsonRpcServer\\Domain\\": "src/Domain",
+            "Yoanm\\JsonRpcServer\\Infra\\": "src/Infra"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Technical\\": "tests/Technical",
+            "Tests\\Functional\\": "tests/Functional",
+            "Tests\\Functional\\BehatContext\\": "features/bootstrap"
+        }
+    },
+    "require": {
+        "php": ">7.0",
+        "phpunit/phpunit": "^6.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "2.*",
+        "behat/behat": "~3.0"
+    }
+}
