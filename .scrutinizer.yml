@@ -69,6 +69,7 @@ checks:
         parameter_doc_comments: true
         param_doc_comment_if_not_inferrable: true
         overriding_parameter: true
+        no_trailing_whitespace: true
         no_short_variable_names:
             minimum: '3'
         no_short_method_names:
