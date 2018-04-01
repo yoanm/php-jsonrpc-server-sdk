@@ -35,7 +35,7 @@ class ApplyTest extends TestCase
     }
 
     /**
-     * Should resolve return the value return by the resolved method
+     * Should resolve return the value returned by the resolved method
      */
     public function testShouldReturnMethodReturnedValue()
     {
