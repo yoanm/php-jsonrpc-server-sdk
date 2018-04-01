@@ -54,13 +54,13 @@ class MethodManager
     /**
      * @param JsonRpcMethodInterface $method
      * @param string                 $methodName
-     * @param array                  $paramList
+     * @param array|mixed            $paramList
      *
      * @throws JsonRpcInvalidParamsException
      *
      * @return void
      */
-    private function validateParamsIfNeeded(JsonRpcMethodInterface $method, string $methodName, array $paramList)
+    private function validateParamsIfNeeded(JsonRpcMethodInterface $method, string $methodName, $paramList)
     {
         if (is_array($paramList)) {
             try {
