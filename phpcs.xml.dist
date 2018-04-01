@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="Things-manager-service">
+<ruleset name="Php-jsonrpc-server-sdk">
     <file>src</file>
     <file>tests</file>
     <file>features/bootstrap</file>
