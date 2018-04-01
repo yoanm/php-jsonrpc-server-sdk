@@ -11,12 +11,45 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  */
 class NormalizeTest extends TestCase
 {
+    const EXPECTED_KEY_JSONRPC_VERSION = 'json-rpc';
+    const EXPECTED_KEY_ID = 'id';
+    const EXPECTED_KEY_RESULT = 'result';
+    const EXPECTED_KEY_ERROR = 'error';
+    const EXPECTED_SUB_KEY_ERROR_CODE = 'code';
+    const EXPECTED_SUB_KEY_ERROR_MESSAGE = 'message';
+    const EXPECTED_SUB_KEY_ERROR_DATA = 'data';
+
     /** @var ResponseNormalizer */
     private $responseNormalizer;
 
     protected function setUp()
     {
         $this->responseNormalizer = new ResponseNormalizer();
+    }
+
+    public function testShouldHaveTheGivenJsonRpcVersion()
+    {
+        $jsonRpc = 'json-rpc-version';
+
+        $response = new JsonRpcResponse($jsonRpc);
+
+        $result = $this->responseNormalizer->normalize($response);
+
+        $this->assertArrayHasKey(self::EXPECTED_KEY_JSONRPC_VERSION, $result);
+        $this->assertSame($jsonRpc, $result[self::EXPECTED_KEY_JSONRPC_VERSION]);
+    }
+
+    public function testShouldHaveTheGivenId()
+    {
+        $id = 'my-id';
+
+        $response = (new JsonRpcResponse())
+            ->setId($id);
+
+        $result = $this->responseNormalizer->normalize($response);
+
+        $this->assertArrayHasKey(self::EXPECTED_KEY_ID, $result);
+        $this->assertSame($id, $result[self::EXPECTED_KEY_ID]);
     }
 
     public function testShouldReturnResult()
@@ -28,8 +61,8 @@ class NormalizeTest extends TestCase
 
         $result = $this->responseNormalizer->normalize($response);
 
-        $this->assertArrayHasKey(ResponseNormalizer::KEY_RESULT, $result);
-        $this->assertSame($expectedResult, $result[ResponseNormalizer::KEY_RESULT]);
+        $this->assertArrayHasKey(self::EXPECTED_KEY_RESULT, $result);
+        $this->assertSame($expectedResult, $result[self::EXPECTED_KEY_RESULT]);
     }
 
     public function testShouldReturnNullForANotification()
@@ -54,20 +87,20 @@ class NormalizeTest extends TestCase
         $result = $this->responseNormalizer->normalize($response);
 
         $this->assertArrayHasKey(
-            ResponseNormalizer::KEY_ERROR,
+            self::EXPECTED_KEY_ERROR,
             $result,
             'Error not found'
         );
-        $errorObject = $result[ResponseNormalizer::KEY_ERROR];
+        $errorObject = $result[self::EXPECTED_KEY_ERROR];
 
-        $this->assertArrayHasKey(ResponseNormalizer::SUB_KEY_ERROR_CODE, $errorObject, 'Error code not found');
-        $this->assertSame($code, $errorObject[ResponseNormalizer::SUB_KEY_ERROR_CODE], 'Error code not expected');
+        $this->assertArrayHasKey(self::EXPECTED_SUB_KEY_ERROR_CODE, $errorObject, 'Error code not found');
+        $this->assertSame($code, $errorObject[self::EXPECTED_SUB_KEY_ERROR_CODE], 'Error code not expected');
 
 
-        $this->assertArrayHasKey(ResponseNormalizer::SUB_KEY_ERROR_MESSAGE, $errorObject, 'Error message not found');
+        $this->assertArrayHasKey(self::EXPECTED_SUB_KEY_ERROR_MESSAGE, $errorObject, 'Error message not found');
         $this->assertSame(
             $message,
-            $errorObject[ResponseNormalizer::SUB_KEY_ERROR_MESSAGE],
+            $errorObject[self::EXPECTED_SUB_KEY_ERROR_MESSAGE],
             'Error message not expected'
         );
     }
@@ -80,9 +113,9 @@ class NormalizeTest extends TestCase
 
         $result = $this->responseNormalizer->normalize($response);
 
-        $errorObject = $result[ResponseNormalizer::KEY_ERROR];
+        $errorObject = $result[self::EXPECTED_KEY_ERROR];
 
-        $this->assertArrayHasKey(ResponseNormalizer::SUB_KEY_ERROR_DATA, $errorObject, 'Error data not found');
-        $this->assertSame($data, $errorObject[ResponseNormalizer::SUB_KEY_ERROR_DATA], 'Error data not expected');
+        $this->assertArrayHasKey(self::EXPECTED_SUB_KEY_ERROR_DATA, $errorObject, 'Error data not found');
+        $this->assertSame($data, $errorObject[self::EXPECTED_SUB_KEY_ERROR_DATA], 'Error data not expected');
     }
 }
