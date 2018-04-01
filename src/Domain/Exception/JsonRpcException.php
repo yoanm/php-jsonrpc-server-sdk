@@ -31,7 +31,6 @@ class JsonRpcException extends \Exception implements JsonRpcExceptionInterface
         return parent::getMessage();
     }
 
-
     /**
      * @return array
      */

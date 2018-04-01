@@ -17,7 +17,7 @@ class RequestDenormalizer
     const KEY_PARAM_LIST = 'params';
 
     /**
-     * @param mixed $item Should be an array or an instance of \stdClass
+     * @param mixed $item Should be an array
      *
      * @return JsonRpcRequest
      *

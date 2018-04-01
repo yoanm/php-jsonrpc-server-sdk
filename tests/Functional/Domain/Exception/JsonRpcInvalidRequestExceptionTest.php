@@ -9,6 +9,13 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
  */
 class JsonRpcInvalidRequestExceptionTest extends TestCase
 {
+    public function testShouldHaveTheRightJsonRpcErrorCode()
+    {
+        $exception = new JsonRpcInvalidRequestException('my-content');
+
+        $this->assertSame(-32600, $exception->getErrorCode());
+    }
+
     public function testShouldHandleAContentAnPutItInExceptionData()
     {
         $content = 'my-content';
