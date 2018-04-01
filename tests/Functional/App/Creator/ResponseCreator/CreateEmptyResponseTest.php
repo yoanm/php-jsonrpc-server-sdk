@@ -11,7 +11,6 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  */
 class CreateEmptyResponseTest extends BaseTestCase
 {
-
     /**
      * Should create an instance of JsonRpcResponse
      */
