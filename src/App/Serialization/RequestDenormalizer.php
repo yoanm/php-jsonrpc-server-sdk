@@ -31,24 +31,47 @@ class RequestDenormalizer
         $this->validateRequiredKey($item, self::KEY_JSON_RPC);
         $this->validateRequiredKey($item, self::KEY_METHOD);
 
-        $request = new JsonRpcRequest($item[self::KEY_JSON_RPC], $item[self::KEY_METHOD]);
+        $request = new JsonRpcRequest(
+            $item[self::KEY_JSON_RPC],
+            $item[self::KEY_METHOD]
+        );
 
+        $this->bindIdIfProvided($request, $item);
+        $this->bindParamListIfProvided($request, $item);
+
+        return $request;
+    }
+
+    /**
+     * @param JsonRpcRequest $request
+     * @param array $item
+     * @return array
+     */
+    protected function bindIdIfProvided(JsonRpcRequest $request, array $item)
+    {
         /** If no id defined => request is a notification */
         if (isset($item[self::KEY_ID])) {
             $request->setId(
-                $item[self::KEY_ID] == (string) ((int) $item[self::KEY_ID])
-                    ? (int) $item[self::KEY_ID] // Convert it in case it's a string containing an int
-                    : (string) $item[self::KEY_ID] // Convert to string in all other cases
+                $item[self::KEY_ID] == (string)((int)$item[self::KEY_ID])
+                    ? (int)$item[self::KEY_ID] // Convert it in case it's a string containing an int
+                    : (string)$item[self::KEY_ID] // Convert to string in all other cases
             );
         }
+    }
 
+    /**
+     * @param JsonRpcRequest $request
+     * @param array          $item
+     *
+     * @throws JsonRpcInvalidRequestException
+     */
+    protected function bindParamListIfProvided(JsonRpcRequest $request, array $item)
+    {
         if (isset($item[self::KEY_PARAM_LIST])) {
             $paramList = $item[self::KEY_PARAM_LIST];
             $this->validateArray($paramList, 'Parameter list must be an array');
             $request->setParamList($paramList);
         }
-
-        return $request;
     }
 
     /**
