@@ -7,9 +7,6 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator
- *
- * @uses \Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException
- * @uses \Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException
  */
 class CreateForTest extends TestCase
 {
@@ -29,11 +26,9 @@ class CreateForTest extends TestCase
      */
     public function testShouldHandlePreviousException()
     {
-        $message = self::DEFAULT_ERROR_MESSAGE;
-        $code = self::DEFAULT_ERROR_CODE;
         $previousException = new \Exception();
 
-        $exception = new \Exception($message, $code, $previousException);
+        $exception = new \Exception(self::DEFAULT_ERROR_MESSAGE, self::DEFAULT_ERROR_CODE, $previousException);
 
         $result = $this->customExceptionCreator->createFor($exception);
 
@@ -54,8 +49,8 @@ class CreateForTest extends TestCase
      */
     public function testShouldBindErrorAndMessage()
     {
-        $message = self::DEFAULT_ERROR_MESSAGE;
-        $code = self::DEFAULT_ERROR_CODE;
+        $message = 'my-message';
+        $code = -32010;
 
         $exception = new \Exception($message, $code);
 
