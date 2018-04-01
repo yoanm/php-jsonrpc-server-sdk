@@ -30,11 +30,12 @@ build:
                     format: 'php-clover'
     cache:
         directories:
-            - /home/scrutinizer/.composer
+            - ~/.composer
             - vendor
 
     environment:
         variables:
+            CI: 'true'
             TEST_OUTPUT_STYLE: 'pretty'
             COVERAGE_OUTPUT_STYLE: 'clover'
             COVERAGE_CLOVER_FILE_PATH: 'build/coverage/clover.xml'
