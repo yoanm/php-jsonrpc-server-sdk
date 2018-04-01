@@ -29,7 +29,7 @@ class DecodeTest extends TestCase
     }
 
     /**
-     * @dataProvider provideValidRequestString
+     * @dataProvider provideValidRequestStringData
      *
      * @param string $content
      */

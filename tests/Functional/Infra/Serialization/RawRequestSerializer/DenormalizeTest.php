@@ -29,7 +29,7 @@ class DenormalizeTest extends TestCase
     }
 
     /**
-     * @dataProvider provideValidRequestString
+     * @dataProvider provideValidRequestStringData
      *
      * @param string $content
      */

@@ -76,6 +76,22 @@ class RawRequestSerializer
      */
     public function denormalize(array $decodedContent) : JsonRpcRawRequest
     {
+        $isBatch = $this->guessBatchOrNot($decodedContent);
+
+        $rawRequest = new JsonRpcRawRequest($isBatch);
+
+        $this->populateItem($rawRequest, $decodedContent);
+
+        return $rawRequest;
+    }
+
+    /**
+     * @param array $decodedContent
+     *
+     * @return bool
+     */
+    private function guessBatchOrNot(array $decodedContent)
+    {
         $isBatch = true;
         // Loop over each items
         // -> In case it's a valid batch request -> all keys will have numeric type -> iterations = Number of requests
@@ -89,10 +105,17 @@ class RawRequestSerializer
             }
         }
 
-        $rawRequest = new JsonRpcRawRequest($isBatch);
+        return $isBatch;
+    }
 
+    /**
+     * @param JsonRpcRawRequest $rawRequest
+     * @param array $decodedContent
+     */
+    private function populateItem(JsonRpcRawRequest $rawRequest, array $decodedContent)
+    {
         // convert to array in any cases for simpler use
-        $itemList = $isBatch ? $decodedContent : [$decodedContent];
+        $itemList = $rawRequest->isBatch() ? $decodedContent : [$decodedContent];
         foreach ($itemList as $item) {
             // Safely denormalize items
             try {
@@ -103,7 +126,5 @@ class RawRequestSerializer
                 $rawRequest->addExceptionItem($exception);
             }
         }
-
-        return $rawRequest;
     }
 }

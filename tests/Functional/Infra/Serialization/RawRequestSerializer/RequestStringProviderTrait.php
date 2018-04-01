@@ -6,7 +6,7 @@ trait RequestStringProviderTrait
     /**
      * @return array
      */
-    public function provideValidRequestString()
+    public function provideValidRequestStringData()
     {
         $notificationRequest = [
             'json-rpc' => '2.0',
