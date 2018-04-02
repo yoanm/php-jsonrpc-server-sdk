@@ -45,8 +45,6 @@ class DeserializeTest extends TestCase
 
         $rawRequest = $this->rawRequestSerializer->deserialize($content);
 
-        $this->assertSame($isBatch, $rawRequest->isBatch());
-
         $this->assertValidDenormalization($decodedContent, $rawRequest, $isBatch);
     }
 }

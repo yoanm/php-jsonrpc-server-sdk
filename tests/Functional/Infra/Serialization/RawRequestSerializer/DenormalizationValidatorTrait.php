@@ -12,6 +12,7 @@ trait DenormalizationValidatorTrait
      */
     public function assertValidDenormalization(array $decodedContent, JsonRpcRawRequest $rawRequest, bool $isBatch)
     {
+        $this->assertSame($isBatch, $rawRequest->isBatch());
         if (!$isBatch) {
             $this->assertCount(1, $rawRequest->getItemtList(), 'Item list for non batch request should be only 1');
         } else {

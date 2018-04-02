@@ -63,6 +63,7 @@ class RawResponseSerializer
             return $this->normalizeBatchResponse($rawResponse->getResponseList());
         } else {
             $responseList = $rawResponse->getResponseList();
+
             return $this->responseNormalizer->normalize(array_shift($responseList));
         }
     }
@@ -75,7 +76,6 @@ class RawResponseSerializer
     private function normalizeBatchResponse(array $responseList)
     {
         $resultList = [];
-
         foreach ($responseList as $response) {
             // Notifications must not have a response, even if they are on error
             if (!$response->isNotification()) {
