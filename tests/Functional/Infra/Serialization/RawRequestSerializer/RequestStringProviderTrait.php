@@ -23,8 +23,8 @@ trait RequestStringProviderTrait
         $baseRequestWithIdAndNamedParams = $baseRequestWithId + $baseNamedParamList;
         $baseRequestWithIdAndParams = $baseRequestWithId + $baseNumericParamList;
 
-        $baseNotificationWithNamedParams = $baseRequestWithId + $baseNamedParamList;
-        $baseNotificationParams = $baseRequestWithId + $baseNumericParamList;
+        $baseNotificationWithNamedParams = $notificationRequest + $baseNamedParamList;
+        $baseNotificationParams = $notificationRequest + $baseNumericParamList;
 
         return [
             'simple request without params' => [

@@ -14,6 +14,7 @@ use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
 class DenormalizeTest extends TestCase
 {
     use RequestStringProviderTrait;
+    use DenormalizationValidatorTrait;
 
     /** @var RawRequestSerializer */
     private $rawRequestSerializer;
@@ -46,19 +47,7 @@ class DenormalizeTest extends TestCase
 
         $this->assertSame($isBatch, $rawRequest->isBatch());
 
-        if (!$isBatch) {
-            $this->assertCount(1, $rawRequest->getItemtList(), 'Item list for non batch request should be only 1');
-        } else {
-            $this->assertTrue(
-                count($rawRequest->getItemtList()) >= 1,
-                'Item list for batch request should be greater or equal to 1'
-            );
-            $this->assertCount(
-                count($decodedContent),
-                $rawRequest->getItemtList(),
-                'Item list for batch request is not the expected one'
-            );
-        }
+        $this->assertValidDenormalization($decodedContent, $rawRequest, $isBatch);
     }
 
     public function testShouldGracefullyHandleRequestDernormalizationException()

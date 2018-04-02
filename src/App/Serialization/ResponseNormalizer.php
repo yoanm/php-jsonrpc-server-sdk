@@ -25,6 +25,7 @@ class ResponseNormalizer
      */
     public function normalize(JsonRpcResponse $response)
     {
+        // Notifications must not have a response, even if they are on error
         if ($response->isNotification()) {
             return null;
         }
