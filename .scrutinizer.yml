@@ -1,12 +1,13 @@
 build_failure_conditions:
-    - 'project.metric_change("scrutinizer.quality", < -0.10)'
+    - 'project.metric_change("scrutinizer.quality", < -0.30)'
     - 'elements.rating(<= D).exists'               # No classes/methods with a rating of D or worse
-    - 'issues.label("coding-style").exists'        # No coding style issues allowed
     - 'issues.severity(>= MAJOR).exists'           # New major or higher severity issues
     - 'project.metric("scrutinizer.quality", < 9)' # Code Quality Rating drops below 9
     - 'project.metric("scrutinizer.test_coverage", < 1)' # Code Coverage must alway be 100%
     - 'patches.label("Doc Comments").exists'       # No doc comments patches allowed
     - 'patches.label("Spacing").exists'            # No spacing patches allowed
+    - 'patches.label("Bug").exists'                # No bug patches allowed
+    - 'issues.label("coding-style").exists'        # No coding style issues allowed
 build:
     dependencies:
         before:
@@ -69,6 +70,7 @@ checks:
         parameter_doc_comments: true
         param_doc_comment_if_not_inferrable: true
         overriding_parameter: true
+        no_trailing_whitespace: true
         no_short_variable_names:
             minimum: '3'
         no_short_method_names:
