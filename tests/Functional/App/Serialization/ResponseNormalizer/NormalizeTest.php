@@ -105,6 +105,17 @@ class NormalizeTest extends TestCase
         );
     }
 
+    public function testShouldNotNormalizeErrorForANotification()
+    {
+        $code = 4321;
+        $message = 'error-message';
+        $response = (new JsonRpcResponse())
+            ->setIsNotification(true)
+            ->setError(new JsonRpcException($code, $message));
+
+        $this->assertNull($this->responseNormalizer->normalize($response));
+    }
+
     public function testShouldNormalizeErrorWithData()
     {
         $data = ['error-data'];
