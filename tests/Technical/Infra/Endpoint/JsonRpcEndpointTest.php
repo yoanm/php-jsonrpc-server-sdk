@@ -99,47 +99,6 @@ class JsonRpcEndpointTest extends TestCase
         );
     }
 
-    public function testShouldManageRequestOnError()
-    {
-        $requestString = 'request-string';
-        $expectedResponseString = 'expected-response-string';
-
-        /** @var ObjectProphecy|JsonRpcRequest $fakeRequestItem */
-        $fakeRequestItem = $this->prophesize(JsonRpcRequest::class);
-        /** @var ObjectProphecy|\Exception $fakeHandleException */
-        $fakeRequestException = $this->prophesize(\Exception::class);
-        /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
-        $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
-        /** @var ObjectProphecy|JsonRpcRawRequest $jsonRpcRawRequest */
-        $jsonRpcRawRequest = $this->prophesize(JsonRpcRawRequest::class);
-
-        $jsonRpcRawRequest->isBatch()->willReturn(false)->shouldBeCalled();
-
-        $this->rawRequestSerializer->deserialize($requestString)
-            ->willReturn($jsonRpcRawRequest->reveal())
-            ->shouldBeCalled();
-
-        $jsonRpcRawRequest->getItemtList()
-            ->willReturn([$fakeRequestException->reveal()])
-            ->shouldBeCalled();
-
-        $this->responseCreator->createErrorResponse($fakeRequestException->reveal())
-            ->willReturn($fakeResponseItem->reveal())
-            ->shouldBeCalled();
-
-        $this->rawResponseNormalizer->serialize(Argument::allOf(
-            Argument::type(JsonRpcRawResponse::class),
-            Argument::which('getResponseList', [$fakeResponseItem->reveal()])
-        ))
-            ->willReturn($expectedResponseString)
-            ->shouldBeCalled();
-
-        $this->assertSame(
-            $expectedResponseString,
-            $this->endpoint->index($requestString)
-        );
-    }
-
     public function provideHandleExceptionData()
     {
         return [

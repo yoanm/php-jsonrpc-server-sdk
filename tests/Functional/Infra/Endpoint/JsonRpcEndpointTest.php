@@ -73,6 +73,7 @@ class JsonRpcEndpointTest extends TestCase
 
         $this->rawResponseNormalizer->serialize(Argument::allOf(
             Argument::type(JsonRpcRawResponse::class),
+            Argument::which('isBatch', false),
             Argument::which('getResponseList', [$fakeResponseItem->reveal()])
         ))
             ->willReturn($expectedResponseString)
@@ -119,6 +120,7 @@ class JsonRpcEndpointTest extends TestCase
 
         $this->rawResponseNormalizer->serialize(Argument::allOf(
             Argument::type(JsonRpcRawResponse::class),
+            Argument::which('isBatch', true),
             Argument::which('getResponseList', [$fakeResponseItem->reveal(), $fakeResponseItem2->reveal()])
         ))
             ->willReturn($expectedResponseString)
@@ -204,6 +206,7 @@ class JsonRpcEndpointTest extends TestCase
 
         $this->rawResponseNormalizer->serialize(Argument::allOf(
             Argument::type(JsonRpcRawResponse::class),
+            Argument::which('isBatch', true),
             Argument::which('getResponseList', [$fakeResponseItem->reveal(), $fakeResponseItem2->reveal()])
         ))
             ->willReturn($expectedResponseString)
