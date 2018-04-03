@@ -59,6 +59,10 @@ Feature: Basic checks
       }
     ]
     """
+    # Error should be because of :
+    # - {"jsonrpc": "2.0"}
+    # - "ABCDE"
+    # - false
     Then I should have the following response:
     """
     [
