@@ -20,6 +20,7 @@ Feature: Ensure JSON-RPC specifications
       }
     }
     """
+
   Scenario Outline: Invalid Request (-32600)
     When I send following payload:
     """
@@ -98,7 +99,6 @@ Feature: Ensure JSON-RPC specifications
     }
     """
 
-    @yo
   Scenario: Internal error (-32603)
     When I send following payload:
     """
@@ -124,7 +124,7 @@ Feature: Ensure JSON-RPC specifications
     }
     """
 
-  Scenario: Implementation-defined server-errors (-32000 to -32099)
+  Scenario: Implementation-defined server-errors (-32099 to -32000)
     When I send following payload:
     """
     {

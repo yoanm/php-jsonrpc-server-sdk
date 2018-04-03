@@ -5,26 +5,25 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
-use Prophecy\Prophet;
 use Tests\Functional\BehatContext\App\BehatMethodResolver;
 use Tests\Functional\BehatContext\App\FakeEndpointCreator;
-use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
-use Yoanm\JsonRpcServer\App\Manager\MethodManager;
-use Yoanm\JsonRpcServer\App\RequestHandler;
-use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
-use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
 
 /**
  * Defines application features from the specific context.
  */
 class FeatureContext implements Context
 {
+    const KEY_JSON_RPC = 'jsonrpc';
+    const KEY_ID = 'id';
+    const KEY_RESULT = 'result';
+    const KEY_ERROR = 'error';
+
+    const SUB_KEY_ERROR_CODE = 'code';
+    const SUB_KEY_ERROR_MESSAGE = 'message';
+    const SUB_KEY_ERROR_DATA = 'data';
+
     /** @var JsonRpcEndpoint */
     private $endpoint;
     /** @var MethodResolverInterface */
@@ -57,17 +56,17 @@ class FeatureContext implements Context
     /**
      * @Then last response should be a valid json-rpc result
      */
-    public function thenLastResponseShouldHaveAResult()
+    public function thenLastResponseShouldBeAValidJsonRpcResult()
     {
-        $this->validateJsonRpcSuccessReponse(json_decode($this->lastResponse, true));
+        $this->validateJsonRpcSuccessReponse($this->getLastResponseDecoded());
     }
 
     /**
      * @Then last response should be a valid json-rpc error
      */
-    public function thenLastResponseShouldHaveAnError()
+    public function thenLastResponseShouldBeAValidJsonRpcError()
     {
-        $this->validateJsonRpcErrorReponse(json_decode($this->lastResponse, true));
+        $this->validateJsonRpcErrorReponse($this->getLastResponseDecoded());
     }
 
     /**
@@ -76,7 +75,7 @@ class FeatureContext implements Context
     public function thenLastResponseShouldBeAValidJsonRpcBatchResponse()
     {
         // Decode content to get rid of any indentation/spacing/... issues
-        $decoded = json_decode($this->lastResponse, true);
+        $decoded = $this->getLastResponseDecoded();
         Assert::assertTrue(is_array($decoded), 'A batch response must be an array');
         Assert::assertTrue(count($decoded) > 0, 'A batch response must contains at least one sub response');
     }
@@ -88,8 +87,8 @@ class FeatureContext implements Context
     {
         // Decode content to get rid of any indentation/spacing/... issues
         Assert::assertEquals(
-            json_decode($expectedResult->getRaw(), true),
-            json_decode($this->lastResponse, true)
+            $this->jsonDecode($expectedResult->getRaw()),
+            $this->getLastResponseDecoded()
         );
     }
 
@@ -99,7 +98,7 @@ class FeatureContext implements Context
     public function thenIShouldHaveAnEmptyResponse()
     {
         // Decode content to get rid of any indentation/spacing/... issues
-        Assert::assertEmpty(json_decode($this->lastResponse, true));
+        Assert::assertEmpty($this->getLastResponseDecoded());
     }
 
     /**
@@ -109,8 +108,8 @@ class FeatureContext implements Context
     {
         // Decode content to get rid of any indentation/spacing/... issues
         Assert::assertArraySubset(
-            json_decode($expectedResult->getRaw(), true),
-            json_decode($this->lastResponse, true)
+            $this->jsonDecode($expectedResult->getRaw()),
+            $this->getLastResponseDecoded()
         );
     }
 
@@ -118,43 +117,77 @@ class FeatureContext implements Context
     {
         Assert::assertTrue(is_array($decoded), 'An error response must be an array');
         // Validate required keys
-        Assert::assertArrayHasKey('jsonrpc', $decoded, 'An error response must have a "jsonrpc" key');
-        Assert::assertArrayHasKey('id', $decoded, 'An error response must have an "id" key');
-        Assert::assertArrayHasKey('error', $decoded, 'An error response must have an "error" key');
+        Assert::assertArrayHasKey(
+            self::KEY_JSON_RPC,
+            $decoded,
+            'An error response must have a "'.self::KEY_JSON_RPC.'" key'
+        );
+        Assert::assertArrayHasKey(
+            self::KEY_ID,
+            $decoded,
+            'An error response must have an "'.self::KEY_ID.'" key'
+        );
+        Assert::assertArrayHasKey(
+            self::KEY_ERROR,
+            $decoded,
+            'An error response must have an "'.self::KEY_ERROR.'" key'
+        );
         // Validate error required keys
         Assert::assertArrayHasKey(
-            'code',
-            $decoded['error'],
-            'An error response must have a "code" key under "error"'
+            self::SUB_KEY_ERROR_CODE,
+            $decoded[self::KEY_ERROR],
+            'An error response must have a "'.self::SUB_KEY_ERROR_CODE.'" key under "'.self::KEY_ERROR.'"'
         );
         Assert::assertTrue(
-            is_int($decoded['error']['code']),
-            'Error code must an integer'
+            is_int($decoded[self::KEY_ERROR][self::SUB_KEY_ERROR_CODE]),
+            'Error code must be an integer'
         );
         Assert::assertTrue(
-            $decoded['error']['code'] >= -32768 && $decoded['error']['code'] <= -32000,
+            $decoded[self::KEY_ERROR][self::SUB_KEY_ERROR_CODE] >= -32768
+            && $decoded[self::KEY_ERROR][self::SUB_KEY_ERROR_CODE] <= -32000,
             'Error code must be between -32768 and -32000'
         );
         Assert::assertArrayHasKey(
-            'message',
-            $decoded['error'],
-            'An error response must have an "message" key under "error"'
+            self::SUB_KEY_ERROR_MESSAGE,
+            $decoded[self::KEY_ERROR],
+            'An error response must have an "'.self::SUB_KEY_ERROR_MESSAGE.'" key under "'.self::KEY_ERROR.'"'
         );
         // Validate nothing else exist in the response
         Assert::assertCount(
             3,
             $decoded,
-            'An error response must not contains any other keys than "jsonrpc", "id" and "error"'
+            'An error response must not contains any other keys than "'
+            .self::KEY_JSON_RPC.'", "'.self::KEY_ID.'" and "'.self::KEY_ERROR.'"'
         );
     }
 
     private function validateJsonRpcSuccessReponse($decoded)
     {
         Assert::assertTrue(is_array($decoded), 'A response must be an array');
-        Assert::assertArrayHasKey('jsonrpc', $decoded, 'A response must have a "jsonrpc" key');
-        Assert::assertArrayHasKey('id', $decoded, 'A response must have an "id" key');
-        Assert::assertFalse(is_null($decoded['id']), 'A response id must not be null');
-        Assert::assertArrayHasKey('result', $decoded, 'A response must have a "result" key');
-        Assert::assertFalse(array_key_exists('error', $decoded), 'A response must not have an "error" key');
+        Assert::assertArrayHasKey(self::KEY_JSON_RPC, $decoded, 'A response must have a "'.self::KEY_JSON_RPC.'" key');
+        Assert::assertArrayHasKey(self::KEY_ID, $decoded, 'A response must have an "'.self::KEY_ID.'" key');
+        Assert::assertFalse(is_null($decoded[self::KEY_ID]), 'A response id must not be null');
+        Assert::assertArrayHasKey(self::KEY_RESULT, $decoded, 'A response must have a "'.self::KEY_RESULT.'" key');
+        Assert::assertArrayHasKey(
+            array_key_exists(self::KEY_ERROR, $decoded),
+            'A response must not have an "'.self::KEY_ERROR.'" key'
+        );
+    }
+
+    private function getLastResponseDecoded()
+    {
+        return $this->jsonDecode($this->lastResponse);
+    }
+
+    private function jsonDecode($content)
+    {
+        $result = json_decode($content, true);
+        $error = json_last_error();
+        if ($error !== JSON_ERROR_NONE) {
+            $errorMessage = json_last_error_msg();
+            throw new \Exception("Json parse error ${error} => ${errorMessage} : ${content}");
+        }
+
+        return $result;
     }
 }

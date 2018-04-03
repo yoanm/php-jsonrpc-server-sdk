@@ -18,7 +18,7 @@ class JsonRpcParseErrorExceptionTest extends TestCase
         $this->assertSame(-32700, $exception->getErrorCode());
     }
 
-    public function testShouldHandleAContentAnPutItInExceptionData()
+    public function testShouldHandleAContent()
     {
         $content = 'my-content';
 
