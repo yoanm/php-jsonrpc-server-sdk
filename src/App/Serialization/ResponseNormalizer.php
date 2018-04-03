@@ -9,7 +9,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  */
 class ResponseNormalizer
 {
-    const KEY_JSON_RPC = 'json-rpc';
+    const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
     const KEY_RESULT = 'result';
     const KEY_ERROR = 'error';

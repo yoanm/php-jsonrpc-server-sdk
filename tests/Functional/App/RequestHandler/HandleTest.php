@@ -36,7 +36,7 @@ class HandleTest extends TestCase
 
     public function testShouldReturnAResponse()
     {
-        $request = new JsonRpcRequest('json-rpc', 'method');
+        $request = new JsonRpcRequest('json-rpc-version', 'method');
 
         $this->methodManager->apply(Argument::cetera())
             ->willReturn(['method-result']);

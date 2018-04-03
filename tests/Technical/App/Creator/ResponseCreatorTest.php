@@ -30,13 +30,14 @@ class ResponseCreatorTest extends TestCase
      */
     public function testCreateErrorResponseConvertOtherExceptions()
     {
-        $exception = new \Exception();
+        $message = 'my-message';
+        $exception = new \Exception($message);
 
         $response = $this->responseCreator->createErrorResponse($exception);
 
         $this->assertInstanceOf(JsonRpcInternalErrorException::class, $response->getError());
         $this->assertSame(
-            $exception,
+            $message,
             $response->getError()->getErrorData()[JsonRpcInternalErrorException::DATA_PREVIOUS_KEY]
         );
     }

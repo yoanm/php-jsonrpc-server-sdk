@@ -54,7 +54,6 @@ class ResponseCreator
     public function createErrorResponse(\Exception $exception, JsonRpcRequest $fromRequest = null) : JsonRpcResponse
     {
         return $this->createEmptyResponse($fromRequest)
-            ->setIsNotification(false)
             ->setError(
                 $exception instanceof JsonRpcExceptionInterface
                     ? $exception

@@ -74,6 +74,9 @@ class DecodeTest extends TestCase
             'an integer' => [
                 'invalidContent' => json_encode(123),
             ],
+            'an empty array' => [
+                'invalidContent' => json_encode([]),
+            ],
         ];
     }
 }

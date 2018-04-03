@@ -14,26 +14,17 @@ class JsonRpcInvalidParamsExceptionTest extends TestCase
 
     public function testShouldHaveTheRightJsonRpcErrorCode()
     {
-        $exception = new JsonRpcInvalidParamsException(self::DEFAULT_METHOD, self::DEFAULT_MESSAGE);
+        $exception = new JsonRpcInvalidParamsException(self::DEFAULT_MESSAGE);
 
         $this->assertSame(-32602, $exception->getErrorCode());
     }
 
-    public function testShouldHandleAMessageAndMethodAnPutItInExceptionData()
+    public function testShouldHandleAMessageAnPutItInExceptionData()
     {
         $method = 'my-method';
         $message = 'my-message';
 
-        $exception = new JsonRpcInvalidParamsException($method, $message);
-
-        $this->assertArrayHasKey(
-            JsonRpcInvalidParamsException::DATA_METHOD_KEY,
-            $exception->getErrorData()
-        );
-        $this->assertSame(
-            $method,
-            $exception->getErrorData()[JsonRpcInvalidParamsException::DATA_METHOD_KEY]
-        );
+        $exception = new JsonRpcInvalidParamsException($message);
 
         $this->assertArrayHasKey(
             JsonRpcInvalidParamsException::DATA_MESSAGE_KEY,

@@ -18,19 +18,15 @@ class JsonRpcMethodNotFoundExceptionTest extends TestCase
         $this->assertSame(-32601, $exception->getErrorCode());
     }
 
-    public function testShouldHandleAMethodAnPutItInExceptionData()
+    public function testShouldHandleAMethod()
     {
         $method = 'my-method';
 
         $exception = new JsonRpcMethodNotFoundException($method);
 
-        $this->assertArrayHasKey(
-            JsonRpcMethodNotFoundException::DATA_METHOD_KEY,
-            $exception->getErrorData()
-        );
         $this->assertSame(
             $method,
-            $exception->getErrorData()[JsonRpcMethodNotFoundException::DATA_METHOD_KEY]
+            $exception->getMethodName()
         );
     }
 }

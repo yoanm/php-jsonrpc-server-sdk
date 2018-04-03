@@ -11,7 +11,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  */
 class NormalizeTest extends TestCase
 {
-    const EXPECTED_KEY_JSONRPC_VERSION = 'json-rpc';
+    const EXPECTED_KEY_JSONRPC_VERSION = 'jsonrpc';
     const EXPECTED_KEY_ID = 'id';
     const EXPECTED_KEY_RESULT = 'result';
     const EXPECTED_KEY_ERROR = 'error';
