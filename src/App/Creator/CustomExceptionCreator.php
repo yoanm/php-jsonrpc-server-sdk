@@ -33,7 +33,7 @@ class CustomExceptionCreator
         $data = [];
 
         if ($exception->getPrevious()) {
-            $data[self::ERROR_DATA_PREVIOUS_KEY] = $exception->getPrevious();
+            $data[self::ERROR_DATA_PREVIOUS_KEY] = $exception->getPrevious()->getMessage();
         }
 
         return new JsonRpcException($errorCode, $exception->getMessage(), $data);
