@@ -42,7 +42,7 @@ class MethodManager
     {
         $method = $this->methodResolver->resolve($methodName);
 
-        $this->validateParamsIfNeeded($method, $methodName, $paramList);
+        $this->validateParamsIfNeeded($method, $paramList);
 
         try {
             return $method->apply($paramList);
@@ -53,14 +53,13 @@ class MethodManager
 
     /**
      * @param JsonRpcMethodInterface $method
-     * @param string                 $methodName
      * @param array|mixed            $paramList
      *
      * @throws JsonRpcInvalidParamsException
      *
      * @return void
      */
-    private function validateParamsIfNeeded(JsonRpcMethodInterface $method, string $methodName, $paramList)
+    private function validateParamsIfNeeded(JsonRpcMethodInterface $method, $paramList)
     {
         if (is_array($paramList)) {
             try {
