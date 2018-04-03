@@ -67,10 +67,9 @@ class RequestDenormalizerTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $description = $e->getErrorData()[JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY];
             $this->assertContains(
                 'Parameter list must be an array',
-                $description,
+                $e->getDescription(),
                 'Exception description is not the expected one'
             );
 
