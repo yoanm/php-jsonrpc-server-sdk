@@ -26,7 +26,8 @@ class CreateForTest extends TestCase
      */
     public function testShouldHandlePreviousException()
     {
-        $previousException = new \Exception();
+        $previousExceptionMessage = 'my-message';
+        $previousException = new \Exception($previousExceptionMessage);
 
         $exception = new \Exception(self::DEFAULT_ERROR_MESSAGE, self::DEFAULT_ERROR_CODE, $previousException);
 
@@ -38,7 +39,7 @@ class CreateForTest extends TestCase
             'Data array does not have required key'
         );
         $this->assertSame(
-            $previousException,
+            $previousExceptionMessage,
             $result->getErrorData()[CustomExceptionCreator::ERROR_DATA_PREVIOUS_KEY],
             'Previous exception not found'
         );
@@ -59,5 +60,15 @@ class CreateForTest extends TestCase
         $this->assertInstanceOf(JsonRpcException::class, $result);
         $this->assertSame($code, $result->getErrorCode(), 'Error code mismatch');
         $this->assertSame($message, $result->getErrorMessage(), 'Error message mismatch');
+    }
+
+    public function testShouldReturnTheSameExceptionIfAlreadyAnInstanceOfJsonRpcExceptionInterface()
+    {
+        $exception = new JsonRpcException(1234, 'message', ['data']);
+
+        $this->assertSame(
+            $exception,
+            $this->customExceptionCreator->createFor($exception)
+        );
     }
 }

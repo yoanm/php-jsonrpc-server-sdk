@@ -10,15 +10,6 @@ use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse;
  */
 class RawResponseSerializer
 {
-    const KEY_JSON_RPC = 'json-rpc';
-    const KEY_ID = 'id';
-    const KEY_RESULT = 'result';
-    const KEY_ERROR = 'error';
-
-    const SUB_KEY_ERROR_CODE = 'code';
-    const SUB_KEY_ERROR_MESSAGE = 'message';
-    const SUB_KEY_ERROR_DATA = 'data';
-
     /** @var ResponseNormalizer */
     private $responseNormalizer;
 

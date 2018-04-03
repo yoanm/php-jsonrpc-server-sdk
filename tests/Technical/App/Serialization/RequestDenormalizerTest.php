@@ -25,7 +25,7 @@ class RequestDenormalizerTest extends TestCase
     public function testDenormalizeShouldCastIdToIntWhenIdIs($requestId)
     {
         $item = [
-            'json-rpc' => 'fake-json-rpc-version',
+            'jsonrpc' => 'fake-json-rpc-version',
             'method' => 'fake-method',
             'id' => $requestId,
         ];
@@ -55,7 +55,7 @@ class RequestDenormalizerTest extends TestCase
     public function testDenormalizeShouldThrowAnExceptionWhenParamsIs($paramList)
     {
         $item = [
-            'json-rpc' => 'fake-json-rpc-version',
+            'jsonrpc' => 'fake-json-rpc-version',
             'method' => 'fake-method',
             'id' => 'fake-id',
             'params' => $paramList
@@ -67,10 +67,9 @@ class RequestDenormalizerTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $description = $e->getErrorData()[JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY];
             $this->assertContains(
                 'Parameter list must be an array',
-                $description,
+                $e->getDescription(),
                 'Exception description is not the expected one'
             );
 

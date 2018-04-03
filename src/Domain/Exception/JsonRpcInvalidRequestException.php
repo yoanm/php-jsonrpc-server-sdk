@@ -8,19 +8,36 @@ class JsonRpcInvalidRequestException extends JsonRpcException
 {
     const CODE = -32600;
 
-    const DATA_CONTENT_KEY = 'content';
-    const DATA_DESCRIPTION_KEY = 'description';
+    /** @var mixed */
+    private $content;
+    /** @var string */
+    private $description;
 
     /**
-     * @param mixed  $content Request parsed content
-     * @param string $message Optional description
+     * @param mixed  $content
+     * @param string $description Optional description of the issue
      */
-    public function __construct($content, string $description = null)
+    public function __construct($content, string $description = '')
     {
-        $data = [self::DATA_CONTENT_KEY => $content];
-        if ($description) {
-            $data[self::DATA_DESCRIPTION_KEY] = $description;
-        }
-        parent::__construct(self::CODE, 'Parse error', $data);
+        $this->content = $content;
+        $this->description = $description;
+
+        parent::__construct(self::CODE, 'Invalid request');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
     }
 }

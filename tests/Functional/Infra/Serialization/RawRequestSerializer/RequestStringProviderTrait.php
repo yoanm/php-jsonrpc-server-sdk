@@ -9,7 +9,7 @@ trait RequestStringProviderTrait
     public function provideValidRequestStringData()
     {
         $notificationRequest = [
-            'json-rpc' => '2.0',
+            'jsonrpc' => '2.0',
             'method' => 'default-method'
         ];
         $baseParamList = [

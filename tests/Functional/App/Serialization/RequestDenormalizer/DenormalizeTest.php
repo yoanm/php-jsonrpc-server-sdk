@@ -21,7 +21,7 @@ class DenormalizeTest extends TestCase
     public function testShouldBindArrayProperties()
     {
         $item = [
-            'json-rpc' => 'expected-json-rpc-version',
+            'jsonrpc' => 'expected-json-rpc-version',
             'id' => 'expected-id',
             'method' => 'expected-method',
             'params' => ['expected-params'],
@@ -30,7 +30,7 @@ class DenormalizeTest extends TestCase
         $result = $this->requestDenormalizer->denormalize($item);
 
         $this->assertSame(
-            $item['json-rpc'],
+            $item['jsonrpc'],
             $result->getJsonRpc(),
             'JSON-RPC version does not match'
         );
@@ -54,7 +54,7 @@ class DenormalizeTest extends TestCase
     public function testShouldHandleNotificationRequest()
     {
         $item = [
-            'json-rpc' => 'expected-json-rpc-version',
+            'jsonrpc' => 'expected-json-rpc-version',
             'method' => 'expected-method'
         ];
 
@@ -72,7 +72,7 @@ class DenormalizeTest extends TestCase
     public function testShouldThrowAnExceptionIfMethodIsNotProvided()
     {
         $item = [
-            'json-rpc' => 'fake-json-rpc-version',
+            'jsonrpc' => 'fake-json-rpc-version',
             'id' => 'fake-id',
         ];
 
@@ -82,10 +82,9 @@ class DenormalizeTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $description = $e->getErrorData()[JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY];
             $this->assertContains(
                 '"method" is a required key',
-                $description,
+                $e->getDescription(),
                 'Exception is not regarding expected field'
             );
 
@@ -109,10 +108,9 @@ class DenormalizeTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $description = $e->getErrorData()[JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY];
             $this->assertContains(
-                '"json-rpc" is a required key',
-                $description,
+                '"jsonrpc" is a required key',
+                $e->getDescription(),
                 'Exception is not regarding expected field'
             );
 

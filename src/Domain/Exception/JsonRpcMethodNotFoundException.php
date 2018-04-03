@@ -8,19 +8,24 @@ class JsonRpcMethodNotFoundException extends JsonRpcException
 {
     const CODE = -32601;
 
-    const DATA_METHOD_KEY = 'method';
+    /** @var string */
+    private $methodName;
 
     /**
      * @param string $methodName
      */
     public function __construct(string $methodName)
     {
-        parent::__construct(
-            self::CODE,
-            'Method not found',
-            [
-                self::DATA_METHOD_KEY => $methodName,
-            ]
-        );
+        $this->methodName = $methodName;
+
+        parent::__construct(self::CODE, 'Method not found');
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethodName()
+    {
+        return $this->methodName;
     }
 }
