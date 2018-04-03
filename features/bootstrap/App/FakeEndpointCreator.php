@@ -83,7 +83,7 @@ class FakeEndpointCreator
 
         $methodResolver->addMethod(
             $customExecutionExceptionMethod->reveal(),
-            'method-that-throw-an-custom-jsonrpc-exception-during-execution'
+            'method-that-throw-a-custom-jsonrpc-exception-during-execution'
         );
 
         return new JsonRpcEndpoint(

@@ -130,7 +130,7 @@ Feature: Ensure JSON-RPC specifications
     {
       "jsonrpc": "2.0",
       "id": "297c8498-5a54-471c-ac75-917be6435607",
-      "method": "method-that-throw-an-custom-jsonrpc-exception-during-execution"
+      "method": "method-that-throw-a-custom-jsonrpc-exception-during-execution"
     }
     """
     Then last response should be a valid json-rpc error
@@ -141,7 +141,10 @@ Feature: Ensure JSON-RPC specifications
       "id": "297c8498-5a54-471c-ac75-917be6435607",
       "error": {
         "code": -32012,
-        "message": "A custom json-rpc error"
+        "message": "A custom json-rpc error",
+        "data": {
+          "custom-data-property": "custom-data-value"
+        }
       }
     }
     """

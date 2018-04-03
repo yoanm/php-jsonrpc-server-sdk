@@ -60,4 +60,14 @@ class CreateForTest extends TestCase
         $this->assertSame($code, $result->getErrorCode(), 'Error code mismatch');
         $this->assertSame($message, $result->getErrorMessage(), 'Error message mismatch');
     }
+
+    public function testShouldReturnTheSameExceptionIfAlreadyAnInstanceOfJsonRpcExceptionInterface()
+    {
+        $exception = new JsonRpcException(1234, 'message', ['data']);
+
+        $this->assertSame(
+            $exception,
+            $this->customExceptionCreator->createFor($exception)
+        );
+    }
 }
