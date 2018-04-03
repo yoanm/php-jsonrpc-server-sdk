@@ -37,7 +37,7 @@ Feature: Basic checks
     """
     Then I should have an empty response
 
-  Scenario: A batch call with only notifications but with sub request on error should return an array with corresponding errors
+  Scenario: A batch call with only notifications but with sub requests on error should return an array with corresponding errors
     When I send following payload:
     """
     [
