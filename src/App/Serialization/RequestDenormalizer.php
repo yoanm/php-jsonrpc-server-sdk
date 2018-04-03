@@ -11,7 +11,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 class RequestDenormalizer
 {
 
-    const KEY_JSON_RPC = 'json-rpc';
+    const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
     const KEY_METHOD = 'method';
     const KEY_PARAM_LIST = 'params';

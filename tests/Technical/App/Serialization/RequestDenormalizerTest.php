@@ -25,7 +25,7 @@ class RequestDenormalizerTest extends TestCase
     public function testDenormalizeShouldCastIdToIntWhenIdIs($requestId)
     {
         $item = [
-            'json-rpc' => 'fake-json-rpc-version',
+            'jsonrpc' => 'fake-json-rpc-version',
             'method' => 'fake-method',
             'id' => $requestId,
         ];
@@ -55,7 +55,7 @@ class RequestDenormalizerTest extends TestCase
     public function testDenormalizeShouldThrowAnExceptionWhenParamsIs($paramList)
     {
         $item = [
-            'json-rpc' => 'fake-json-rpc-version',
+            'jsonrpc' => 'fake-json-rpc-version',
             'method' => 'fake-method',
             'id' => 'fake-id',
             'params' => $paramList

@@ -24,41 +24,27 @@ class JsonRpcParseErrorExceptionTest extends TestCase
 
         $exception = new JsonRpcParseErrorException($content);
 
-        $this->assertArrayHasKey(
-            JsonRpcParseErrorException::DATA_CONTENT_KEY,
-            $exception->getErrorData()
-        );
         $this->assertSame(
             $content,
-            $exception->getErrorData()[JsonRpcParseErrorException::DATA_CONTENT_KEY]
+            $exception->getContent()
         );
     }
 
-    public function testShouldHandleAParseErrorCodeAnPutItInExceptionData()
+    public function testShouldHandleAParseErrorCode()
     {
         $code = 'my-error-code';
 
         $exception = new JsonRpcParseErrorException(self::DEFAULT_CONTENT, $code);
-
-        $this->assertArrayHasKey(JsonRpcParseErrorException::DATA_ERROR_KEY, $exception->getErrorData());
-
-        $errorData = $exception->getErrorData()[JsonRpcParseErrorException::DATA_ERROR_KEY];
-        $this->assertArrayHasKey(JsonRpcParseErrorException::DATA_ERROR_CODE_KEY, $errorData);
-
-        $this->assertSame($code, $errorData[JsonRpcParseErrorException::DATA_ERROR_CODE_KEY]);
+        
+        $this->assertSame($code, $exception->getParseErrorCode());
     }
 
-    public function testShouldHandleAParseErrorMessageAnPutItInExceptionData()
+    public function testShouldHandleAParseErrorMessage()
     {
         $message = 'my-message';
 
         $exception = new JsonRpcParseErrorException(self::DEFAULT_CONTENT, 1234, $message);
 
-        $this->assertArrayHasKey(JsonRpcParseErrorException::DATA_ERROR_KEY, $exception->getErrorData());
-
-        $errorData = $exception->getErrorData()[JsonRpcParseErrorException::DATA_ERROR_KEY];
-        $this->assertArrayHasKey(JsonRpcParseErrorException::DATA_ERROR_MESSAGE_KEY, $errorData);
-
-        $this->assertSame($message, $errorData[JsonRpcParseErrorException::DATA_ERROR_MESSAGE_KEY]);
+        $this->assertSame($message, $exception->getParseErrorMessage());
     }
 }

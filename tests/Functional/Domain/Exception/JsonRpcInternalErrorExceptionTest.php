@@ -18,7 +18,8 @@ class JsonRpcInternalErrorExceptionTest extends TestCase
 
     public function testShouldHandleAnExceptionAnPutItInExceptionData()
     {
-        $previousException = new \Exception('my-exception');
+        $message = 'my-exception';
+        $previousException = new \Exception($message);
 
         $exception = new JsonRpcInternalErrorException($previousException);
 
@@ -27,7 +28,7 @@ class JsonRpcInternalErrorExceptionTest extends TestCase
             $exception->getErrorData()
         );
         $this->assertSame(
-            $previousException,
+            $message,
             $exception->getErrorData()[JsonRpcInternalErrorException::DATA_PREVIOUS_KEY]
         );
     }
