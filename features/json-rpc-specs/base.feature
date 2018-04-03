@@ -37,7 +37,7 @@ Feature: Basic checks
     """
     Then I should have an empty response
 
-  Scenario: A batch call with only notifications but with an error should return an array with corresponding errors
+  Scenario: A batch call with only notifications but with sub requests on error should return an array with corresponding errors
     When I send following payload:
     """
     [
@@ -55,11 +55,14 @@ Feature: Basic checks
       false,
       {
         "jsonrpc": "2.0",
-        "id": "1234",
         "method": "a-method-that-do-not-exist"
       }
     ]
     """
+    # Error should be because of :
+    # - {"jsonrpc": "2.0"}
+    # - "ABCDE"
+    # - false
     Then I should have the following response:
     """
     [
@@ -85,14 +88,6 @@ Feature: Basic checks
         "error": {
           "code": -32600,
           "message": "Invalid request"
-        }
-      },
-      {
-        "jsonrpc": "2.0",
-        "id": "1234",
-        "error": {
-          "code": -32601,
-          "message": "Method not found"
         }
       }
     ]
