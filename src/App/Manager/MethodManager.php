@@ -67,7 +67,6 @@ class MethodManager
                 $method->validateParams($paramList);
             } catch (\Exception $validationException) {
                 throw new JsonRpcInvalidParamsException(
-                    $methodName,
                     $validationException->getMessage()
                 );
             }
