@@ -27,8 +27,7 @@ make coverage
  * Wait for feedback or merge.
 
   Some stuff that will increase your pull request's acceptance:
-    
-    * Write tests.
-    * Follow PSR-2 coding style.
-    * Write good commit messages.
-    * Do not rebase or squash your commits when a review has been made.
+   * Write tests.
+   * Follow PSR-2 coding style.
+   * Write good commit messages.
+   * Do not rebase or squash your commits when a review has been made.
