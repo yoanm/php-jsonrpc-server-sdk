@@ -35,7 +35,7 @@ class RequestHandlerTest extends TestCase
 
     public function testHandleShouldManageExceptionFromMethodExecution()
     {
-        $request = new JsonRpcRequest('json-rpc', 'method');
+        $request = new JsonRpcRequest('json-rpc-version', 'method');
         $exception = $this->prophesize(\Exception::class);
 
         $this->methodManager->apply(Argument::cetera())

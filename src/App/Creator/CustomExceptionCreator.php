@@ -22,6 +22,9 @@ class CustomExceptionCreator
      */
     public function createFor(\Exception $exception) : JsonRpcExceptionInterface
     {
+        if ($exception instanceof JsonRpcExceptionInterface) {
+            return $exception;
+        }
         $errorCode = (int) $exception->getCode();
         if ($errorCode < self::MIN_VALID_ERROR_CODE || $errorCode > self::MAX_VALID_ERROR_CODE) {
             return new JsonRpcInternalErrorException($exception);
@@ -30,7 +33,7 @@ class CustomExceptionCreator
         $data = [];
 
         if ($exception->getPrevious()) {
-            $data[self::ERROR_DATA_PREVIOUS_KEY] = $exception->getPrevious();
+            $data[self::ERROR_DATA_PREVIOUS_KEY] = $exception->getPrevious()->getMessage();
         }
 
         return new JsonRpcException($errorCode, $exception->getMessage(), $data);

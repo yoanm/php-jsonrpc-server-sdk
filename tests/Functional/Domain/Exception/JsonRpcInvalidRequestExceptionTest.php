@@ -16,35 +16,21 @@ class JsonRpcInvalidRequestExceptionTest extends TestCase
         $this->assertSame(-32600, $exception->getErrorCode());
     }
 
-    public function testShouldHandleAContentAnPutItInExceptionData()
+    public function testShouldHandleAContent()
     {
         $content = 'my-content';
 
         $exception = new JsonRpcInvalidRequestException($content);
 
-        $this->assertArrayHasKey(
-            JsonRpcInvalidRequestException::DATA_CONTENT_KEY,
-            $exception->getErrorData()
-        );
-        $this->assertSame(
-            $content,
-            $exception->getErrorData()[JsonRpcInvalidRequestException::DATA_CONTENT_KEY]
-        );
+        $this->assertSame($content, $exception->getContent());
     }
 
-    public function testShouldHandleAnOptionalDescriptionAnPutItInExceptionData()
+    public function testShouldHandleAnOptionalDescription()
     {
         $description = 'my-description';
 
         $exception = new JsonRpcInvalidRequestException('a-content', $description);
 
-        $this->assertArrayHasKey(
-            JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY,
-            $exception->getErrorData()
-        );
-        $this->assertSame(
-            $description,
-            $exception->getErrorData()[JsonRpcInvalidRequestException::DATA_DESCRIPTION_KEY]
-        );
+        $this->assertSame($description, $exception->getDescription());
     }
 }

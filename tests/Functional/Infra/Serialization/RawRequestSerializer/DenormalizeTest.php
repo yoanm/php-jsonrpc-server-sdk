@@ -53,7 +53,7 @@ class DenormalizeTest extends TestCase
     public function testShouldGracefullyHandleRequestDernormalizationException()
     {
         $decodedContent = [
-            'json-rpc' => '2.0',
+            'jsonrpc' => '2.0',
             'method' => 'method'
         ];
         $exception = $this->prophesize(\Exception::class);
@@ -75,15 +75,15 @@ class DenormalizeTest extends TestCase
     {
         $decodedContent = [
             [
-                'json-rpc' => '2.0',
+                'jsonrpc' => '2.0',
                 'method' => 'valid-method'
             ],
             [
-                'json-rpc' => '2.0',
+                'jsonrpc' => '2.0',
                 'method' => 'invalid-method'
             ],
             [
-                'json-rpc' => '2.0',
+                'jsonrpc' => '2.0',
                 'method' => 'valid-method-2'
             ],
         ];

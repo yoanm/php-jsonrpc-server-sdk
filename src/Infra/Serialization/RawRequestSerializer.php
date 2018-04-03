@@ -12,11 +12,6 @@ use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawRequest;
  */
 class RawRequestSerializer
 {
-    const KEY_JSON_RPC = 'json-rpc';
-    const KEY_ID = 'id';
-    const KEY_METHOD = 'method';
-    const KEY_PARAM_LIST = 'params';
-
     /** @var RequestDenormalizer */
     private $requestDenormalizer;
 
@@ -62,7 +57,10 @@ class RawRequestSerializer
 
         // Content must be either an array (normal request) or an array of array (batch request)
         //  => so must be an array
-        if (!is_array($decodedContent)) {
+        // In case it's a batch call, at least one sub request must exist
+        // and in case not, some required properties must exist
+        // => array must have at least one child
+        if (!is_array($decodedContent) || count($decodedContent) === 0) {
             throw new JsonRpcInvalidRequestException($requestContent);
         }
 
