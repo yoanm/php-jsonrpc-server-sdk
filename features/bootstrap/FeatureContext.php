@@ -146,7 +146,6 @@ class FeatureContext implements Context
             $decoded,
             'An error response must not contains any other keys than "jsonrpc", "id" and "error"'
         );
-
     }
 
     private function validateJsonRpcSuccessReponse($decoded)
