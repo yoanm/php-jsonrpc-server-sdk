@@ -10,14 +10,12 @@ git clone git@github.com:your-username/php-jsonrpc-server-sdk.git
 ```bash
 make build
 make test
-make codestyle
 ```
 
  * Make your changes (Add/Update tests according to your changes).
  * Make sure tests are still green:
 ```bash
 make test
-make codestyle
 ```
 
  * To check code coverage, launch
