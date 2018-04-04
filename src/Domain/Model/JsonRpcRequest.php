@@ -1,7 +1,7 @@
 <?php
 namespace Yoanm\JsonRpcServer\Domain\Model;
 
-use \InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Class JsonRpcRequest
