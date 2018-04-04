@@ -60,7 +60,6 @@ class DummyMethod implements JsonRpcMethodInterface
 #### Array method resolver (simple example)
 *You could take example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php)*
 ```php
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 
@@ -72,16 +71,10 @@ class ArrayMethodResolver implements MethodResolverInterface
     /**
      * @param string $methodName
      *
-     * @return JsonRpcMethodInterface
-     *
-     * @throws JsonRpcMethodNotFoundException
+     * @return JsonRpcMethodInterface|null
      */
-    public function resolve(string $methodName) : JsonRpcMethodInterface
+    public function resolve(string $methodName)
     {
-        if (!isset($this->methodList[$methodName])) {
-            throw new JsonRpcMethodNotFoundException($methodName);
-        }
-
         return $this->methodList[$methodName];
     }
 

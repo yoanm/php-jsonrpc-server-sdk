@@ -11,9 +11,7 @@ interface MethodResolverInterface
     /**
      * @param string $methodName
      *
-     * @return JsonRpcMethodInterface
-     *
-     * @throws JsonRpcMethodNotFoundException In case method was not found
+     * @return JsonRpcMethodInterface|mixed A valid JSON-RPC method, anything else will be considered as invalid
      */
-    public function resolve(string $methodName) : JsonRpcMethodInterface;
+    public function resolve(string $methodName);
 }
