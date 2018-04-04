@@ -5,9 +5,7 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
-use Tests\Functional\BehatContext\App\BehatMethodResolver;
 use Tests\Functional\BehatContext\App\FakeEndpointCreator;
-use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 /**
@@ -26,8 +24,6 @@ class FeatureContext implements Context
 
     /** @var JsonRpcEndpoint */
     private $endpoint;
-    /** @var MethodResolverInterface */
-    private $methodResolver;
     /** @var string */
     private $lastResponse;
 
@@ -40,9 +36,7 @@ class FeatureContext implements Context
      */
     public function __construct()
     {
-        $this->methodResolver = new BehatMethodResolver();
-
-        $this->endpoint = (new FakeEndpointCreator())->create($this->methodResolver);
+        $this->endpoint = (new FakeEndpointCreator())->create();
     }
 
     /**

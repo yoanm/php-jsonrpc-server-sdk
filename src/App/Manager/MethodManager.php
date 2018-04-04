@@ -42,6 +42,10 @@ class MethodManager
     {
         $method = $this->methodResolver->resolve($methodName);
 
+        if (!$method instanceof JsonRpcMethodInterface) {
+            throw new JsonRpcMethodNotFoundException($methodName);
+        }
+
         $this->validateParamsIfNeeded($method, $paramList);
 
         try {
