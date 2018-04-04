@@ -115,8 +115,10 @@ class SymfonyExtensionContext implements Context
     /**
      * @Given I have a JSON-RPC method service definition with :tagName tag and following tag attributes:
      */
-    public function givenITagMyJsonRpcMethodServiceWithTagAndFollowingAttributes($tagName, PyStringNode $tagAttributeNode)
-    {
+    public function givenITagMyJsonRpcMethodServiceWithTagAndFollowingAttributes(
+        $tagName,
+        PyStringNode $tagAttributeNode
+    ) {
         $definition = $this->createJsonRpcMethodDefinition()
             ->addTag($tagName, json_decode($tagAttributeNode, true));
 
