@@ -12,7 +12,7 @@ Simple server SDK to convert a json-rpc request string into json-rpc response st
 ## How to use
 
 Sdk requires only two things : 
- - A method resolver : must implement [MethodResolverInterface](./src/Domain/Model/MethodResolverInterface.php), resolving logic's is your own.
+ - A method resolver : you could either pick `Yoanm\JsonRpcServer\Infra\Resolver\ArrayMethodResolver` or implement your own. Resolver must implement [MethodResolverInterface](./src/Domain/Model/MethodResolverInterface.php)
  - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/Model/JsonRpcMethodInterface.php)
  
 :warning: No dependency injection is managed in this library 
@@ -57,37 +57,6 @@ class DummyMethod implements JsonRpcMethodInterface
     }
 }
 ```
-#### Array method resolver (simple example)
-*You could take example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php)*
-```php
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
-use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
-
-class ArrayMethodResolver implements MethodResolverInterface
-{
-    /** @var JsonRpcMethodInterface[] */
-    private $methodList = [];
-
-    /**
-     * @param string $methodName
-     *
-     * @return JsonRpcMethodInterface|null
-     */
-    public function resolve(string $methodName)
-    {
-        return $this->methodList[$methodName];
-    }
-
-    /**
-     * @param JsonRpcMethodInterface $method
-     * @param string                 $methodName
-     */
-    public function addMethod(JsonRpcMethodInterface $method, string $methodName)
-    {
-        $this->methodList[$methodName] = $method;
-    }
-}
-```
 
 Then add your method to the resolver and create the endpoint : 
 ```php
@@ -98,14 +67,12 @@ use Yoanm\JsonRpcServer\App\RequestHandler;
 use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
+use Yoanm\JsonRpcServer\Infra\Resolver\ArrayMethodResolver
 use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
 use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
 
-$resolver = new ArrayMethodResolver();
-$resolver->addMethod(
-    'dummy-method'
-    new DummyMethod()
-);
+// Use ArrayMethodResolver or implement your own
+$resolver = (new ArrayMethodResolver())->addMethod('dummy-method' new DummyMethod());
 
 $responseCreator = new ResponseCreator();
 
