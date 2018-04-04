@@ -29,6 +29,9 @@
     "require": {
         "php": ">7.0"
     },
+    "suggest": {
+        "symfony/dependency-injection": "Better sdk integration. Method resolver and json-rpc methods tags for autoloading"
+    },
     "require-dev": {
         "behat/behat": "~3.0",
         "squizlabs/php_codesniffer": "3.*",

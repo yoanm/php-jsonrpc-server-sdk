@@ -1,6 +1,7 @@
 COLOR_ENABLED ?= true
 TEST_OUTPUT_STYLE ?= dot
 COVERAGE_OUTPUT_STYLE ?= html
+CI_ONLY_SYMFONY_EXTENSION ?=false
 
 ## DIRECTORY AND FILE
 BUILD_DIRECTORY ?= build
@@ -47,16 +48,33 @@ else
     endif
 endif
 
+ifeq ("${CI_ONLY_SYMFONY_EXTENSION}","true")
+	BEHAT_TAG_OPTION=--tags=@symfony-extension
+	PHPUNIT_GROUP_OPTION=--group=symfony-extension
+	PHPUNIT_COVERAGE_GROUP_OPTION=--group=symfony-extension
+else
+	BEHAT_TAG_OPTION=--tags=~@symfony-extension
+	PHPUNIT_GROUP_OPTION=--exclude-group=symfony-extension
+	PHPUNIT_COVERAGE_GROUP_OPTION=--exclude-group=symfony-extension
+endif
+
 ifneq ("${PHPCS_REPORT_FILE}","")
 	PHPCS_REPORT_FILE_OPTION ?= --report-file=${PHPCS_REPORT_FILE}
 endif
 
+ifeq ("${SCRUTINIZER}","true")
+	# On scrutinizer coverage must be done in all files
+	PHPUNIT_COVERAGE_GROUP_OPTION=
+endif
 
 ## Project build (install and configure)
 build: install configure
 
 ## Project installation
 install:
+ifeq ("${CI_ONLY_SYMFONY_EXTENSION}","true")
+	composer require symfony/dependency-injection ${COMPOSER_COLOR_OPTION} ${COMPOSER_OPTIONS} --prefer-dist --no-suggest --no-interaction
+endif
 	composer install ${COMPOSER_COLOR_OPTION} ${COMPOSER_OPTIONS} --prefer-dist --no-suggest --no-interaction
 
 ## project Configuration
@@ -69,17 +87,17 @@ test:
 	make codestyle
 
 test-technical:
-	./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} --testsuite technical
+	./vendor/bin/phpunit ${PHPUNIT_GROUP_OPTION} ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} --testsuite technical
 
 test-functional:
-	./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} --testsuite functional
-	./vendor/bin/behat ${BEHAT_COLOR_OPTION} ${BEHAT_OUTPUT_STYLE_OPTION} --no-snippets
+	./vendor/bin/phpunit ${PHPUNIT_GROUP_OPTION} ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} --testsuite functional
+	./vendor/bin/behat ${BEHAT_COLOR_OPTION} ${BEHAT_OUTPUT_STYLE_OPTION} ${BEHAT_TAG_OPTION} --no-snippets
 
 codestyle: create-reports-directory
 	./vendor/bin/phpcs --standard=phpcs.xml.dist ${PHPCS_COLOR_OPTION} ${PHPCS_REPORT_FILE_OPTION} --report=${PHPCS_REPORT_STYLE}
 
 coverage: create-coverage-directory
-	./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} ${PHPUNIT_COVERAGE_OPTION}
+	./vendor/bin/phpunit ${PHPUNIT_COVERAGE_GROUP_OPTION} ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} ${PHPUNIT_COVERAGE_OPTION}
 
 
 
