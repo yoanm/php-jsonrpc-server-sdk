@@ -2,9 +2,7 @@
 namespace Tests\Technical\App\Creator;
 
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
 
 /**

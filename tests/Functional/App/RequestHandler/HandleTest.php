@@ -2,7 +2,6 @@
 namespace Tests\Functional\App\RequestHandler;
 
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Util\Json;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;

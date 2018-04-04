@@ -1,8 +1,6 @@
 <?php
 namespace Yoanm\JsonRpcServer\Domain\Model;
 
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
-
 /**
  * Class MethodResolverInterface
  */
