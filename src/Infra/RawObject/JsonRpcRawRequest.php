@@ -2,7 +2,6 @@
 namespace Yoanm\JsonRpcServer\Infra\RawObject;
 
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * Class JsonRpcRawRequest

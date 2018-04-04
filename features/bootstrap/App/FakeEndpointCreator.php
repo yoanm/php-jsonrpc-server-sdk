@@ -4,7 +4,6 @@ namespace Tests\Functional\BehatContext\App;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophet;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\App\Manager\MethodManager;
