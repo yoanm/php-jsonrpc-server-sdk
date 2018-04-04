@@ -2,11 +2,11 @@
 namespace Yoanm\JsonRpcServer\App\Manager;
 
 use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
-use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcExceptionInterface;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 
 /**
  * Class MethodManager
@@ -41,6 +41,10 @@ class MethodManager
     public function apply(string $methodName, array $paramList = null)
     {
         $method = $this->methodResolver->resolve($methodName);
+
+        if (!$method instanceof JsonRpcMethodInterface) {
+            throw new JsonRpcMethodNotFoundException($methodName);
+        }
 
         $this->validateParamsIfNeeded($method, $paramList);
 

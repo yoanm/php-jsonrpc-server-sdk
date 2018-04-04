@@ -7,6 +7,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
 use Yoanm\JsonRpcServer\App\Manager\MethodManager;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
+use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 
@@ -89,5 +90,22 @@ class ApplyTest extends TestCase
         $this->expectException(JsonRpcInvalidParamsException::class);
 
         $this->methodManager->apply($methodName, $paramList);
+    }
+
+    /**
+     * Should handle a the case where method does not exist
+     * and throw proper JSON-RPC exception
+     */
+    public function testShouldHandleMethodThatDoesNotExist()
+    {
+        $methodName = 'methodName';
+
+        $this->methodResolver->resolve($methodName)
+            ->willReturn(null)
+            ->shouldBeCalled();
+
+        $this->expectException(JsonRpcMethodNotFoundException::class);
+
+        $this->methodManager->apply($methodName);
     }
 }

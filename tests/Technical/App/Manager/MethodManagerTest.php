@@ -8,7 +8,6 @@ use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
 use Yoanm\JsonRpcServer\App\Manager\MethodManager;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcExceptionInterface;
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
 
