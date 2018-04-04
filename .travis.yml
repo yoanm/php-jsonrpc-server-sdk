@@ -10,6 +10,8 @@ env:
   TEST_OUTPUT_STYLE: 'pretty'
   PHPCS_REPORT_STYLE: 'full'
   COMPOSER_OPTIONS: '--optimize-autoloader'
+  CI_ONLY_SYMFONY_EXTENSION: true
+  CI_ONLY_SYMFONY_EXTENSION: false
 
 sudo: false
 
