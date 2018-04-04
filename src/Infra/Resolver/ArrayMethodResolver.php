@@ -26,9 +26,13 @@ class ArrayMethodResolver implements MethodResolverInterface
     /**
      * @param JsonRpcMethodInterface $method
      * @param string                 $methodName
+     *
+     * @return ArrayMethodResolver
      */
-    public function addMethod(JsonRpcMethodInterface $method, string $methodName)
+    public function addMethod(JsonRpcMethodInterface $method, string $methodName) : ArrayMethodResolver
     {
         $this->methodList[$methodName] = $method;
+
+        return $this;
     }
 }
