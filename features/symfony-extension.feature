@@ -67,5 +67,5 @@ Feature: Symfony extension
     When I load endpoint from "yoanm.jsonrpc_server_sdk.endpoint" service
     Then endpoint should respond to following JSON-RPC methods:
     | getDummy          |
-    | my-method-name          |
+    | my-method-name    |
     | an-another-method |

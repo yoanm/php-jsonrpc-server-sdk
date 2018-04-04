@@ -8,9 +8,7 @@ use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophet;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Tests\Functional\BehatContext\App\CustomMethodResolver;
 use Tests\Functional\BehatContext\App\JsonRpcMethod;
@@ -73,7 +71,7 @@ class SymfonyExtensionContext implements Context
     /**
      * @Given I inject my :methodName JSON-RPC method into default method resolver instance
      */
-    public function givenIInjectMyJsonRpcMethodIntoDefaultMethodResolver($methodName)
+    public function givenIInjectMyJsonRpcMethodIntoDefaultMethodResolverInstance($methodName)
     {
         $this->injectJsonRpcMethodToResolverService(
             $methodName,
@@ -93,7 +91,7 @@ class SymfonyExtensionContext implements Context
     /**
      * @Given I inject my :methodName JSON-RPC method into my custom method resolver instance
      */
-    public function givenIInjectMyJsonRpcMethodIntoMyCustomMethodResolver($methodName)
+    public function givenIInjectMyJsonRpcMethodIntoMyCustomMethodResolverInstance($methodName)
     {
         $this->injectJsonRpcMethodToResolverService(
             $methodName,
@@ -117,7 +115,7 @@ class SymfonyExtensionContext implements Context
     /**
      * @Given I have a JSON-RPC method service definition with :tagName tag and following tag attributes:
      */
-    public function givenITagMyJsonRpcMethodServiceWithTag($tagName, PyStringNode $tagAttributeNode)
+    public function givenITagMyJsonRpcMethodServiceWithTagAndFollowingAttributes($tagName, PyStringNode $tagAttributeNode)
     {
         $definition = $this->createJsonRpcMethodDefinition()
             ->addTag($tagName, json_decode($tagAttributeNode, true));
@@ -128,7 +126,7 @@ class SymfonyExtensionContext implements Context
     /**
      * @When I load endpoint from :serviceId service
      */
-    public function whenIAskForService($serviceId)
+    public function whenILoadEndpointFromService($serviceId)
     {
         $this->getContainerBuilder()->compile();
 
@@ -147,6 +145,10 @@ class SymfonyExtensionContext implements Context
         $this->assertEndpointRespondToCalls($this->endpoint, $methodList);
     }
 
+    /**
+     * @param JsonRpcEndpoint $endpoint
+     * @param array           $methodNameList
+     */
     private function assertEndpointRespondToCalls(JsonRpcEndpoint $endpoint, array $methodNameList)
     {
         foreach ($methodNameList as $methodName) {

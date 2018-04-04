@@ -45,6 +45,9 @@ class JsonRpcServerExtension extends Extension
     private $infraRawReqSerializerServiceId  = 'yoanm.jsonrpc_server_sdk.infra.serialization.raw_request_serializer';
     private $infraRawRespSerializerServiceId = 'yoanm.jsonrpc_server_sdk.infra.serialization.raw_response_serializer';
 
+    /**
+     * {@inheritdoc}
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
         // Use only references to avoid class instantiation
@@ -170,6 +173,9 @@ class JsonRpcServerExtension extends Extension
         return $resolverServiceId;
     }
 
+    /**
+     * @param ContainerBuilder $container
+     */
     private function loadJsonRpcMethodsFromTag(ContainerBuilder $container)
     {
         // Check if methods have been defined by tags
