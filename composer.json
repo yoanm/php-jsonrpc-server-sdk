@@ -32,7 +32,7 @@
     "require-dev": {
         "behat/behat": "~3.0",
         "squizlabs/php_codesniffer": "3.*",
-        "phpunit/phpunit": "^6.0",
+        "phpunit/phpunit": "^6.0 || ^7.0",
         "yoanm/php-unit-extended": "^1.0"
     }
 }
