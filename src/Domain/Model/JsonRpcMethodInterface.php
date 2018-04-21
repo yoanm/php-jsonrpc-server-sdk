@@ -9,11 +9,9 @@ interface JsonRpcMethodInterface
     /**
      * @param array $paramList
      *
-     * @return void
-     *
-     * @throws \Exception In case of validation issue. Will be used later to generate proper JSON-RPC error
+     * @return array List of violations, if not empty, will be used later to generate proper JSON-RPC error
      */
-    public function validateParams(array $paramList);
+    public function validateParams(array $paramList) : array;
 
     /**
      * @param array|null $paramList

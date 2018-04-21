@@ -64,17 +64,15 @@ class ApplyTest extends TestCase
         );
     }
 
-
     /**
-     * Should handle a validation exception return by the method validator
+     * Should handle params violation list returned by the method validator
      * and throw proper JSON-RPC exception
      */
-    public function testShouldHandleValidationException()
+    public function testShouldHandleParamsViolationList()
     {
         $methodName = 'methodName';
         $paramList = ['param-list'];
         $validationErrorMessage = 'validation-error-message';
-        $validationException = new \Exception($validationErrorMessage);
 
         /** @var JsonRpcMethodInterface|ObjectProphecy $method */
         $method = $this->prophesize(JsonRpcMethodInterface::class);
@@ -84,7 +82,7 @@ class ApplyTest extends TestCase
             ->shouldBeCalled();
 
         $method->validateParams($paramList)
-            ->willThrow($validationException)
+            ->willReturn([$validationErrorMessage])
             ->shouldBeCalled();
 
         $this->expectException(JsonRpcInvalidParamsException::class);
