@@ -88,7 +88,7 @@ class FakeEndpointCreator
     {
         $basicMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
         $basicMethod->validateParams(Argument::cetera())
-            ->willReturn(null);
+            ->willReturn([]);
         $basicMethod->apply(Argument::cetera())
             ->willReturn('basic-method-result');
 
@@ -106,12 +106,15 @@ class FakeEndpointCreator
         $methodWithParams->validateParams(Argument::cetera())
             ->will(function ($args) {
                 $params = $args[0];
+                $violationList = [];
                 // Throw an exception only in case no params are given
                 if (!is_array($params) || count($params) === 0) {
-                    throw new \Exception('basic-method-with-param requires parameters');
+                    $violationList[] = [
+                        'basic-method-with-param requires parameters'
+                    ];
                 }
 
-                return null;
+                return $violationList;
             });
         $methodWithParams->apply(Argument::cetera())
             ->willReturn('basic-method-with-params-result');
@@ -129,7 +132,12 @@ class FakeEndpointCreator
     {
         $paramsValidationExceptionMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
         $paramsValidationExceptionMethod->validateParams(Argument::cetera())
-            ->willThrow(new \Exception('method-that-throw-params-validation-exception validation exception'));
+            ->willReturn([
+                [
+                    'path' => 'path-on-error',
+                    'message' => 'method-that-throw-params-validation-exception validation exception'
+                ]
+            ]);
 
         return $paramsValidationExceptionMethod;
     }
@@ -143,7 +151,7 @@ class FakeEndpointCreator
     {
         $executionExceptionMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
         $executionExceptionMethod->validateParams(Argument::cetera())
-            ->willReturn(null);
+            ->willReturn([]);
         $executionExceptionMethod->apply(Argument::cetera())
             ->willThrow(new \Exception('method-that-throw-an-exception-during-execution execution exception'));
 
@@ -159,7 +167,7 @@ class FakeEndpointCreator
     {
         $customExecutionExceptionMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
         $customExecutionExceptionMethod->validateParams(Argument::cetera())
-            ->willReturn(null);
+            ->willReturn([]);
         $customExecutionExceptionMethod->apply(Argument::cetera())
             ->willThrow(new JsonRpcException(
                 -32012,
