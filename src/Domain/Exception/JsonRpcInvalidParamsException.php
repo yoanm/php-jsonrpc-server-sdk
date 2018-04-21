@@ -8,19 +8,18 @@ class JsonRpcInvalidParamsException extends JsonRpcException
 {
     const CODE = -32602;
 
-    const DATA_MESSAGE_KEY = 'message';
+    const DATA_VIOLATIONS_KEY = 'violations';
 
     /**
-     * @param string $method
-     * @param string $message
+     * @param array $violationMessageList
      */
-    public function __construct(string $message)
+    public function __construct(array $violationMessageList)
     {
         parent::__construct(
             self::CODE,
             'Invalid params',
             [
-                self::DATA_MESSAGE_KEY => $message,
+                self::DATA_VIOLATIONS_KEY => $violationMessageList,
             ]
         );
     }

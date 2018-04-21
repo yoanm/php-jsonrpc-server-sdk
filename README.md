@@ -25,22 +25,24 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
 class DummyMethod implements JsonRpcMethodInterface
 {
     /**
-     * @param array $paramList
-     *
-     * @throws \Exception
+     * {@inheritdoc}
      */
-    public function validateParams(array $paramList)
+    public function validateParams(array $paramList) : array
     {
+        $violationList = [];
         //If case your app require a specific param for instance
         if (!isset($paramList['my-required-key')) {
-            throw new \Exception('"my-required-key" is a required key');
+            $violationList[] = [
+                'path' => 'my-required-key',
+                'error' => 'Key is required'
+            ]
         }
+
+        return $violationList;
     }
 
     /**
-     * @param array|null $paramList
-     * 
-     * @return array|int|null
+     * {@inheritdoc}
      */
     public function apply(array $paramList = null)
     {

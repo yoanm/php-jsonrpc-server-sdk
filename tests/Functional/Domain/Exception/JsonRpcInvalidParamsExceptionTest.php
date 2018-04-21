@@ -9,30 +9,35 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
  */
 class JsonRpcInvalidParamsExceptionTest extends TestCase
 {
-    const DEFAULT_METHOD = 'default-method';
     const DEFAULT_MESSAGE = 'default-message';
+    const DEFAULT_PATH = 'my-path';
 
     public function testShouldHaveTheRightJsonRpcErrorCode()
     {
-        $exception = new JsonRpcInvalidParamsException(self::DEFAULT_MESSAGE);
+        $exception = new JsonRpcInvalidParamsException([self::DEFAULT_MESSAGE]);
 
         $this->assertSame(-32602, $exception->getErrorCode());
     }
 
     public function testShouldHandleAMessageAnPutItInExceptionData()
     {
-        $method = 'my-method';
-        $message = 'my-message';
+        $violationList = [
+            'message' => self::DEFAULT_MESSAGE,
+            [
+                'path' => self::DEFAULT_PATH,
+                'message' => self::DEFAULT_MESSAGE.'_2'
+            ]
+        ];
 
-        $exception = new JsonRpcInvalidParamsException($message);
+        $exception = new JsonRpcInvalidParamsException($violationList);
 
         $this->assertArrayHasKey(
-            JsonRpcInvalidParamsException::DATA_MESSAGE_KEY,
+            JsonRpcInvalidParamsException::DATA_VIOLATIONS_KEY,
             $exception->getErrorData()
         );
         $this->assertSame(
-            $message,
-            $exception->getErrorData()[JsonRpcInvalidParamsException::DATA_MESSAGE_KEY]
+            $violationList,
+            $exception->getErrorData()[JsonRpcInvalidParamsException::DATA_VIOLATIONS_KEY]
         );
     }
 }

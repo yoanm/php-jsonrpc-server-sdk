@@ -93,7 +93,12 @@ Feature: Ensure JSON-RPC specifications
         "code": -32602,
         "message": "Invalid params",
         "data": {
-          "message": "method-that-throw-params-validation-exception validation exception"
+          "violations": [
+            {
+              "path": "path-on-error",
+              "message": "method-that-throw-params-validation-exception validation exception"
+            }
+          ]
         }
       }
     }
