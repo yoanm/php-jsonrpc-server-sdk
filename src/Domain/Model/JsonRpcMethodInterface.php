@@ -9,7 +9,7 @@ interface JsonRpcMethodInterface
     /**
      * @param array $paramList
      *
-     * @return array List of violations, will be used later to generate proper JSON-RPC error
+     * @return array List of violations, if not empty, will be used later to generate proper JSON-RPC error
      */
     public function validateParams(array $paramList) : array;
 

@@ -56,7 +56,6 @@ class ApplyTest extends TestCase
             ->shouldBeCalled();
 
         $method->validateParams($paramList)
-            ->willReturn([])
             ->shouldBeCalled();
 
         $this->assertSame(
