@@ -66,12 +66,10 @@ class MethodManager
     private function validateParamsIfNeeded(JsonRpcMethodInterface $method, $paramList)
     {
         if (is_array($paramList)) {
-            try {
-                $method->validateParams($paramList);
-            } catch (\Exception $validationException) {
-                throw new JsonRpcInvalidParamsException(
-                    $validationException->getMessage()
-                );
+            $violationList = $method->validateParams($paramList);
+
+            if (count($violationList)) {
+                throw new JsonRpcInvalidParamsException($violationList);
             }
         }
     }
