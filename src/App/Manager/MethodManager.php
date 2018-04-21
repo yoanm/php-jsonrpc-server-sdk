@@ -29,8 +29,8 @@ class MethodManager
     }
 
     /**
-     * @param string $methodName
-     * @param array  $paramList
+     * @param string      $methodName
+     * @param array|null  $paramList
      *
      * @return mixed
      *
@@ -46,7 +46,7 @@ class MethodManager
             throw new JsonRpcMethodNotFoundException($methodName);
         }
 
-        $this->validateParamsIfNeeded($method, $paramList);
+        $this->validateParams($method, $paramList);
 
         try {
             return $method->apply($paramList);
@@ -57,20 +57,18 @@ class MethodManager
 
     /**
      * @param JsonRpcMethodInterface $method
-     * @param array|mixed            $paramList
+     * @param array|null             $paramList
      *
      * @throws JsonRpcInvalidParamsException
      *
      * @return void
      */
-    private function validateParamsIfNeeded(JsonRpcMethodInterface $method, $paramList)
+    private function validateParams(JsonRpcMethodInterface $method, array $paramList = null)
     {
-        if (is_array($paramList)) {
-            $violationList = $method->validateParams($paramList);
+        $violationList = $method->validateParams($paramList ?? []);
 
-            if (count($violationList)) {
-                throw new JsonRpcInvalidParamsException($violationList);
-            }
+        if (count($violationList)) {
+            throw new JsonRpcInvalidParamsException($violationList);
         }
     }
 }
