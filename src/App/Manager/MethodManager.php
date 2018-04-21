@@ -63,7 +63,7 @@ class MethodManager
      *
      * @return void
      */
-    private function validateParams(JsonRpcMethodInterface $method, $paramList)
+    private function validateParams(JsonRpcMethodInterface $method, array $paramList = null)
     {
         $violationList = $method->validateParams($paramList ?? []);
 
