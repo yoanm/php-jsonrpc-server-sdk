@@ -19,12 +19,12 @@ class OnMethodFailureEvent extends AbstractOnMethodEvent
     /**
      * @param \Exception             $exception
      * @param JsonRpcMethodInterface $method
-     * @param JsonRpcRequest|null    $jsonRpcRequest
+     * @param JsonRpcRequest         $jsonRpcRequest
      */
     public function __construct(
         \Exception $exception,
         JsonRpcMethodInterface $method,
-        JsonRpcRequest $jsonRpcRequest = null
+        JsonRpcRequest $jsonRpcRequest
     ) {
         $this->exception = $exception;
 
@@ -34,16 +34,20 @@ class OnMethodFailureEvent extends AbstractOnMethodEvent
     /**
      * @return \Exception
      */
-    public function getException()
+    public function getException() : \Exception
     {
         return $this->exception;
     }
 
     /**
      * @param \Exception $exception
+     *
+     * @return OnMethodFailureEvent
      */
-    public function setException($exception)
+    public function setException(\Exception $exception) : OnMethodFailureEvent
     {
         $this->exception = $exception;
+
+        return $this;
     }
 }

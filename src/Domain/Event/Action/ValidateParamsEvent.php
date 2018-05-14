@@ -16,8 +16,8 @@ class ValidateParamsEvent implements JsonRpcServerEvent
     /** @var JsonRpcMethodInterface */
     private $method;
     /** @var array */
-    private $paramList;
-    /** @var array */
+    private $paramList = [];
+    /** @var mixed[] */
     private $violationList = [];
 
     /**
@@ -33,7 +33,7 @@ class ValidateParamsEvent implements JsonRpcServerEvent
     /**
      * @return JsonRpcMethodInterface
      */
-    public function getMethod()
+    public function getMethod() : JsonRpcMethodInterface
     {
         return $this->method;
     }
@@ -59,9 +59,21 @@ class ValidateParamsEvent implements JsonRpcServerEvent
     }
 
     /**
+     * @param mixed $violation
+     *
+     * @return ValidateParamsEvent
+     */
+    public function addViolation($violation) : ValidateParamsEvent
+    {
+        $this->violationList[] = $violation;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
-    public function getViolationList()
+    public function getViolationList() : array
     {
         return $this->violationList;
     }

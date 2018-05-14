@@ -18,8 +18,6 @@ Trait JsonRpcServerDispatcherAwareTrait
     public function setJsonRpcServerDispatcher(JsonRpcServerDispatcherInterface $jsonRpcServerDispatcher)
     {
         $this->jsonRpcServerDispatcher = $jsonRpcServerDispatcher;
-
-        return $this;
     }
 
     /**

@@ -10,7 +10,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
  */
 abstract class AbstractOnMethodEvent implements JsonRpcServerEvent
 {
-    /** @var JsonRpcRequest|null */
+    /** @var JsonRpcRequest */
     private $jsonRpcRequest;
     /** @var JsonRpcMethodInterface */
     private $method;
@@ -19,16 +19,16 @@ abstract class AbstractOnMethodEvent implements JsonRpcServerEvent
      * @param JsonRpcMethodInterface $method
      * @param JsonRpcRequest|null    $jsonRpcRequest
      */
-    public function __construct(JsonRpcMethodInterface $method, JsonRpcRequest $jsonRpcRequest = null)
+    public function __construct(JsonRpcMethodInterface $method, JsonRpcRequest $jsonRpcRequest)
     {
         $this->jsonRpcRequest = $jsonRpcRequest;
         $this->method = $method;
     }
 
     /**
-     * @return null|JsonRpcRequest
+     * @return JsonRpcRequest
      */
-    public function getJsonRpcRequest()
+    public function getJsonRpcRequest() : JsonRpcRequest
     {
         return $this->jsonRpcRequest;
     }
@@ -36,7 +36,7 @@ abstract class AbstractOnMethodEvent implements JsonRpcServerEvent
     /**
      * @return JsonRpcMethodInterface
      */
-    public function getMethod()
+    public function getMethod() : JsonRpcMethodInterface
     {
         return $this->method;
     }

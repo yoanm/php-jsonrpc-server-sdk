@@ -11,7 +11,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
  */
 class OnMethodSuccessEvent extends AbstractOnMethodEvent
 {
-    const EVENT_NAME= 'json_rpc_server_skd.on_method_success';
+    const EVENT_NAME = 'json_rpc_server_skd.on_method_success';
 
     /** @var mixed|array|null */
     private $result;
@@ -19,20 +19,17 @@ class OnMethodSuccessEvent extends AbstractOnMethodEvent
     /**
      * @param mixed                  $result
      * @param JsonRpcMethodInterface $method
-     * @param JsonRpcRequest|null    $jsonRpcRequest
+     * @param JsonRpcRequest         $jsonRpcRequest
      */
-    public function __construct(
-        $result,
-        JsonRpcMethodInterface $method,
-        JsonRpcRequest $jsonRpcRequest = null
-    ) {
+    public function __construct($result, JsonRpcMethodInterface $method, JsonRpcRequest $jsonRpcRequest)
+    {
         $this->result = $result;
 
         parent::__construct($method, $jsonRpcRequest);
     }
 
     /**
-     * @return mixed|array|null
+     * @return mixed
      */
     public function getResult()
     {
@@ -40,7 +37,7 @@ class OnMethodSuccessEvent extends AbstractOnMethodEvent
     }
 
     /**
-     * @param array|mixed|null $result
+     * @param mixed $result
      */
     public function setResult($result)
     {

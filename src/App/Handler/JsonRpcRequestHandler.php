@@ -100,16 +100,11 @@ class JsonRpcRequestHandler
         try {
             $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
         } catch (\Exception $validationException) {
-            // Append violations to current list
-            $event->setViolationList(
-                array_merge(
-                    $event->getViolationList(),
-                    [
-                        'message' => 'Internal error during validation',
-                        'exception' => $validationException->getMessage()
-                    ]
-                )
-            );
+            // Append exception to current violation list
+            $event->addViolation([
+                'message' => 'Internal error during validation',
+                'exception' => $validationException->getMessage()
+            ]);
         }
 
         if (count($event->getViolationList())) {
