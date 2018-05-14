@@ -75,6 +75,8 @@ Feature: Ensure JSON-RPC specifications
     """
 
   Scenario: Invalid params (-32602)
+    # Dispatcher is required for validations
+    Given endpoint will use default JsonRpcServerDispatcher
     When I send following payload:
     """
     {
