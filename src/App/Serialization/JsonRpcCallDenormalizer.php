@@ -26,9 +26,9 @@ class JsonRpcCallDenormalizer
      */
     public function denormalize(array $decodedContent) : JsonRpcCall
     {
-        $isBatch = $this->guessBatchOrNot($decodedContent);
-
-        $jsonRpcCall = new JsonRpcCall($isBatch);
+        $jsonRpcCall = new JsonRpcCall(
+            $this->guessBatchOrNot($decodedContent)
+        );
 
         $this->populateItem($jsonRpcCall, $decodedContent);
 
