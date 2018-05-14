@@ -6,9 +6,13 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
  * Class OnMethodSuccessEvent
+ *
+ * Dispatched only in case JSON-RPC method return a response
  */
 class OnMethodSuccessEvent extends AbstractOnMethodEvent
 {
+    const EVENT_NAME= 'json_rpc_server_skd.on_method_success';
+
     /** @var mixed|array|null */
     private $result;
 

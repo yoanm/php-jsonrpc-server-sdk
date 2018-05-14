@@ -7,9 +7,13 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 
 /**
  * Class OnResponseSendingEvent
+ *
+ * Dispatched when a response has been successfully serialized by the endpoint and will be returned
  */
 class OnResponseSendingEvent implements JsonRpcServerEvent
 {
+    const EVENT_NAME = 'json_rpc_server_skd.on_response_sending';
+
     /** @var string */
     private $responseString;
     /** @var JsonRpcCallResponse */

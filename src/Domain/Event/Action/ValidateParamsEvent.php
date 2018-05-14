@@ -6,9 +6,13 @@ use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 
 /**
  * Class ValidateParamsEvent
+ *
+ * Dispatched before JSON-RPC will be called, in order to validate params
  */
 class ValidateParamsEvent implements JsonRpcServerEvent
 {
+    const EVENT_NAME = 'json_rpc_server_skd.validate_params';
+
     /** @var JsonRpcMethodInterface */
     private $method;
     /** @var array */

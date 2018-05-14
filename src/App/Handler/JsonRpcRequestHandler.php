@@ -8,7 +8,6 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
-use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
@@ -52,15 +51,12 @@ class JsonRpcRequestHandler
 
         try {
             $result = $method->apply($jsonRpcRequest->getParamList());
-
-            $eventName = JsonRpcServerDispatcherInterface::ON_METHOD_SUCCESS_EVENT_NAME;
             $event = new ActionEvent\OnMethodSuccessEvent($result, $method, $jsonRpcRequest);
         } catch (\Exception $exception) {
-            $eventName = JsonRpcServerDispatcherInterface::ON_METHOD_FAILURE_EVENT_NAME;
             $event = new ActionEvent\OnMethodFailureEvent($exception, $method, $jsonRpcRequest);
         }
 
-        $this->dispatchJsonRpcEvent($eventName, $event);
+        $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
 
         if ($event instanceof ActionEvent\OnMethodSuccessEvent) {
             $response = $this->responseCreator->createResultResponse($event->getResult(), $event->getJsonRpcRequest());
@@ -100,10 +96,9 @@ class JsonRpcRequestHandler
      */
     private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method)
     {
+        $event = new ActionEvent\ValidateParamsEvent($method, $jsonRpcRequest->getParamList() ?? []);
         try {
-            $event = new ActionEvent\ValidateParamsEvent($method, $jsonRpcRequest->getParamList() ?? []);
-
-            $this->dispatchJsonRpcEvent(JsonRpcServerDispatcherInterface::VALIDATE_PARAMS_EVENT_NAME, $event);
+            $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
         } catch (\Exception $validationException) {
             // Append violations to current list
             $event->setViolationList(

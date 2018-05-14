@@ -6,9 +6,13 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 
 /**
  * Class OnRequestReceivedEvent
+ *
+ * Dispatched when a request has been passed to the endpoint and successfully deserialized
  */
 class OnRequestReceivedEvent implements JsonRpcServerEvent
 {
+    const EVENT_NAME = 'json_rpc_server_skd.on_request_received';
+
     /** @var string */
     private $request;
     /** @var JsonRpcCall */

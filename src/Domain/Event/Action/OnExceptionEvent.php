@@ -6,9 +6,13 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
  * Class OnExceptionEvent
+ *
+ * Dispatched when a response has been successfully serialized by the endpoint and will be returned
  */
 class OnExceptionEvent implements JsonRpcServerEvent
 {
+    const EVENT_NAME = 'json_rpc_server_skd.on_exception';
+
     /** @var \Exception */
     private $exception;
     /** @var null|JsonRpcRequest */

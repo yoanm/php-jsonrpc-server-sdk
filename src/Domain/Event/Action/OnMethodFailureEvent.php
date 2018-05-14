@@ -6,9 +6,13 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
  * Class OnMethodFailureEvent
+ *
+ * Dispatched only in case JSON-RPC method thrown an exception.
  */
 class OnMethodFailureEvent extends AbstractOnMethodEvent
 {
+    const EVENT_NAME = 'json_rpc_server_skd.on_method_failure';
+
     /** @var \Exception */
     private $exception;
 

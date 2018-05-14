@@ -6,7 +6,6 @@ use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
 use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge as AcknowledgeEvent;
-use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
@@ -73,10 +72,8 @@ class JsonRpcEndpoint
     {
         $jsonRpcCall = $this->jsonRpcCallSerializer->deserialize($request);
 
-        $this->dispatchJsonRpcEvent(
-            JsonRpcServerDispatcherInterface::ON_REQUEST_RECEIVED_EVENT_NAME,
-            new AcknowledgeEvent\OnRequestReceivedEvent($request, $jsonRpcCall)
-        );
+        $event = new AcknowledgeEvent\OnRequestReceivedEvent($request, $jsonRpcCall);
+        $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
 
         return $jsonRpcCall;
     }
@@ -91,10 +88,8 @@ class JsonRpcEndpoint
     {
         $response = $this->jsonRpcCallSerializer->serialize($jsonRpcCallResponse);
 
-        $this->dispatchJsonRpcEvent(
-            JsonRpcServerDispatcherInterface::ON_RESPONSE_SENDING_EVENT_NAME,
-            new AcknowledgeEvent\OnResponseSendingEvent($response, $jsonRpcCallResponse, $jsonRpcCall)
-        );
+        $event = new AcknowledgeEvent\OnResponseSendingEvent($response, $jsonRpcCallResponse, $jsonRpcCall);
+        $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
 
         return $response;
     }
@@ -110,19 +105,15 @@ class JsonRpcEndpoint
 
         foreach ($jsonRpcCall->getItemList() as $itemPosition => $item) {
             if ($jsonRpcCall->isBatch()) {
-                $this->dispatchJsonRpcEvent(
-                    JsonRpcServerDispatcherInterface::ON_BATCH_SUB_REQUEST_PROCESSING_EVENT_NAME,
-                    new AcknowledgeEvent\OnBatchSubRequestProcessingEvent($itemPosition)
-                );
+                $event = new AcknowledgeEvent\OnBatchSubRequestProcessingEvent($itemPosition);
+                $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
             }
             $jsonRpcCallResponse->addResponse(
                 $this->processItem($item)
             );
             if ($jsonRpcCall->isBatch()) {
-                $this->dispatchJsonRpcEvent(
-                    JsonRpcServerDispatcherInterface::ON_BATCH_SUB_REQUEST_PROCESSED_EVENT_NAME,
-                    new AcknowledgeEvent\OnBatchSubRequestProcessedEvent($itemPosition)
-                );
+                $event = new AcknowledgeEvent\OnBatchSubRequestProcessedEvent($itemPosition);
+                $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
             }
         }
 
