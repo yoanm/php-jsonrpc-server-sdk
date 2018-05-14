@@ -1,10 +1,10 @@
 <?php
-namespace Yoanm\JsonRpcServer\Domain\Model;
+namespace Yoanm\JsonRpcServer\Domain;
 
 /**
- * Class MethodResolverInterface
+ * Class JsonRpcMethodResolverInterface
  */
-interface MethodResolverInterface
+interface JsonRpcMethodResolverInterface
 {
     /**
      * @param string $methodName

@@ -5,9 +5,9 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcExceptionInterface;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
- * Class ResponseNormalizer
+ * Class JsonRpcResponseNormalizer
  */
-class ResponseNormalizer
+class JsonRpcResponseNormalizer
 {
     const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
