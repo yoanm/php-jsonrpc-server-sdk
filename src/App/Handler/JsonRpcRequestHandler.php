@@ -92,10 +92,8 @@ class JsonRpcRequestHandler
      *
      * @throws JsonRpcInvalidParamsException
      */
-    private function validateParamList(
-        JsonRpcRequest $jsonRpcRequest,
-        JsonRpcMethodInterface $method
-    ) : JsonRpcInvalidParamsException {
+    private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method)
+    {
         $event = new ActionEvent\ValidateParamsEvent($method, $jsonRpcRequest->getParamList() ?? []);
         try {
             $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);

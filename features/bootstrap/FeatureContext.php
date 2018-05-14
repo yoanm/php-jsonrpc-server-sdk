@@ -5,8 +5,9 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
+use Tests\Functional\BehatContext\App\BehatRequestLifecycleDispatcher;
 use Tests\Functional\BehatContext\App\FakeEndpointCreator;
-use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
+use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 
 /**
  * Defines application features from the specific context.
@@ -22,21 +23,17 @@ class FeatureContext implements Context
     const SUB_KEY_ERROR_MESSAGE = 'message';
     const SUB_KEY_ERROR_DATA = 'data';
 
-    /** @var JsonRpcEndpoint */
-    private $endpoint;
-    /** @var string */
-    private $lastResponse;
+    /** @var string|null */
+    private $lastResponse = null;
+    /** @var null|JsonRpcServerDispatcherInterface */
+    private $dispatcher = null;
 
     /**
-     * Initializes context.
-     *
-     * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
+     * @Given endpoint will use default JsonRpcServerDispatcher
      */
-    public function __construct()
+    public function givenEndpointWillUseDefaultJsonRpcServerDispatcher()
     {
-        $this->endpoint = (new FakeEndpointCreator())->create();
+        $this->dispatcher = new BehatRequestLifecycleDispatcher();
     }
 
     /**
@@ -44,7 +41,9 @@ class FeatureContext implements Context
      */
     public function whenISendTheFollowingPayload(PyStringNode $payload)
     {
-        $this->lastResponse = $this->endpoint->index($payload->getRaw());
+        $endpoint = (new FakeEndpointCreator())->create($this->dispatcher);
+
+        $this->lastResponse = $endpoint->index($payload->getRaw());
     }
 
     /**

@@ -18,18 +18,18 @@ class OnResponseSendingEvent implements JsonRpcServerEvent
     private $responseString;
     /** @var JsonRpcCallResponse */
     private $jsonRpcCallResponse;
-    /** @var JsonRpcCall */
-    private $jsonRpcCall;
+    /** @var null|JsonRpcCall */
+    private $jsonRpcCall = null;
 
     /**
      * @param string              $responseString
      * @param JsonRpcCallResponse $jsonRpcCallResponse
-     * @param JsonRpcCall         $jsonRpcCall
+     * @param JsonRpcCall|null    $jsonRpcCall
      */
     public function __construct(
         string $responseString,
         JsonRpcCallResponse $jsonRpcCallResponse,
-        JsonRpcCall $jsonRpcCall
+        JsonRpcCall $jsonRpcCall = null
     ) {
         $this->responseString = $responseString;
         $this->jsonRpcCallResponse = $jsonRpcCallResponse;
@@ -53,9 +53,9 @@ class OnResponseSendingEvent implements JsonRpcServerEvent
     }
 
     /**
-     * @return JsonRpcCall
+     * @return null|JsonRpcCall
      */
-    public function getJsonRpcCall() : JsonRpcCall
+    public function getJsonRpcCall()
     {
         return $this->jsonRpcCall;
     }
