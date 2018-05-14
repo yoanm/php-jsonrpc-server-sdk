@@ -53,7 +53,7 @@ class JsonRpcCallSerializer
     }
 
     /**
-     * @param mixed $normalizedContent
+     * @param mixed $normalizedContent Could be an array or null for instance
      *
      * @return string
      */
@@ -68,6 +68,7 @@ class JsonRpcCallSerializer
      * @return array Decoded content
      *
      * @throws JsonRpcParseErrorException
+     * @throws JsonRpcInvalidRequestException
      */
     public function decode(string $requestContent) : array
     {
