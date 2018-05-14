@@ -15,14 +15,14 @@ class OnExceptionEvent implements JsonRpcServerEvent
 
     /** @var \Exception */
     private $exception;
-    /** @var null|JsonRpcRequest */
+    /** @var JsonRpcRequest */
     private $fromJsonRpcRequest;
 
     /**
-     * @param \Exception          $exception
-     * @param JsonRpcRequest|null $fromJsonRpcRequest
+     * @param \Exception     $exception
+     * @param JsonRpcRequest $fromJsonRpcRequest
      */
-    public function __construct(\Exception $exception, JsonRpcRequest $fromJsonRpcRequest = null)
+    public function __construct(\Exception $exception, JsonRpcRequest $fromJsonRpcRequest)
     {
         $this->exception = $exception;
         $this->fromJsonRpcRequest = $fromJsonRpcRequest;
@@ -37,18 +37,22 @@ class OnExceptionEvent implements JsonRpcServerEvent
     }
 
     /**
-     * @return null|JsonRpcRequest
+     * @return JsonRpcRequest
      */
-    public function getFromJsonRpcRequest()
+    public function getFromJsonRpcRequest() : JsonRpcRequest
     {
         return $this->fromJsonRpcRequest;
     }
 
     /**
      * @param \Exception $exception
+     *
+     * @return OnExceptionEvent
      */
-    public function setException(\Exception $exception)
+    public function setException(\Exception $exception) : OnExceptionEvent
     {
         $this->exception = $exception;
+
+        return $this;
     }
 }

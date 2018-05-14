@@ -75,11 +75,7 @@ class JsonRpcCallSerializer
 
         // Check if parsing is ok => Parse error
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new JsonRpcParseErrorException(
-                $requestContent,
-                json_last_error(),
-                json_last_error_msg()
-            );
+            throw new JsonRpcParseErrorException($requestContent, json_last_error(), json_last_error_msg());
         }
 
         // Content must be either an array (normal request) or an array of array (batch request)

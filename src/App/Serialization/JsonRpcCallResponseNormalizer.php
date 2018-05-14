@@ -42,6 +42,7 @@ class JsonRpcCallResponseNormalizer
             return null;
         }
 
+        // In case it's not a batch, return the first (lonely) result
         if (!$jsonRpcCallResponse->isBatch()) {
             return array_shift($resultList);
         }

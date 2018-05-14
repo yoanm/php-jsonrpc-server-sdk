@@ -14,9 +14,8 @@ interface JsonRpcServerDispatcherInterface
     public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null);
 
     /**
+     * @param string   $eventName
      * @param callable $listener
-     * @param string   $targetEventClassName
-     * @param int      $priority
      */
     public function addJsonRpcListener(string $eventName, $listener);
 }

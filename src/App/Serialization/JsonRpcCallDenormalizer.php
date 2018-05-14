@@ -40,7 +40,7 @@ class JsonRpcCallDenormalizer
      *
      * @return bool
      */
-    private function guessBatchOrNot(array $decodedContent)
+    private function guessBatchOrNot(array $decodedContent) : bool
     {
         $isBatch = true;
         // Loop over each items
@@ -60,7 +60,7 @@ class JsonRpcCallDenormalizer
 
     /**
      * @param JsonRpcCall $jsonRpcCall
-     * @param array $decodedContent
+     * @param array       $decodedContent
      */
     private function populateItem(JsonRpcCall $jsonRpcCall, array $decodedContent)
     {

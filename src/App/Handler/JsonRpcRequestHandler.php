@@ -27,10 +27,8 @@ class JsonRpcRequestHandler
      * @param JsonRpcMethodResolverInterface $methodResolver
      * @param ResponseCreator                $responseCreator
      */
-    public function __construct(
-        JsonRpcMethodResolverInterface $methodResolver,
-        ResponseCreator $responseCreator
-    ) {
+    public function __construct(JsonRpcMethodResolverInterface $methodResolver, ResponseCreator $responseCreator)
+    {
         $this->methodResolver = $methodResolver;
         $this->responseCreator = $responseCreator;
     }
@@ -94,8 +92,10 @@ class JsonRpcRequestHandler
      *
      * @throws JsonRpcInvalidParamsException
      */
-    private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method)
-    {
+    private function validateParamList(
+        JsonRpcRequest $jsonRpcRequest,
+        JsonRpcMethodInterface $method
+    ) : JsonRpcInvalidParamsException {
         $event = new ActionEvent\ValidateParamsEvent($method, $jsonRpcRequest->getParamList() ?? []);
         try {
             $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);

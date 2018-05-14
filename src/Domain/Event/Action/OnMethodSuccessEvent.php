@@ -38,9 +38,13 @@ class OnMethodSuccessEvent extends AbstractOnMethodEvent
 
     /**
      * @param mixed $result
+     *
+     * @return OnMethodSuccessEvent
      */
-    public function setResult($result)
+    public function setResult($result) : OnMethodSuccessEvent
     {
         $this->result = $result;
+
+        return $this;
     }
 }
