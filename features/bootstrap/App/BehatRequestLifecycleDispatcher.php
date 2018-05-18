@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Functional\BehatContext\App;
 
+use Yoanm\JsonRpcServer\Domain\Event\Action\OnExceptionEvent;
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 
@@ -11,6 +12,8 @@ class BehatRequestLifecycleDispatcher implements JsonRpcServerDispatcherInterfac
 {
     /** @var callable[] */
     private $listenerList = [];
+    /** @var array */
+    private $eventDispatchedList = [];
 
     /**
      * @param string                  $eventName
@@ -18,6 +21,7 @@ class BehatRequestLifecycleDispatcher implements JsonRpcServerDispatcherInterfac
      */
     public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null)
     {
+        $this->eventDispatchedList[] = [$eventName, $event];
         if (!array_key_exists($eventName, $this->listenerList)) {
             return;
         }
@@ -46,5 +50,13 @@ class BehatRequestLifecycleDispatcher implements JsonRpcServerDispatcherInterfac
         $this->listenerList[$eventName][] = $listener;
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getEventDispatchedList()
+    {
+        return $this->eventDispatchedList;
     }
 }

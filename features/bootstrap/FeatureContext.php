@@ -2,6 +2,8 @@
 namespace Tests\Functional\BehatContext;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Context\Environment\InitializedContextEnvironment;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
@@ -25,15 +27,21 @@ class FeatureContext implements Context
 
     /** @var string|null */
     private $lastResponse = null;
-    /** @var null|JsonRpcServerDispatcherInterface */
-    private $dispatcher = null;
+    /** @var  EventsContext */
+    private $eventsContext;
 
     /**
-     * @Given endpoint will use default JsonRpcServerDispatcher
+     * @BeforeScenario
+     *
+     * @param BeforeScenarioScope $scope
      */
-    public function givenEndpointWillUseDefaultJsonRpcServerDispatcher()
+    public function beforeScenario(BeforeScenarioScope $scope)
     {
-        $this->dispatcher = new BehatRequestLifecycleDispatcher();
+        $environment = $scope->getEnvironment();
+
+        if ($environment instanceof InitializedContextEnvironment) {
+            $this->eventsContext = $environment->getContext(EventsContext::class);
+        }
     }
 
     /**
@@ -41,7 +49,7 @@ class FeatureContext implements Context
      */
     public function whenISendTheFollowingPayload(PyStringNode $payload)
     {
-        $endpoint = (new FakeEndpointCreator())->create($this->dispatcher);
+        $endpoint = (new FakeEndpointCreator())->create($this->eventsContext->getDispatcher());
 
         $this->lastResponse = $endpoint->index($payload->getRaw());
     }
