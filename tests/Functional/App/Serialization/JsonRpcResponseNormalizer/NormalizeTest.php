@@ -1,13 +1,13 @@
 <?php
-namespace Tests\Functional\App\Creator\ResponseNormalizer;
+namespace Tests\Functional\App\Creator\JsonRpcResponseNormalizer;
 
 use PHPUnit\Framework\TestCase;
-use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
- * @covers \Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer
+ * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer
  */
 class NormalizeTest extends TestCase
 {
@@ -19,12 +19,12 @@ class NormalizeTest extends TestCase
     const EXPECTED_SUB_KEY_ERROR_MESSAGE = 'message';
     const EXPECTED_SUB_KEY_ERROR_DATA = 'data';
 
-    /** @var ResponseNormalizer */
+    /** @var JsonRpcResponseNormalizer */
     private $responseNormalizer;
 
     protected function setUp()
     {
-        $this->responseNormalizer = new ResponseNormalizer();
+        $this->responseNormalizer = new JsonRpcResponseNormalizer();
     }
 
     public function testShouldHaveTheGivenJsonRpcVersion()

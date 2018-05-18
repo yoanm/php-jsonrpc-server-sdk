@@ -3,18 +3,18 @@ namespace Tests\Functional\Infra\Serialization\RawResponseSerializer;
 
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
-use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 
 trait NormalizationHelperTrait
 {
     /**
-     * @param JsonRpcRawResponse                $rawResponse
+     * @param JsonRpcCallResponse                $rawResponse
      * @param ObjectProphecy|ResponseNormalizer $responseNormalizer
      *
      * @return array Expected response list
      */
     public function prophesizeResponseNormalizerNormalize(
-        JsonRpcRawResponse $rawResponse,
+        JsonRpcCallResponse $rawResponse,
         ObjectProphecy $responseNormalizer
     ) {
         $expectedResponseList = [];

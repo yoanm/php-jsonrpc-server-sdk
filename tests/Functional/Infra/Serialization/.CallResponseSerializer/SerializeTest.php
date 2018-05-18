@@ -1,47 +1,47 @@
 <?php
-namespace Tests\Functional\Infra\Serialization\RawResponseSerializer;
+namespace Tests\Functional\Infra\Serialization\CallResponseSerializer;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
-use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
+use Yoanm\JsonRpcServer\Infra\Serialization\CallResponseSerializer;
 
 /**
- * @covers \Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer
+ * @covers \Yoanm\JsonRpcServer\Infra\Serialization\CallResponseSerializer
  */
 class SerializeTest extends TestCase
 {
-    use JsonRpcRawResponseProviderTrait;
+    use JsonRpcCallResponseProviderTrait;
     use NormalizationHelperTrait;
 
-    /** @var RawResponseSerializer */
-    private $rawResponseSerializer;
+    /** @var CallResponseSerializer */
+    private $callResponseSerializer;
     /** @var ResponseNormalizer|ObjectProphecy */
     private $responseNormalizer;
 
     protected function setUp()
     {
         $this->responseNormalizer= $this->prophesize(ResponseNormalizer::class);
-        $this->rawResponseSerializer = new RawResponseSerializer(
+        $this->callResponseSerializer = new CallResponseSerializer(
             $this->responseNormalizer->reveal()
         );
     }
 
     /**
-     * @dataProvider provideValidRawResponseData
-     * @param JsonRpcRawResponse $rawResponse
+     * @dataProvider provideValidCallResponseData
+     * @param JsonRpcCallResponse $callResponse
      * @param bool               $isBatch
      * @param bool               $expectNull
      */
-    public function testShouldHandle(JsonRpcRawResponse $rawResponse, $isBatch, $expectNull)
+    public function testShouldHandle(JsonRpcCallResponse $callResponse, $isBatch, $expectNull)
     {
         $expectedResponseList = $this->prophesizeResponseNormalizerNormalize(
-            $rawResponse,
+            $callResponse,
             $this->responseNormalizer
         );
 
-        $serialized = $this->rawResponseSerializer->serialize($rawResponse);
+        $serialized = $this->callResponseSerializer->serialize($callResponse);
 
         $this->assertValidNormalization(json_decode($serialized, true), $expectedResponseList, $isBatch, $expectNull);
     }

@@ -2,20 +2,20 @@
 namespace Tests\Technical\App\Creator;
 
 use PHPUnit\Framework\TestCase;
-use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 
 /**
- * @covers \Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer
+ * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer
  */
-class RequestDenormalizerTest extends TestCase
+class JsonRpcRequestDenormalizerTest extends TestCase
 {
-    /** @var RequestDenormalizer */
+    /** @var JsonRpcRequestDenormalizer */
     private $requestDenormalizer;
 
     protected function setUp()
     {
-        $this->requestDenormalizer = new RequestDenormalizer();
+        $this->requestDenormalizer = new JsonRpcRequestDenormalizer();
     }
 
     /**

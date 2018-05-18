@@ -2,10 +2,10 @@
 namespace Tests\Functional\Infra\Serialization\RawResponseSerializer;
 
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
-use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse;
 
-trait JsonRpcRawResponseProviderTrait
+trait JsonRpcCallResponseProviderTrait
 {
     /**
      * @return array
@@ -32,27 +32,27 @@ trait JsonRpcRawResponseProviderTrait
 
         return [
             'simple response' => [
-                'response' => (new JsonRpcRawResponse())->addResponse($baseResponse),
+                'response' => (new JsonRpcCallResponse())->addResponse($baseResponse),
                 'isBatch' => false,
                 'expectNull' => false
             ],
             'simple response on error' => [
-                'response' => (new JsonRpcRawResponse())->addResponse($baseResponseOnError),
+                'response' => (new JsonRpcCallResponse())->addResponse($baseResponseOnError),
                 'isBatch' => false,
                 'expectNull' => false
             ],
             'notification response' => [
-                'response' => (new JsonRpcRawResponse())->addResponse($baseNotificationResponse),
+                'response' => (new JsonRpcCallResponse())->addResponse($baseNotificationResponse),
                 'isBatch' => false,
                 'expectNull' => true
             ],
             'notification response on error' => [
-                'response' => (new JsonRpcRawResponse())->addResponse($baseNotificationResponseOnError),
+                'response' => (new JsonRpcCallResponse())->addResponse($baseNotificationResponseOnError),
                 'isBatch' => false,
                 'expectNull' => true
             ],
             'batch response' => [
-                'response' => (new JsonRpcRawResponse(true))
+                'response' => (new JsonRpcCallResponse(true))
                     ->addResponse($baseResponse)
                     ->addResponse($baseNotificationResponse)
                     ->addResponse($baseNotificationResponse2)
@@ -62,7 +62,7 @@ trait JsonRpcRawResponseProviderTrait
                 'expectNull' => false
             ],
             'batch response with some errors' => [
-                'response' => (new JsonRpcRawResponse(true))
+                'response' => (new JsonRpcCallResponse(true))
                     ->addResponse($baseResponse2)
                     ->addResponse($baseNotificationResponseOnError)
                     ->addResponse($baseNotificationResponse2)
@@ -72,7 +72,7 @@ trait JsonRpcRawResponseProviderTrait
                 'expectNull' => false
             ],
             'batch response with only notification' => [
-                'response' => (new JsonRpcRawResponse())
+                'response' => (new JsonRpcCallResponse())
                     ->addResponse($baseNotificationResponse)
                     ->addResponse($baseNotificationResponse2)
                 ,
