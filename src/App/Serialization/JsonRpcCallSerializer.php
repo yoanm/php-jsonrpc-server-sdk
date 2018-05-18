@@ -84,7 +84,7 @@ class JsonRpcCallSerializer
         // In case it's a batch call, at least one sub request must exist
         // and in case not, some required properties must exist
         // => array must have at least one child
-        if (!is_array($decodedContent) || count($decodedContent) === 0 ) {
+        if (!is_array($decodedContent) || count($decodedContent) === 0) {
             throw new JsonRpcInvalidRequestException($requestContent);
         }
 

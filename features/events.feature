@@ -57,23 +57,27 @@ Feature: Events dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
 
-  Scenario: Simple request on exception (invalid payload)
+  Scenario Outline: Request on exception
     When I send following payload:
     """
-    null
+    <content>
     """
     Then 2 event should have been dispatched
     And a "Action\OnException" event named "json_rpc_server_skd.on_exception" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
 
-  Scenario: Simple request on exception (invalid request)
-    When I send following payload:
-    """
-    {}
-    """
-    Then 2 event should have been dispatched
-    And a "Action\OnException" event named "json_rpc_server_skd.on_exception" should have been dispatched
-    And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
+  Examples:
+  | content                                                  |
+    # Empty batch call
+  | []                                                       |
+    # Request without any parameter
+  | {}                                                       |
+    # No jsonrpc property
+  | {"method": "my-method"}                                  |
+    # No method property
+  | {"jsonrpc": "2.0"}                                       |
+    # Params property not an array or object
+  | {"jsonrpc": "2.0", "method": "my-method", "params": 234} |
 
   Scenario: Batch request on exception (invalid payload)
     When I send following payload:
