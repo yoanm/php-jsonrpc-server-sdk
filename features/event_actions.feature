@@ -3,7 +3,7 @@ Feature: Actions through events
   Background:
     Given endpoint will use default JsonRpcServerDispatcher
 
-  Scenario: Update result thanks to OnMethodResult event
+  Scenario: Update result thanks to OnMethodSuccess event
     Given I will replace "Action\OnMethodSuccess" result by following json:
     """
     {"key": "my-custom-result"}
@@ -74,22 +74,24 @@ Feature: Actions through events
     }
     """
 
-  Scenario: Update method exception thanks to OnMethodFailure event
-    Given I will replace "Action\OnException" exception by an exception with following message:
+  Scenario: Update exception thanks to OnMethodFailure event
+    Given I will replace "Action\OnMethodFailure" exception by an exception with following message:
     """
     my custom exception message
     """
     When I send following payload:
     """
     {
-      !!invalid JSON string!!
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "method-that-throw-an-exception-during-execution"
     }
     """
     Then I should have the following response:
     """
     {
       "jsonrpc": "2.0",
-      "id": null,
+      "id": 1,
       "error": {
         "code": -32603,
         "message": "Internal error",

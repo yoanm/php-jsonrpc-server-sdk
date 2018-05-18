@@ -66,6 +66,16 @@ Feature: Events dispatched
     And a "Action\OnException" event named "json_rpc_server_skd.on_exception" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
 
+  Scenario: Simple request on exception (invalid request)
+    When I send following payload:
+    """
+    {}
+    """
+    Then 3 event should have been dispatched
+    And a "Acknowledge\OnRequestReceived" event named "json_rpc_server_skd.on_request_received" should have been dispatched
+    And a "Action\OnException" event named "json_rpc_server_skd.on_exception" should have been dispatched
+    And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
+
   Scenario: Batch request on exception (invalid payload)
     When I send following payload:
     """

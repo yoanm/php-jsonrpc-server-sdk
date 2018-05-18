@@ -1,7 +1,6 @@
 <?php
 namespace Tests\Functional\BehatContext\App;
 
-use Yoanm\JsonRpcServer\Domain\Event\Action\OnExceptionEvent;
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 

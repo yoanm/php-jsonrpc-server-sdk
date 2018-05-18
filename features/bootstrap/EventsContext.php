@@ -4,7 +4,6 @@ namespace Tests\Functional\BehatContext;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
-use Prophecy\Argument;
 use Tests\Functional\BehatContext\App\BehatRequestLifecycleDispatcher;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnExceptionEvent;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnMethodFailureEvent;
@@ -112,7 +111,7 @@ class EventsContext implements Context
     }
 
     /**
-     * @Given I will replace "Action\OnMethodFailure" exception by an exception with following message:
+     * @Given /^I will replace "Action\\OnMethodFailure" exception by an exception with following message:$/
      */
     public function iWillReplaceOnmethodfailureExceptionByAnExceptionWithFollowingMessage(PyStringNode $newExceptionMessage)
     {
@@ -143,6 +142,7 @@ class EventsContext implements Context
     protected function getEventDispatchedList()
     {
         if (null === $this->eventDispatchedList) {
+            // Backup event list (checks regarding event dispatched must be done after execution not during execution)
             $this->eventDispatchedList = $this->dispatcher->getEventDispatchedList();
         }
 
