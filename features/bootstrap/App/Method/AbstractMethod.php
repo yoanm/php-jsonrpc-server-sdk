@@ -5,7 +5,6 @@ use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 
 abstract class AbstractMethod implements JsonRpcMethodInterface
 {
-
     /**
      * @param array $paramList
      *

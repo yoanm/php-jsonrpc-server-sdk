@@ -23,6 +23,8 @@ class JsonRpcCallDenormalizer
      * @param array $decodedContent
      *
      * @return JsonRpcCall
+     *
+     * @throws \Exception
      */
     public function denormalize(array $decodedContent) : JsonRpcCall
     {
@@ -42,7 +44,7 @@ class JsonRpcCallDenormalizer
      */
     private function guessBatchOrNot(array $decodedContent) : bool
     {
-        $isBatch = true;
+        $isBatch = (0 !== count($decodedContent));
         // Loop over each items
         // -> In case it's a valid batch request -> all keys will have numeric type -> iterations = Number of requests
         // -> In case it's a valid normal request -> all keys will have string type -> iterations = 1 (stopped on #1)
@@ -61,6 +63,8 @@ class JsonRpcCallDenormalizer
     /**
      * @param JsonRpcCall $jsonRpcCall
      * @param array       $decodedContent
+     *
+     * @throws \Exception
      */
     private function populateItem(JsonRpcCall $jsonRpcCall, array $decodedContent)
     {
@@ -73,6 +77,11 @@ class JsonRpcCallDenormalizer
 
                 $jsonRpcCall->addRequestItem($item);
             } catch (\Exception $exception) {
+                if (false === $jsonRpcCall->isBatch()) {
+                    // If it's not a batch call, throw the exception
+                    throw $exception;
+                }
+                // Else populate the item (exception will be managed later
                 $jsonRpcCall->addExceptionItem($exception);
             }
         }
