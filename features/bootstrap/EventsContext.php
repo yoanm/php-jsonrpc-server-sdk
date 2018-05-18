@@ -53,7 +53,7 @@ class EventsContext implements Context
         $event = $this->shitfDispatchedEvent();
 
         // Check event class
-        $expectedEventClass = $this->getFullyQualifiedEventClass($eventClassName);
+        $expectedEventClass = sprintf('Yoanm\JsonRpcServer\Domain\Event\\%sEvent', $eventClassName);
         $currentEventClass = get_class($event[1]);
         Assert::assertSame(
             $expectedEventClass,
@@ -162,14 +162,5 @@ class EventsContext implements Context
         $this->eventDispatchedList = $list;
 
         return $event;
-    }
-
-    /**
-     * @param $eventClassName
-     * @return string
-     */
-    protected function getFullyQualifiedEventClass($eventClassName)
-    {
-        return sprintf('Yoanm\JsonRpcServer\Domain\Event\\%sEvent', $eventClassName);
     }
 }

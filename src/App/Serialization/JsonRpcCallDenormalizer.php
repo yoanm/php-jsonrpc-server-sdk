@@ -42,7 +42,7 @@ class JsonRpcCallDenormalizer
      */
     private function guessBatchOrNot(array $decodedContent) : bool
     {
-        $isBatch = true;
+        $isBatch = (0 !== count($decodedContent));
         // Loop over each items
         // -> In case it's a valid batch request -> all keys will have numeric type -> iterations = Number of requests
         // -> In case it's a valid normal request -> all keys will have string type -> iterations = 1 (stopped on #1)

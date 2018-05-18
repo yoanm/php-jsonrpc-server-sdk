@@ -102,7 +102,6 @@ Feature: Actions through events
     }
     """
 
-
   Scenario: Update method exception with custom JSON-RPC error thanks to OnMethodFailure event
     Given I will replace "Action\OnMethodFailure" exception by a "-32020" JSON-RPC exception with following message:
     """
