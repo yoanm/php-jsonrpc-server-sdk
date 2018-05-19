@@ -1,14 +1,13 @@
 <?php
-
 namespace Yoanm\JsonRpcServer\App\Serialization;
 
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
- * Class RequestDenormalizer
+ * Class JsonRpcRequestDenormalizer
  */
-class RequestDenormalizer
+class JsonRpcRequestDenormalizer
 {
 
     const KEY_JSON_RPC = 'jsonrpc';
