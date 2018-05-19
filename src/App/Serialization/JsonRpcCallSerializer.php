@@ -41,14 +41,14 @@ class JsonRpcCallSerializer
     }
 
     /**
-     * @param JsonRpcCallResponse $jsonRpcCallReponse
+     * @param JsonRpcCallResponse $jsonRpcCallResponse
      *
      * @return string
      */
-    public function serialize(JsonRpcCallResponse $jsonRpcCallReponse) : string
+    public function serialize(JsonRpcCallResponse $jsonRpcCallResponse) : string
     {
         return $this->encode(
-            $this->normalize($jsonRpcCallReponse)
+            $this->normalize($jsonRpcCallResponse)
         );
     }
 

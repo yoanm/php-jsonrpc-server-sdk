@@ -11,6 +11,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
+ *
+ * @group JsonRpcCallSerializer
  */
 class DenormalizeTest extends TestCase
 {

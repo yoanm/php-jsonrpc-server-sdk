@@ -2,23 +2,17 @@
 namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
-use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
  *
  * @group JsonRpcCallSerializer
  */
-class DeserializeTest extends TestCase
+class EncodeTest extends TestCase
 {
-    use RequestStringProviderTrait;
-    use DenormalizationValidatorTrait;
-
     /** @var JsonRpcCallSerializer */
     private $jsonRpcCallSerializer;
     /** @var JsonRpcCallDenormalizer|ObjectProphecy */
@@ -36,23 +30,30 @@ class DeserializeTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider provideValidRequestStringData
-     *
-     * @param string $content
-     */
-    public function testShouldHandle($content, $isNotification, $isBatch)
+    public function testShouldJsonEncodeContent()
     {
-        $decodedContent = json_decode($content, true);
-        $rawRequest = $this->prophesize(JsonRpcCall::class);
+        $decoded = [
+            'a' => 'b',
+            'c' => [
+                'd' => 'e',
+                'f' => [
+                    'g',
+                    'h',
+                    2,
+                    true,
+                    null
+                ]
+            ],
+            'i' => 4,
+            'j' => false,
+            'k' => null
+        ];
 
-        $this->callDenormalizer->denormalize(Argument::cetera())
-            ->willReturn($rawRequest->reveal())
-            ->shouldBeCalled()
-        ;
+        $encoded = $this->jsonRpcCallSerializer->encode($decoded);
 
-        $this->assertSame($rawRequest->reveal(), $this->jsonRpcCallSerializer->deserialize($content));
-
-        //$this->assertValidDenormalization($decodedContent, $rawRequest, $isBatch);
+        $this->assertSame(
+            $encoded,
+            json_encode($decoded)
+        );
     }
 }

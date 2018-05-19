@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\Infra\Serialization\RawResponseSerializer;
+namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
@@ -10,7 +10,7 @@ trait JsonRpcCallResponseProviderTrait
     /**
      * @return array
      */
-    public function provideValidRawResponseData()
+    public function provideValidCallResponseData()
     {
         $baseNotificationResponse = (new JsonRpcResponse('2.0'))->setIsNotification(true);
         $baseNotificationResponse2 = (new JsonRpcResponse('2.0'))->setIsNotification(true);

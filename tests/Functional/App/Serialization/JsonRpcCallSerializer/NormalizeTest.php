@@ -2,22 +2,21 @@
 namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
  *
  * @group JsonRpcCallSerializer
  */
-class DeserializeTest extends TestCase
+class NormalizeTest extends TestCase
 {
-    use RequestStringProviderTrait;
-    use DenormalizationValidatorTrait;
+    use JsonRpcCallResponseProviderTrait;
+    use NormalizationHelperTrait;
 
     /** @var JsonRpcCallSerializer */
     private $jsonRpcCallSerializer;
@@ -37,22 +36,23 @@ class DeserializeTest extends TestCase
     }
 
     /**
-     * @dataProvider provideValidRequestStringData
-     *
-     * @param string $content
+     * @dataProvider provideValidCallResponseData
+     * @param JsonRpcCallResponse $callResponse
+     * @param bool               $isBatch
+     * @param bool               $expectNull
      */
-    public function testShouldHandle($content, $isNotification, $isBatch)
+    public function testShouldHandle(JsonRpcCallResponse $callResponse, $isBatch, $expectNull)
     {
-        $decodedContent = json_decode($content, true);
-        $rawRequest = $this->prophesize(JsonRpcCall::class);
+        $normalizedResponse = ['id' => spl_object_hash($callResponse)];
+        $this->callResponseNormalizer->normalize($callResponse)
+            ->willReturn($normalizedResponse)
+            ->shouldBeCalled();
 
-        $this->callDenormalizer->denormalize(Argument::cetera())
-            ->willReturn($rawRequest->reveal())
-            ->shouldBeCalled()
-        ;
+        $this->assertSame(
+            $normalizedResponse,
+            $this->jsonRpcCallSerializer->normalize($callResponse)
+        );
 
-        $this->assertSame($rawRequest->reveal(), $this->jsonRpcCallSerializer->deserialize($content));
-
-        //$this->assertValidDenormalization($decodedContent, $rawRequest, $isBatch);
+        //$this->assertValidNormalization($normalized, $expectedResponseList, $isBatch, $expectNull);
     }
 }

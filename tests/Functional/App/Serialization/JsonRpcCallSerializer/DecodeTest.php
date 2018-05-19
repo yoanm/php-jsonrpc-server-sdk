@@ -11,6 +11,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
+ *
+ * @group JsonRpcCallSerializer
  */
 class DecodeTest extends TestCase
 {
@@ -27,7 +29,6 @@ class DecodeTest extends TestCase
     {
         $this->callDenormalizer = $this->prophesize(JsonRpcCallDenormalizer::class);
         $this->callResponseNormalizer = $this->prophesize(JsonRpcCallResponseNormalizer::class);
-
         $this->jsonRpcCallSerializer = new JsonRpcCallSerializer(
             $this->callDenormalizer->reveal(),
             $this->callResponseNormalizer->reveal()
