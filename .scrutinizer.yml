@@ -16,7 +16,7 @@ build:
         stop_on_failure: true
         override:
             - php-scrutinizer-run --enable-security-analysis
-            - command -v phpcs phpcs-run # Seem that it's mandatory to have in order to allow scrutinizer to detect the use of "phpcs-run"
+            - command -v phpcs-run # Seem that it's mandatory to have in order to allow scrutinizer to detect the use of "phpcs-run"
             -
                 command: make codestyle
                 analysis:
@@ -41,7 +41,7 @@ build:
             COVERAGE_OUTPUT_STYLE: 'clover'
             COVERAGE_CLOVER_FILE_PATH: 'build/coverage/clover.xml'
             PHPCS_BIN: "phpcs-run"
-            PHPCS_DISABLE_WARNING: true
+            PHPCS_DISABLE_WARNING: "true"
             PHPCS_REPORT_STYLE: 'checkstyle'
             PHPCS_REPORT_FILE: 'build/reports/cs-data'
         php:
