@@ -15,9 +15,13 @@ Sdk requires only two things :
  - A method resolver : must implement [MethodResolverInterface](./src/Domain/Model/MethodResolverInterface.php), resolving logic's is your own.
  - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/Model/JsonRpcMethodInterface.php)
  
-:warning: No dependency injection is managed in this library 
+Sdk optionally provide :
+ - Events dispatch
+ - Params validation (thanks to event dispatching)
+ 
+:warning: For dependency injection see [JSON-RPC server symfony bundle](https://github.com/yoanm/symfony-jsonrpc-http-server)
 
-### Example
+### Simple Example
 #### JSON-RPC Method
 ```php
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
@@ -43,7 +47,7 @@ class DummyMethod implements JsonRpcMethodInterface
 }
 ```
 #### Array method resolver (simple example)
-*You could take example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php) or on this [Psr11 method resolver](https://github.com/yoanm/php-jsonrpc-server-sdk-psr11-resolver)*
+*You can follow example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php) or on this [Psr11 method resolver](https://github.com/yoanm/php-jsonrpc-server-sdk-psr11-resolver)*
 ```php
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
@@ -134,6 +138,91 @@ $responseString = $endpoint->index($requestString);
  * ```json
    {"jsonrpc":"2.0","id":1,"result":12345}
    ```
+### Events dispatch example
+*You can follow example on [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php)*
+
+#### Simple event dispatcher
+```php
+use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
+use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
+
+/**
+ * Class SimpleDispatcher
+ */
+class SimpleDispatcher implements JsonRpcServerDispatcherInterface
+{
+    /** @var callable[] */
+    private $listenerList = [];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null)
+    {
+        if (!array_key_exists($eventName, $this->listenerList)) {
+            return;
+        }
+
+        foreach ($this->listenerList[$eventName] as $listener) {
+            $listener($event, $eventName);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addJsonRpcListener(string $eventName, $listener)
+    {
+        $this->listenerList[$eventName][] = $listener;
+    }
+}
+```
+
+Then bind your listeners to your dispatcher:
+```php
+use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnRequestReceivedEvent;
+
+$dispatcher = new SimpleDispatcher();
+
+$listener = function ($event, $eventName) {
+    echo sprintf(
+        'Received %s with event class "%s"',
+        $eventName,
+        get_class($event)
+    );
+};
+
+$dispatcher->addJsonRpcListener($OnRequestReceivedEvent::EVENT_NAME, $listener);
+```
+
+And bind dispatcher like following :
+```php
+$endpoint->setJsonRpcServerDispatcher($dispatcher);
+$requestHandler->setJsonRpcServerDispatcher($dispatcher);
+$exceptionHandler->setJsonRpcServerDispatcher($dispatcher);
+```
+
+### Params validation example
+**Params validation is based on event dispatching and so, requires dispatcher configuration like described in previous section**
+
+*You can follow example on this [JSON-RPC params symfony validator](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk)*
+
+To validate params for a given method, do the following :
+```php
+use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
+
+$validator = function (ValidateParamsEvent $event) {
+    $method = $event->getMethod();
+    if (/** Select the right method */) {
+        // Create your violations based on what you want
+        $violation = "???";
+        // Then add it/them to the event
+        $event->addViolation($violation);
+    }
+};
+
+$dispatcher->addJsonRpcListener(ValidateParamsEvent::EVENT_NAME, $validator);
+```
 
 ## Contributing
 See [contributing note](./CONTRIBUTING.md)
