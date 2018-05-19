@@ -1,36 +1,38 @@
 <?php
-namespace Tests\Functional\Infra\RawObject;
+namespace Tests\Functional\Domain\Model;
 
 use PHPUnit\Framework\TestCase;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
-use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse;
 
 /**
- * @covers \Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse
+ * @covers \Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse
+ *
+ * @group Models
  */
-class JsonRpcRawResponseTest extends TestCase
+class JsonRpcCallResponseTest extends TestCase
 {
     public function testShouldManageBatchProperty()
     {
-        $this->assertTrue((new JsonRpcRawResponse(true))->isBatch());
-        $this->assertFalse((new JsonRpcRawResponse(false))->isBatch());
+        $this->assertTrue((new JsonRpcCallResponse(true))->isBatch());
+        $this->assertFalse((new JsonRpcCallResponse(false))->isBatch());
     }
 
     public function testShouldManageAnItemList()
     {
-        $rawRequest = new JsonRpcRawResponse();
+        $jsonRpcCallResponse = new JsonRpcCallResponse();
 
         $firstItem = $this->prophesize(JsonRpcResponse::class);
         $secondItem = $this->prophesize(JsonRpcResponse::class);
         $thirdItem = $this->prophesize(JsonRpcResponse::class);
 
-        $rawRequest->addResponse($firstItem->reveal())
+        $jsonRpcCallResponse->addResponse($firstItem->reveal())
             ->addResponse($secondItem->reveal())
             ->addResponse($thirdItem->reveal())
         ;
 
-        $this->assertCount(3, $rawRequest->getResponseList());
-        $itemList = $rawRequest->getResponseList();
+        $this->assertCount(3, $jsonRpcCallResponse->getResponseList());
+        $itemList = $jsonRpcCallResponse->getResponseList();
         $this->assertSame($firstItem->reveal(), $itemList[0]);
         $this->assertSame($secondItem->reveal(), $itemList[1]);
         $this->assertSame($thirdItem->reveal(), $itemList[2]);
