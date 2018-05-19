@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\App\Serialization;
+namespace Tests\Functional\App\Serialization\Helper;
 
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 

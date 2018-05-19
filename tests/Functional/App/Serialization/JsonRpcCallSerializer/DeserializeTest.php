@@ -4,6 +4,7 @@ namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
+use Tests\Functional\App\Serialization\Helper\RequestStringProviderTrait;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
@@ -13,6 +14,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
  *
  * @group JsonRpcCallSerializer
+ * @group Serialization
  */
 class DeserializeTest extends TestCase
 {

@@ -10,6 +10,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer
  *
  * @group JsonRpcResponseNormalizer
+ * @group Serialization
  */
 class JsonRpcResponseNormalizerTest extends TestCase
 {

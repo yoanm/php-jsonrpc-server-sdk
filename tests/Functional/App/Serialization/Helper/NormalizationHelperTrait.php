@@ -1,9 +1,5 @@
 <?php
-namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
-
-use Prophecy\Prophecy\ObjectProphecy;
-use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
+namespace Tests\Functional\App\Serialization\Helper;
 
 trait NormalizationHelperTrait
 {

@@ -7,8 +7,6 @@ use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Dispatcher\JsonRpcServerDispatcherAwareTrait;
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Dispatcher\JsonRpcServerDispatcherAwareTrait

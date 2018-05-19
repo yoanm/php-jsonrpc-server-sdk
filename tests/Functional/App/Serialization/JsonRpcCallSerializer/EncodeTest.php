@@ -11,6 +11,7 @@ use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
  *
  * @group JsonRpcCallSerializer
+ * @group Serialization
  */
 class EncodeTest extends TestCase
 {

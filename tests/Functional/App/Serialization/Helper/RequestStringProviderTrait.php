@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
+namespace Tests\Functional\App\Serialization\Helper;
 
 trait RequestStringProviderTrait
 {
