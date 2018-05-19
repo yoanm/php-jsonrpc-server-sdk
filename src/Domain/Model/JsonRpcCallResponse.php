@@ -1,12 +1,10 @@
 <?php
-namespace Yoanm\JsonRpcServer\Infra\RawObject;
-
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
+namespace Yoanm\JsonRpcServer\Domain\Model;
 
 /**
- * Class JsonRpcRawResponse
+ * Class JsonRpcCallResponse
  */
-class JsonRpcRawResponse
+class JsonRpcCallResponse
 {
     /** @var bool */
     private $isBatch;
@@ -24,9 +22,9 @@ class JsonRpcRawResponse
     /**
      * @param JsonRpcResponse $response
      *
-     * @return JsonRpcRawResponse
+     * @return JsonRpcCallResponse
      */
-    public function addResponse(JsonRpcResponse $response) : JsonRpcRawResponse
+    public function addResponse(JsonRpcResponse $response) : JsonRpcCallResponse
     {
         $this->responseList[] = $response;
 
