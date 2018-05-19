@@ -12,7 +12,7 @@ class JsonRpcCall
     private $itemList = [];
 
     /**
-     * @param bool|false $isBatch
+     * @param bool $isBatch
      */
     public function __construct(bool $isBatch = false)
     {
@@ -44,7 +44,7 @@ class JsonRpcCall
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isBatch() : bool
     {
