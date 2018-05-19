@@ -1,11 +1,13 @@
 <?php
-namespace Tests\Technical\Domain\Model;
+namespace Tests\Technical\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException
+ *
+ * @group Exceptions
  */
 class JsonRpcParseErrorExceptionTest extends TestCase
 {
