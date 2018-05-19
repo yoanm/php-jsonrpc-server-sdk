@@ -4,44 +4,41 @@ namespace Tests\Functional\Infra\Endpoint;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
-use Yoanm\JsonRpcServer\App\RequestHandler;
+use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
+use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
-use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawRequest;
-use Yoanm\JsonRpcServer\Infra\RawObject\JsonRpcRawResponse;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint
+ *
+ * @group JsonRpcEndpoint
  */
 class JsonRpcEndpointTest extends TestCase
 {
     /** @var JsonRpcEndpoint */
     private $endpoint;
-    /** @var RawRequestSerializer|ObjectProphecy */
-    private $rawRequestSerializer;
-    /** @var RequestHandler|ObjectProphecy */
-    private $requestHandler;
-    /** @var ResponseCreator|ObjectProphecy */
-    private $responseCreator;
-    /** @var RawResponseSerializer|ObjectProphecy */
-    private $rawResponseNormalizer;
+    /** @var JsonRpcCallSerializer|ObjectProphecy */
+    private $jsonRpcCallSerializer;
+    /** @var JsonRpcRequestHandler|ObjectProphecy */
+    private $jsonRpcRequestHandler;
+    /** @var ExceptionHandler|ObjectProphecy */
+    private $exceptionHandler;
 
     public function setUp()
     {
-        $this->rawRequestSerializer = $this->prophesize(RawRequestSerializer::class);
-        $this->requestHandler = $this->prophesize(RequestHandler::class);
-        $this->responseCreator = $this->prophesize(ResponseCreator::class);
-        $this->rawResponseNormalizer = $this->prophesize(RawResponseSerializer::class);
+        $this->jsonRpcCallSerializer = $this->prophesize(JsonRpcCallSerializer::class);
+        $this->jsonRpcRequestHandler = $this->prophesize(JsonRpcRequestHandler::class);
+        $this->exceptionHandler = $this->prophesize(ExceptionHandler::class);
 
         $this->endpoint = new JsonRpcEndpoint(
-            $this->rawRequestSerializer->reveal(),
-            $this->requestHandler->reveal(),
-            $this->rawResponseNormalizer->reveal(),
-            $this->responseCreator->reveal()
+            $this->jsonRpcCallSerializer->reveal(),
+            $this->jsonRpcRequestHandler->reveal(),
+            $this->exceptionHandler->reveal()
         );
     }
 
@@ -54,25 +51,21 @@ class JsonRpcEndpointTest extends TestCase
         $fakeRequestItem = $this->prophesize(JsonRpcRequest::class);
         /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
         $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
-        /** @var ObjectProphecy|JsonRpcRawRequest $jsonRpcRawRequest */
-        $jsonRpcRawRequest = $this->prophesize(JsonRpcRawRequest::class);
+        /** @var JsonRpcCall $jsonRpcCall */
+        $jsonRpcCall = (new JsonRpcCall(false))
+            ->addRequestItem($fakeRequestItem->reveal())
+        ;
 
-        $jsonRpcRawRequest->isBatch()->willReturn(false)->shouldBeCalled();
-
-        $this->rawRequestSerializer->deserialize($requestString)
-            ->willReturn($jsonRpcRawRequest->reveal())
+        $this->jsonRpcCallSerializer->deserialize($requestString)
+            ->willReturn($jsonRpcCall)
             ->shouldBeCalled();
 
-        $jsonRpcRawRequest->getItemtList()
-            ->willReturn([$fakeRequestItem->reveal()])
-            ->shouldBeCalled();
-
-        $this->requestHandler->handle($fakeRequestItem)
+        $this->jsonRpcRequestHandler->processJsonRpcRequest($fakeRequestItem)
             ->willReturn($fakeResponseItem->reveal())
             ->shouldBeCalled();
 
-        $this->rawResponseNormalizer->serialize(Argument::allOf(
-            Argument::type(JsonRpcRawResponse::class),
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
             Argument::which('isBatch', false),
             Argument::which('getResponseList', [$fakeResponseItem->reveal()])
         ))
@@ -98,28 +91,25 @@ class JsonRpcEndpointTest extends TestCase
         $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
         /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem2 */
         $fakeResponseItem2 = $this->prophesize(JsonRpcResponse::class);
-        /** @var ObjectProphecy|JsonRpcRawRequest $jsonRpcRawRequest */
-        $jsonRpcRawRequest = $this->prophesize(JsonRpcRawRequest::class);
+        /** @var JsonRpcCall $jsonRpcCall */
+        $jsonRpcCall = (new JsonRpcCall(true))
+            ->addRequestItem($fakeRequestItem->reveal())
+            ->addRequestItem($fakeRequestItem2->reveal())
+        ;
 
-        $jsonRpcRawRequest->isBatch()->willReturn(true)->shouldBeCalled();
-
-        $this->rawRequestSerializer->deserialize($requestString)
-            ->willReturn($jsonRpcRawRequest->reveal())
+        $this->jsonRpcCallSerializer->deserialize($requestString)
+            ->willReturn($jsonRpcCall)
             ->shouldBeCalled();
 
-        $jsonRpcRawRequest->getItemtList()
-            ->willReturn([$fakeRequestItem->reveal(), $fakeRequestItem2->reveal()])
-            ->shouldBeCalled();
-
-        $this->requestHandler->handle($fakeRequestItem->reveal())
+        $this->jsonRpcRequestHandler->processJsonRpcRequest($fakeRequestItem->reveal())
             ->willReturn($fakeResponseItem)
             ->shouldBeCalled();
-        $this->requestHandler->handle($fakeRequestItem2->reveal())
+        $this->jsonRpcRequestHandler->processJsonRpcRequest($fakeRequestItem2->reveal())
             ->willReturn($fakeResponseItem2)
             ->shouldBeCalled();
 
-        $this->rawResponseNormalizer->serialize(Argument::allOf(
-            Argument::type(JsonRpcRawResponse::class),
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
             Argument::which('isBatch', true),
             Argument::which('getResponseList', [$fakeResponseItem->reveal(), $fakeResponseItem2->reveal()])
         ))
@@ -141,25 +131,20 @@ class JsonRpcEndpointTest extends TestCase
         $fakeException = $this->prophesize(\Exception::class);
         /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
         $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
-        /** @var ObjectProphecy|JsonRpcRawRequest $jsonRpcRawRequest */
-        $jsonRpcRawRequest = $this->prophesize(JsonRpcRawRequest::class);
+        /** @var JsonRpcCall $jsonRpcCall */
+        $jsonRpcCall = (new JsonRpcCall(false))
+            ->addExceptionItem($fakeException->reveal());
 
-        $jsonRpcRawRequest->isBatch()->willReturn(false)->shouldBeCalled();
-
-        $this->rawRequestSerializer->deserialize($requestString)
-            ->willReturn($jsonRpcRawRequest->reveal())
+        $this->jsonRpcCallSerializer->deserialize($requestString)
+            ->willReturn($jsonRpcCall)
             ->shouldBeCalled();
 
-        $jsonRpcRawRequest->getItemtList()
-            ->willReturn([$fakeException->reveal()])
-            ->shouldBeCalled();
-
-        $this->responseCreator->createErrorResponse($fakeException)
+        $this->exceptionHandler->getJsonRpcResponseFromException($fakeException->reveal(), null)
             ->willReturn($fakeResponseItem->reveal())
             ->shouldBeCalled();
 
-        $this->rawResponseNormalizer->serialize(Argument::allOf(
-            Argument::type(JsonRpcRawResponse::class),
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
             Argument::which('getResponseList', [$fakeResponseItem->reveal()])
         ))
             ->willReturn($expectedResponseString)
@@ -184,28 +169,26 @@ class JsonRpcEndpointTest extends TestCase
         $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
         /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem2 */
         $fakeResponseItem2 = $this->prophesize(JsonRpcResponse::class);
-        /** @var ObjectProphecy|JsonRpcRawRequest $jsonRpcRawRequest */
-        $jsonRpcRawRequest = $this->prophesize(JsonRpcRawRequest::class);
+        /** @var JsonRpcCall $jsonRpcCall */
+        $jsonRpcCall = (new JsonRpcCall(true))
+            ->addRequestItem($fakeRequestItem->reveal())
+            ->addExceptionItem($fakeExceptionItem->reveal())
+        ;
 
-        $jsonRpcRawRequest->isBatch()->willReturn(true)->shouldBeCalled();
 
-        $this->rawRequestSerializer->deserialize($requestString)
-            ->willReturn($jsonRpcRawRequest->reveal())
+        $this->jsonRpcCallSerializer->deserialize($requestString)
+            ->willReturn($jsonRpcCall)
             ->shouldBeCalled();
 
-        $jsonRpcRawRequest->getItemtList()
-            ->willReturn([$fakeRequestItem->reveal(), $fakeExceptionItem->reveal()])
-            ->shouldBeCalled();
-
-        $this->requestHandler->handle($fakeRequestItem->reveal())
+        $this->jsonRpcRequestHandler->processJsonRpcRequest($fakeRequestItem->reveal())
             ->willReturn($fakeResponseItem)
             ->shouldBeCalled();
-        $this->responseCreator->createErrorResponse($fakeExceptionItem->reveal())
+        $this->exceptionHandler->getJsonRpcResponseFromException($fakeExceptionItem->reveal(), null)
             ->willReturn($fakeResponseItem2)
             ->shouldBeCalled();
 
-        $this->rawResponseNormalizer->serialize(Argument::allOf(
-            Argument::type(JsonRpcRawResponse::class),
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
             Argument::which('isBatch', true),
             Argument::which('getResponseList', [$fakeResponseItem->reveal(), $fakeResponseItem2->reveal()])
         ))
