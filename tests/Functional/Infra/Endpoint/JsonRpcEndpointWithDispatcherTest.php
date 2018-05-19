@@ -173,7 +173,5 @@ class JsonRpcEndpointWithDispatcherTest extends TestCase
                 Argument::which('getJsonRpcCall', $jsonRpcCall)
             )
         )->shouldHaveBeenCalled();
-
-
     }
 }
