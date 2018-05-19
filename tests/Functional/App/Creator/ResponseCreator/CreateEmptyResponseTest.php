@@ -8,19 +8,11 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  *
  * @uses \Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest
  * @uses \Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse
+ *
+ * @group ResponseCreator
  */
 class CreateEmptyResponseTest extends BaseTestCase
 {
-    /**
-     * Should create an instance of JsonRpcResponse
-     */
-    public function testShouldReturnRightInstance()
-    {
-        $response = $this->responseCreator->createEmptyResponse();
-
-        $this->assertInstanceOf(JsonRpcResponse::class, $response);
-    }
-
     /**
      * Should bind following properties  to response :
      *  - json-rpc version from request
