@@ -116,10 +116,7 @@ $requestString = <<<JSONRPC
 {
     "jsonrpc": "2.0",
     "id": 1
-    "method": "dummy-method",
-    "params": {
-        "my-required-key": "a-value"
-    }
+    "method": "dummy-method"
 }
 JSONRPC;
 
