@@ -7,7 +7,7 @@ use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 /**
  * Class JsonRpcServerDispatcherAwareTrait
  */
-Trait JsonRpcServerDispatcherAwareTrait
+trait JsonRpcServerDispatcherAwareTrait
 {
     /** @var JsonRpcServerDispatcherInterface */
     private $jsonRpcServerDispatcher = null;
