@@ -16,6 +16,7 @@ build:
         stop_on_failure: true
         override:
             - php-scrutinizer-run --enable-security-analysis
+            - which phpcs-run
             -
                 command: make codestyle
                 analysis:
