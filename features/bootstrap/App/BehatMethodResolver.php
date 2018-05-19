@@ -1,7 +1,6 @@
 <?php
 namespace Tests\Functional\BehatContext\App;
 
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 
@@ -14,11 +13,7 @@ class BehatMethodResolver implements JsonRpcMethodResolverInterface
     private $methodList = [];
 
     /**
-     * @param string $methodName
-     *
-     * @return JsonRpcMethodInterface
-     *
-     * @throws JsonRpcMethodNotFoundException
+     * {@inheritdoc}
      */
     public function resolve(string $methodName)
     {

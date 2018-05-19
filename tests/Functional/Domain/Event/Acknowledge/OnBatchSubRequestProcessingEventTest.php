@@ -3,7 +3,6 @@ namespace Tests\Functional\Domain\Event\Acknowledge;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnBatchSubRequestProcessingEvent;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnBatchSubRequestProcessingEvent

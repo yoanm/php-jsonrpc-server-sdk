@@ -1,8 +1,6 @@
 <?php
 namespace Tests\Functional\App\Creator\ResponseCreator;
 
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
-
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
  *
