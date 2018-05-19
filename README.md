@@ -47,7 +47,7 @@ class DummyMethod implements JsonRpcMethodInterface
 }
 ```
 #### Array method resolver (simple example)
-*You can follow example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php) or on this [Psr11 method resolver](https://github.com/yoanm/php-jsonrpc-server-sdk-psr11-resolver)*
+*You can use [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php) or this [Psr11 method resolver](https://github.com/yoanm/php-jsonrpc-server-sdk-psr11-resolver) as example*
 ```php
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
@@ -139,7 +139,7 @@ $responseString = $endpoint->index($requestString);
    {"jsonrpc":"2.0","id":1,"result":12345}
    ```
 ### Events dispatch example
-*You can follow example on [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php)*
+*You can use [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php) as example*
 
 #### Simple event dispatcher
 ```php
@@ -209,7 +209,7 @@ $exceptionHandler->setJsonRpcServerDispatcher($dispatcher);
 ### Params validation example
 **Params validation is based on event dispatching and so, requires dispatcher configuration like described in previous section**
 
-*You can follow example on this [JSON-RPC params symfony validator](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk)*
+*You can use this [JSON-RPC params symfony validator](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk) as example*
 
 To validate params for a given method, do the following :
 ```php
