@@ -39,6 +39,7 @@ build:
             COMPOSER_OPTIONS: '--optimize-autoloader'
             COVERAGE_OUTPUT_STYLE: 'clover'
             COVERAGE_CLOVER_FILE_PATH: 'build/coverage/clover.xml'
+            PHPCS_BIN: "phpcs-run
             PHPCS_REPORT_STYLE: 'checkstyle'
             PHPCS_REPORT_FILE: 'build/reports/cs-data'
         php:
