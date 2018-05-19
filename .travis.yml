@@ -6,15 +6,20 @@ php:
   - '7.2'
 
 env:
-  CI: 'true'
-  TEST_OUTPUT_STYLE: 'pretty'
-  PHPCS_REPORT_STYLE: 'full'
-  COMPOSER_OPTIONS: '--optimize-autoloader'
+  global:
+    CI: 'true'
+    TEST_OUTPUT_STYLE: 'pretty'
+    PHPCS_REPORT_STYLE: 'full'
+    COMPOSER_OPTIONS: '--optimize-autoloader'
 
 sudo: false
 
 matrix:
   fast_finish: true
+
+before_install:
+  # remove xdebug to speed up build
+  - phpenv config-rm xdebug.ini
 
 install:
   - make build

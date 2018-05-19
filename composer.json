@@ -1,7 +1,7 @@
 {
     "name": "yoanm/jsonrpc-server-sdk",
     "description": "Server SDK to convert a json-rpc request string into json-rpc response string",
-    "license": "GPL-3.0-only",
+    "license": "MIT",
     "type": "library",
     "support": {
         "issues": "https://github.com/yoanm/php-jsonrpc-server-sdk/issues"
