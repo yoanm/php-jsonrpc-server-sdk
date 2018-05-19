@@ -15,32 +15,19 @@ Sdk requires only two things :
  - A method resolver : must implement [MethodResolverInterface](./src/Domain/Model/MethodResolverInterface.php), resolving logic's is your own.
  - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/Model/JsonRpcMethodInterface.php)
  
-:warning: No dependency injection is managed in this library 
+Sdk optionally provide :
+ - Events dispatch
+ - Params validation (thanks to event dispatching)
+ 
+:warning: For dependency injection see [JSON-RPC server symfony bundle](https://github.com/yoanm/symfony-jsonrpc-http-server)
 
-### Example
+### Simple Example
 #### JSON-RPC Method
 ```php
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 
 class DummyMethod implements JsonRpcMethodInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function validateParams(array $paramList) : array
-    {
-        $violationList = [];
-        //If case your app require a specific param for instance
-        if (!isset($paramList['my-required-key')) {
-            $violationList[] = [
-                'path' => 'my-required-key',
-                'error' => 'Key is required'
-            ]
-        }
-
-        return $violationList;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -60,10 +47,10 @@ class DummyMethod implements JsonRpcMethodInterface
 }
 ```
 #### Array method resolver (simple example)
-*You could take example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php)*
+*You can use [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php) or this [Psr11 method resolver](https://github.com/yoanm/php-jsonrpc-server-sdk-psr11-resolver) as example*
 ```php
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
-use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 
 class ArrayMethodResolver implements MethodResolverInterface
 {
@@ -71,13 +58,14 @@ class ArrayMethodResolver implements MethodResolverInterface
     private $methodList = [];
 
     /**
-     * @param string $methodName
-     *
-     * @return JsonRpcMethodInterface|null
+     * {@inheritdoc}
      */
     public function resolve(string $methodName)
     {
-        return $this->methodList[$methodName];
+        return array_key_exists($methodName, $this->methodList)
+            ? $this->methodList[$methodName]
+            : null
+        ;
     }
 
     /**
@@ -93,15 +81,15 @@ class ArrayMethodResolver implements MethodResolverInterface
 
 Then add your method to the resolver and create the endpoint : 
 ```php
-use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
-use Yoanm\JsonRpcServer\App\Manager\MethodManager;
-use Yoanm\JsonRpcServer\App\RequestHandler;
-use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
-use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
+use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
 
 $resolver = new ArrayMethodResolver();
 $resolver->addMethod(
@@ -109,24 +97,19 @@ $resolver->addMethod(
     new DummyMethod()
 );
 
-$responseCreator = new ResponseCreator();
-
-$endpoint = new JsonRpcEndpoint(
-    new RawRequestSerializer(
-        new RequestDenormalizer()
+$jsonRpcSerializer = new JsonRpcCallSerializer(
+    new JsonRpcCallDenormalizer(
+        new JsonRpcRequestDenormalizer()
     ),
-    new RequestHandler(
-        new MethodManager(
-            $resolver,
-            new CustomExceptionCreator()
-        ),
-        $responseCreator
-    ),
-    new RawResponseSerializer(
-        new ResponseNormalizer()
-    ),
-    $responseCreator
+    new JsonRpcCallResponseNormalizer(
+        new JsonRpcResponseNormalizer()
+    )
 );
+$responseCreator = new ResponseCreator();
+$requestHandler = new JsonRpcRequestHandler($resolver, $responseCreator);
+$exceptionHandler = new ExceptionHandler($responseCreator);
+
+$endpoint = new JsonRpcEndpoint($jsonRpcSerializer, $requestHandler, $exceptionHandler);
 ```
 
 Once endpoint is ready, you can send it request string : 
@@ -137,10 +120,7 @@ $requestString = <<<JSONRPC
 {
     "jsonrpc": "2.0",
     "id": 1
-    "method": "dummy-method",
-    "params": {
-        "my-required-key": "a-value"
-    }
+    "method": "dummy-method"
 }
 JSONRPC;
 
@@ -158,6 +138,96 @@ $responseString = $endpoint->index($requestString);
  * ```json
    {"jsonrpc":"2.0","id":1,"result":12345}
    ```
+### Events dispatch example
+*You can use [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php) as example*
+
+#### Simple event dispatcher
+```php
+use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
+use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
+
+/**
+ * Class SimpleDispatcher
+ */
+class SimpleDispatcher implements JsonRpcServerDispatcherInterface
+{
+    /** @var callable[] */
+    private $listenerList = [];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null)
+    {
+        if (!array_key_exists($eventName, $this->listenerList)) {
+            return;
+        }
+
+        foreach ($this->listenerList[$eventName] as $listener) {
+            $listener($event, $eventName);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addJsonRpcListener(string $eventName, $listener)
+    {
+        $this->listenerList[$eventName][] = $listener;
+    }
+}
+```
+
+Then bind your listeners to your dispatcher:
+```php
+use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnRequestReceivedEvent;
+use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnResponseSendingEvent;
+use Yoanm\JsonRpcServer\Domain\Event\Action\OnMethodSuccessEvent;
+
+$dispatcher = new SimpleDispatcher();
+
+$listener = function ($event, $eventName) {
+    echo sprintf(
+        'Received %s with event class "%s"',
+        $eventName,
+        get_class($event)
+    );
+};
+
+$dispatcher->addJsonRpcListener(OnRequestReceivedEvent::EVENT_NAME, $listener);
+$dispatcher->addJsonRpcListener(OnResponseSendingEvent::EVENT_NAME, $listener);
+$dispatcher->addJsonRpcListener(OnMethodSuccessEvent::EVENT_NAME, $listener);
+```
+
+And bind dispatcher like following :
+```php
+$endpoint->setJsonRpcServerDispatcher($dispatcher);
+$requestHandler->setJsonRpcServerDispatcher($dispatcher);
+$exceptionHandler->setJsonRpcServerDispatcher($dispatcher);
+```
+
+### Params validation example
+**Params validation is based on event dispatching and so, requires dispatcher configuration like described in previous section**
+
+*You can use this [JSON-RPC params symfony validator](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk) as example*
+
+To validate params for a given method, do the following :
+```php
+use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
+
+$validator = function (ValidateParamsEvent $event) {
+    $method = $event->getMethod();
+    $paramList = $event->getParamList();
+    if (/** Select the right method */) {
+        // Create your violations based on what you want
+        $violation = "???";
+        // Then add it/them to the event
+        $event->addViolation($violation);
+    }
+};
+
+$dispatcher->addJsonRpcListener(ValidateParamsEvent::EVENT_NAME, $validator);
+```
 
 ## Contributing
 See [contributing note](./CONTRIBUTING.md)
