@@ -16,6 +16,8 @@ use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint
+ *
+ * @group JsonRpcEndpoint
  */
 class JsonRpcEndpointTest extends TestCase
 {
@@ -43,37 +45,71 @@ class JsonRpcEndpointTest extends TestCase
 
     /**
      * @dataProvider provideHandleExceptionData
-     * @param $exceptionClass
+     *
+     * @param string $exceptionClass
      */
-    public function testShouldManageAnyExceptionThrownBeforeResponseSerialization($exceptionClass)
+    public function testShouldManageAnyExceptionThrownDuringRequestDeserialization($exceptionClass)
     {
         $requestString = 'request-string';
         $expectedResponseString = 'expected-response-string';
 
         /** @var ObjectProphecy|JsonRpcRequest $fakeRequestItem */
         $fakeRequestItem = $this->prophesize(JsonRpcRequest::class);
-        $fakeHandleException = $this->prophesize($exceptionClass);
+        $fakeException = $this->prophesize($exceptionClass);
         /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
         $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
-        /** @var ObjectProphecy|JsonRpcCall $jsonRpcCall */
-        $jsonRpcCall = $this->prophesize(JsonRpcCall::class);
-
-        $jsonRpcCall->isBatch()->willReturn(false)->shouldBeCalled();
 
         $this->jsonRpcCallSerializer->deserialize($requestString)
-            ->willReturn($jsonRpcCall->reveal())
+            ->willThrow($fakeException->reveal())
             ->shouldBeCalled();
 
-        $jsonRpcCall->getItemList()
-            ->willReturn([$fakeRequestItem->reveal()])
+        $this->exceptionHandler->getJsonRpcResponseFromException($fakeException->reveal())
+            ->willReturn($fakeResponseItem->reveal())
+            ->shouldBeCalled();
+
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
+            Argument::which('getResponseList', [$fakeResponseItem->reveal()])
+        ))
+            ->willReturn($expectedResponseString)
+            ->shouldBeCalled();
+
+        $this->assertSame(
+            $expectedResponseString,
+            $this->endpoint->index($requestString)
+        );
+    }
+
+    /**
+     * @dataProvider provideHandleExceptionData
+     *
+     * @param string $exceptionClass
+     */
+    public function testShouldManageAnyExceptionThrownDuringItemProcessing($exceptionClass)
+    {
+        $requestString = 'request-string';
+        $expectedResponseString = 'expected-response-string';
+
+        /** @var ObjectProphecy|JsonRpcRequest $fakeRequestItem */
+        $fakeRequestItem = $this->prophesize(JsonRpcRequest::class);
+        $fakeException = $this->prophesize($exceptionClass);
+        /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
+        $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);
+        /** @var JsonRpcCall $jsonRpcCall */
+        $jsonRpcCall = (new JsonRpcCall(false))
+            ->addRequestItem($fakeRequestItem->reveal())
+        ;
+
+        $this->jsonRpcCallSerializer->deserialize($requestString)
+            ->willReturn($jsonRpcCall)
             ->shouldBeCalled();
 
         $this->jsonRpcRequestHandler->processJsonRpcRequest($fakeRequestItem->reveal())
-            ->willThrow($fakeHandleException->reveal())
+            ->willThrow($fakeException->reveal())
             ->shouldBeCalled();
 
         $this->exceptionHandler->getJsonRpcResponseFromException(
-            $fakeHandleException->reveal(),
+            $fakeException->reveal(),
             $fakeRequestItem->reveal()
         )
             ->willReturn($fakeResponseItem->reveal())
@@ -82,6 +118,60 @@ class JsonRpcEndpointTest extends TestCase
         $this->jsonRpcCallSerializer->serialize(Argument::allOf(
             Argument::type(JsonRpcCallResponse::class),
             Argument::which('getResponseList', [$fakeResponseItem->reveal()])
+        ))
+            ->willReturn($expectedResponseString)
+            ->shouldBeCalled();
+
+        $this->assertSame(
+            $expectedResponseString,
+            $this->endpoint->index($requestString)
+        );
+    }
+
+    /**
+     * @dataProvider provideHandleExceptionData
+     *
+     * @param string $exceptionClass
+     */
+    public function testShouldManageAnyExceptionThrownDuringResponseSerialization($exceptionClass)
+    {
+        $requestString = 'request-string';
+        $expectedResponseString = 'expected-response-string';
+
+        /** @var ObjectProphecy|JsonRpcRequest $fakeRequestItem */
+        $fakeRequestItem = $this->prophesize(JsonRpcRequest::class);
+        $fakeException = $this->prophesize($exceptionClass);
+        /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
+        $fakeResultResponseItem = $this->prophesize(JsonRpcResponse::class);
+        /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
+        $fakeExceptionResponseItem = $this->prophesize(JsonRpcResponse::class);
+        /** @var JsonRpcCall $jsonRpcCall */
+        $jsonRpcCall = (new JsonRpcCall(false))
+            ->addRequestItem($fakeRequestItem->reveal())
+        ;
+
+        $this->jsonRpcCallSerializer->deserialize($requestString)
+            ->willReturn($jsonRpcCall)
+            ->shouldBeCalled();
+
+        $this->jsonRpcRequestHandler->processJsonRpcRequest($fakeRequestItem->reveal())
+            ->willReturn($fakeResultResponseItem->reveal())
+            ->shouldBeCalled();
+
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
+            Argument::which('getResponseList', [$fakeResultResponseItem->reveal()])
+        ))
+            ->willThrow($fakeException->reveal())
+            ->shouldBeCalled();
+
+        $this->exceptionHandler->getJsonRpcResponseFromException($fakeException->reveal())
+            ->willReturn($fakeExceptionResponseItem->reveal())
+            ->shouldBeCalled();
+
+        $this->jsonRpcCallSerializer->serialize(Argument::allOf(
+            Argument::type(JsonRpcCallResponse::class),
+            Argument::which('getResponseList', [$fakeExceptionResponseItem->reveal()])
         ))
             ->willReturn($expectedResponseString)
             ->shouldBeCalled();

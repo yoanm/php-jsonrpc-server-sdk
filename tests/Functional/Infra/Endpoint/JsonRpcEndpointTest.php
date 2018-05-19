@@ -15,6 +15,8 @@ use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint
+ *
+ * @group JsonRpcEndpoint
  */
 class JsonRpcEndpointTest extends TestCase
 {
