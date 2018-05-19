@@ -2,11 +2,14 @@
 namespace Tests\Functional\BehatContext;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Context\Environment\InitializedContextEnvironment;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
+use Tests\Functional\BehatContext\App\BehatRequestLifecycleDispatcher;
 use Tests\Functional\BehatContext\App\FakeEndpointCreator;
-use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
+use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 
 /**
  * Defines application features from the specific context.
@@ -22,21 +25,23 @@ class FeatureContext implements Context
     const SUB_KEY_ERROR_MESSAGE = 'message';
     const SUB_KEY_ERROR_DATA = 'data';
 
-    /** @var JsonRpcEndpoint */
-    private $endpoint;
-    /** @var string */
-    private $lastResponse;
+    /** @var string|null */
+    private $lastResponse = null;
+    /** @var  EventsContext */
+    private $eventsContext;
 
     /**
-     * Initializes context.
+     * @BeforeScenario
      *
-     * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
+     * @param BeforeScenarioScope $scope
      */
-    public function __construct()
+    public function beforeScenario(BeforeScenarioScope $scope)
     {
-        $this->endpoint = (new FakeEndpointCreator())->create();
+        $environment = $scope->getEnvironment();
+
+        if ($environment instanceof InitializedContextEnvironment) {
+            $this->eventsContext = $environment->getContext(EventsContext::class);
+        }
     }
 
     /**
@@ -44,7 +49,9 @@ class FeatureContext implements Context
      */
     public function whenISendTheFollowingPayload(PyStringNode $payload)
     {
-        $this->lastResponse = $this->endpoint->index($payload->getRaw());
+        $endpoint = (new FakeEndpointCreator())->create($this->eventsContext->getDispatcher());
+
+        $this->lastResponse = $endpoint->index($payload->getRaw());
     }
 
     /**
