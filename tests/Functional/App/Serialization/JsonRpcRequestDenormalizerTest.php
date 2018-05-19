@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\App\Creator\JsonRpcRequestDenormalizer;
+namespace Tests\Functional\App\Serialization;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
@@ -7,8 +7,10 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer
+ *
+ * @group JsonRpcRequestDenormalizer
  */
-class DenormalizeTest extends TestCase
+class JsonRpcRequestDenormalizerTest extends TestCase
 {
     /** @var JsonRpcRequestDenormalizer */
     private $requestDenormalizer;

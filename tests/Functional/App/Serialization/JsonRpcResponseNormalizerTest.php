@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\App\Creator;
+namespace Tests\Functional\App\Serialization;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
