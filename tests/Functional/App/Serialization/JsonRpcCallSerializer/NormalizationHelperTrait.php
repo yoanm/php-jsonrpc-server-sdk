@@ -8,32 +8,14 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 trait NormalizationHelperTrait
 {
     /**
-     * @param JsonRpcCallResponse                          $rawResponse
-     * @param ObjectProphecy|JsonRpcCallResponseNormalizer $responseNormalizer
-     *
-     * @return array Expected response
-     */
-    public function prophesizeJsonRpcCallResponseNormalizerNormalize(
-        JsonRpcCallResponse $rawResponse,
-        ObjectProphecy $responseNormalizer
-    ) {
-        $normalizedResponse = ['id' => spl_object_hash($rawResponse)];
-        $responseNormalizer->normalize($rawResponse)
-            ->willReturn($normalizedResponse)
-            ->shouldBeCalled();
-
-        return $normalizedResponse;
-    }
-
-    /**
      * @param array|null $normalized
-     * @param array      $expectedResponse
+     * @param array|null $expectedResponse
      * @param bool       $isBatch
      * @param bool       $expectNull
      */
     public function assertValidNormalization(
         $normalized,
-        array $expectedResponse,
+        $expectedResponse,
         bool $isBatch,
         bool $expectNull
     ) {

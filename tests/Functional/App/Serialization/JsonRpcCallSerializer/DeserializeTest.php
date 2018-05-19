@@ -17,7 +17,6 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 class DeserializeTest extends TestCase
 {
     use RequestStringProviderTrait;
-    use DenormalizationValidatorTrait;
 
     /** @var JsonRpcCallSerializer */
     private $jsonRpcCallSerializer;
@@ -52,7 +51,5 @@ class DeserializeTest extends TestCase
         ;
 
         $this->assertSame($rawRequest->reveal(), $this->jsonRpcCallSerializer->deserialize($content));
-
-        //$this->assertValidDenormalization($decodedContent, $rawRequest, $isBatch);
     }
 }

@@ -16,7 +16,6 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 class NormalizeTest extends TestCase
 {
     use JsonRpcCallResponseProviderTrait;
-    use NormalizationHelperTrait;
 
     /** @var JsonRpcCallSerializer */
     private $jsonRpcCallSerializer;
@@ -52,7 +51,5 @@ class NormalizeTest extends TestCase
             $normalizedResponse,
             $this->jsonRpcCallSerializer->normalize($callResponse)
         );
-
-        //$this->assertValidNormalization($normalized, $expectedResponseList, $isBatch, $expectNull);
     }
 }

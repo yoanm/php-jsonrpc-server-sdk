@@ -2,6 +2,7 @@
 namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
@@ -15,7 +16,6 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 class SerializeTest extends TestCase
 {
     use JsonRpcCallResponseProviderTrait;
-    use NormalizationHelperTrait;
 
     /** @var JsonRpcCallSerializer */
     private $jsonRpcCallSerializer;
@@ -52,7 +52,5 @@ class SerializeTest extends TestCase
             json_encode($normalizedResponse),
             $this->jsonRpcCallSerializer->serialize($callResponse)
         );
-
-        //$this->assertValidNormalization(json_decode($serialized, true), $expectedResponse, $isBatch, $expectNull);
     }
 }
