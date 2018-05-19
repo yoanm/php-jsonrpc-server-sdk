@@ -95,15 +95,8 @@ class JsonRpcRequestHandler
     private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method)
     {
         $event = new ActionEvent\ValidateParamsEvent($method, $jsonRpcRequest->getParamList() ?? []);
-        try {
-            $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
-        } catch (\Exception $validationException) {
-            // Append exception to current violation list
-            $event->addViolation([
-                'message' => 'Internal error during validation',
-                'exception' => $validationException->getMessage()
-            ]);
-        }
+
+        $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
 
         if (count($event->getViolationList())) {
             throw new JsonRpcInvalidParamsException($event->getViolationList());
