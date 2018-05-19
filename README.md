@@ -20,27 +20,10 @@ Sdk requires only two things :
 ### Example
 #### JSON-RPC Method
 ```php
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 
 class DummyMethod implements JsonRpcMethodInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function validateParams(array $paramList) : array
-    {
-        $violationList = [];
-        //If case your app require a specific param for instance
-        if (!isset($paramList['my-required-key')) {
-            $violationList[] = [
-                'path' => 'my-required-key',
-                'error' => 'Key is required'
-            ]
-        }
-
-        return $violationList;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -60,10 +43,10 @@ class DummyMethod implements JsonRpcMethodInterface
 }
 ```
 #### Array method resolver (simple example)
-*You could take example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php)*
+*You could take example on [the one used for behat tests](./features/bootstrap/App/BehatMethodResolver.php) or on this [Psr11 method resolver](https://github.com/yoanm/php-jsonrpc-server-sdk-psr11-resolver)*
 ```php
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
-use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 
 class ArrayMethodResolver implements MethodResolverInterface
 {
@@ -71,13 +54,14 @@ class ArrayMethodResolver implements MethodResolverInterface
     private $methodList = [];
 
     /**
-     * @param string $methodName
-     *
-     * @return JsonRpcMethodInterface|null
+     * {@inheritdoc}
      */
     public function resolve(string $methodName)
     {
-        return $this->methodList[$methodName];
+        return array_key_exists($methodName, $this->methodList)
+            ? $this->methodList[$methodName]
+            : null
+        ;
     }
 
     /**
@@ -93,15 +77,15 @@ class ArrayMethodResolver implements MethodResolverInterface
 
 Then add your method to the resolver and create the endpoint : 
 ```php
-use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
-use Yoanm\JsonRpcServer\App\Manager\MethodManager;
-use Yoanm\JsonRpcServer\App\RequestHandler;
-use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
-use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
+use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
 
 $resolver = new ArrayMethodResolver();
 $resolver->addMethod(
@@ -109,24 +93,19 @@ $resolver->addMethod(
     new DummyMethod()
 );
 
-$responseCreator = new ResponseCreator();
-
-$endpoint = new JsonRpcEndpoint(
-    new RawRequestSerializer(
-        new RequestDenormalizer()
+$jsonRpcSerializer = new JsonRpcCallSerializer(
+    new JsonRpcCallDenormalizer(
+        new JsonRpcRequestDenormalizer()
     ),
-    new RequestHandler(
-        new MethodManager(
-            $resolver,
-            new CustomExceptionCreator()
-        ),
-        $responseCreator
-    ),
-    new RawResponseSerializer(
-        new ResponseNormalizer()
-    ),
-    $responseCreator
+    new JsonRpcCallResponseNormalizer(
+        new JsonRpcResponseNormalizer()
+    )
 );
+$responseCreator = new ResponseCreator();
+$requestHandler = new JsonRpcRequestHandler($resolver, $responseCreator);
+$exceptionHandler = new ExceptionHandler($responseCreator);
+
+$endpoint = new JsonRpcEndpoint($jsonRpcSerializer, $requestHandler, $exceptionHandler);
 ```
 
 Once endpoint is ready, you can send it request string : 
