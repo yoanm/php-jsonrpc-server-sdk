@@ -2,194 +2,85 @@
 namespace Tests\Functional\BehatContext\App;
 
 use Prophecy\Argument;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
-use Yoanm\JsonRpcServer\App\Creator\CustomExceptionCreator;
+use Tests\Functional\BehatContext\App\Method\AbstractMethod;
+use Tests\Functional\BehatContext\App\Method\BasicMethod;
+use Tests\Functional\BehatContext\App\Method\BasicMethodWithRequiredParams;
+use Tests\Functional\BehatContext\App\Method\MethodThatThrowExceptionDuringExecution;
+use Tests\Functional\BehatContext\App\Method\MethodThatThrowJsonRpcExceptionDuringExecution;
+use Tests\Functional\BehatContext\App\Method\MethodWithParamsValidationError;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
-use Yoanm\JsonRpcServer\App\Manager\MethodManager;
-use Yoanm\JsonRpcServer\App\RequestHandler;
-use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
-use Yoanm\JsonRpcServer\App\Serialization\ResponseNormalizer;
-use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcMethodInterface;
-use Yoanm\JsonRpcServer\Domain\Model\MethodResolverInterface;
+use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
+use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
+use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
+use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawResponseSerializer;
-use Yoanm\SymfonyJsonRpcServer\App\Resolver\DefaultServiceNameResolver;
-use Yoanm\SymfonyJsonRpcServer\Infra\Resolver\ContainerJsonRpcMethodResolver;
 
 class FakeEndpointCreator
 {
     /**@return JsonRpcEndpoint
      */
-    public function create() : JsonRpcEndpoint
+    public function create(JsonRpcServerDispatcherInterface $dispatcher = null) : JsonRpcEndpoint
     {
-        $prophet = new Prophet();
+        /** @var AbstractMethod[] $methodList */
+        $methodList = [
+            'basic-method' => new BasicMethod(),
+            'basic-method-with-params' => new BasicMethodWithRequiredParams(),
+            'method-that-throw-params-validation-exception' => new MethodWithParamsValidationError(),
+            'method-that-throw-an-exception-during-execution' => new MethodThatThrowExceptionDuringExecution(),
+            'method-that-throw-a-custom-jsonrpc-exception-during-execution' => new MethodThatThrowJsonRpcExceptionDuringExecution(),
+        ];
 
-        $methodResolver = $prophet->prophesize(MethodResolverInterface::class);
-        // Return null by default
-        $methodResolver->resolve(Argument::any())->willReturn(null);
+        $methodResolver = new BehatMethodResolver();
 
-        $this->addMethod($methodResolver, 'basic-method', $this->getBasicMethod($prophet));
+        foreach ($methodList as $methodName => $method) {
+            $methodResolver->addMethod($method, $methodName);
+        }
 
-        $this->addMethod(
-            $methodResolver,
-            'basic-method-with-params',
-            $this->getMethodWithRequiredParams($prophet)
+        $jsonRpcSerializer = new JsonRpcCallSerializer(
+            new JsonRpcCallDenormalizer(
+                new JsonRpcRequestDenormalizer()
+            ),
+            new JsonRpcCallResponseNormalizer(
+                new JsonRpcResponseNormalizer()
+            )
         );
-        $this->addMethod(
-            $methodResolver,
-            'method-that-throw-params-validation-exception',
-            $this->getParamsValidationExceptionMethod($prophet)
-        );
-        $this->addMethod(
-            $methodResolver,
-            'method-that-throw-params-validation-exception',
-            $this->getParamsValidationExceptionMethod($prophet)
-        );
-        $this->addMethod(
-            $methodResolver,
-            'method-that-throw-an-exception-during-execution',
-            $this->getExecutionExceptionMethod($prophet)
-        );
-
-        $this->addMethod(
-            $methodResolver,
-            'method-that-throw-a-custom-jsonrpc-exception-during-execution',
-            $this->getCustomExecutionExceptionMethod($prophet)
-        );
-
         $responseCreator = new ResponseCreator();
-        return new JsonRpcEndpoint(
-            new RawRequestSerializer(
-                new RequestDenormalizer()
-            ),
-            new RequestHandler(
-                new MethodManager(
-                    $methodResolver->reveal(),
-                    new CustomExceptionCreator()
-                ),
-                $responseCreator
-            ),
-            new RawResponseSerializer(
-                new ResponseNormalizer()
-            ),
-            $responseCreator
-        );
-    }
+        $requestHandler = new JsonRpcRequestHandler($methodResolver, $responseCreator);
+        $exceptionHandler = new ExceptionHandler($responseCreator);
+        $endpoint = new JsonRpcEndpoint($jsonRpcSerializer, $requestHandler, $exceptionHandler);
 
-    /**
-     * @param Prophet $prophet
-     *
-     * @return ObjectProphecy
-     */
-    private function getBasicMethod(Prophet $prophet)
-    {
-        $basicMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
-        $basicMethod->validateParams(Argument::cetera())
-            ->willReturn([]);
-        $basicMethod->apply(Argument::cetera())
-            ->willReturn('basic-method-result');
-
-        return $basicMethod;
-    }
-
-    /**
-     * @param Prophet $prophet
-     *
-     * @return ObjectProphecy
-     */
-    private function getMethodWithRequiredParams(Prophet $prophet)
-    {
-        $methodWithParams = $prophet->prophesize(JsonRpcMethodInterface::class);
-        $methodWithParams->validateParams(Argument::cetera())
-            ->will(function ($args) {
-                $params = $args[0];
-                $violationList = [];
-                // Throw an exception only in case no params are given
-                if (!is_array($params) || count($params) === 0) {
-                    $violationList[] = [
-                        'basic-method-with-param requires parameters'
-                    ];
+        if ($dispatcher) {
+            /** Add basic params validation */
+            $dispatcher->addJsonRpcListener(
+                ValidateParamsEvent::EVENT_NAME,
+                function (ValidateParamsEvent $event) {
+                    $method = $event->getMethod();
+                    if (!$method instanceof AbstractMethod) {
+                        return;
+                    }
+                    $extraViolationList = $method->validateParams($event->getParamList());
+                    if (count($extraViolationList)) {
+                        // Append violations to current list
+                        $event->setViolationList(
+                            array_merge(
+                                $event->getViolationList(),
+                                $extraViolationList
+                            )
+                        );
+                    }
                 }
+            );
 
-                return $violationList;
-            });
-        $methodWithParams->apply(Argument::cetera())
-            ->willReturn('basic-method-with-params-result');
+            $endpoint->setJsonRpcServerDispatcher($dispatcher);
+            $requestHandler->setJsonRpcServerDispatcher($dispatcher);
+            $exceptionHandler->setJsonRpcServerDispatcher($dispatcher);
+        }
 
-        return $methodWithParams;
-    }
-
-    /**
-     * @param Prophet $prophet
-     *
-     *
-     * @return ObjectProphecy
-     */
-    private function getParamsValidationExceptionMethod(Prophet $prophet)
-    {
-        $paramsValidationExceptionMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
-        $paramsValidationExceptionMethod->validateParams(Argument::cetera())
-            ->willReturn([
-                [
-                    'path' => 'path-on-error',
-                    'message' => 'method-that-throw-params-validation-exception validation exception'
-                ]
-            ]);
-
-        return $paramsValidationExceptionMethod;
-    }
-
-    /**
-     * @param Prophet $prophet
-     *
-     * @return ObjectProphecy
-     */
-    private function getExecutionExceptionMethod(Prophet $prophet)
-    {
-        $executionExceptionMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
-        $executionExceptionMethod->validateParams(Argument::cetera())
-            ->willReturn([]);
-        $executionExceptionMethod->apply(Argument::cetera())
-            ->willThrow(new \Exception('method-that-throw-an-exception-during-execution execution exception'));
-
-        return $executionExceptionMethod;
-    }
-
-    /**
-     * @param Prophet $prophet
-     *
-     * @return ObjectProphecy
-     */
-    private function getCustomExecutionExceptionMethod(Prophet $prophet)
-    {
-        $customExecutionExceptionMethod = $prophet->prophesize(JsonRpcMethodInterface::class);
-        $customExecutionExceptionMethod->validateParams(Argument::cetera())
-            ->willReturn([]);
-        $customExecutionExceptionMethod->apply(Argument::cetera())
-            ->willThrow(new JsonRpcException(
-                -32012,
-                'A custom json-rpc error',
-                [
-                    'custom-data-property' => 'custom-data-value'
-                ]
-            ));
-
-        return $customExecutionExceptionMethod;
-    }
-
-    /**
-     * @param ObjectProphecy $methodResolver
-     * @param string         $methodName
-     * @param ObjectProphecy $method
-     */
-    private function addMethod(
-        ObjectProphecy $methodResolver,
-        string $methodName,
-        ObjectProphecy $method
-    ) {
-        $methodResolver->resolve($methodName)->willReturn($method->reveal());
+        return $endpoint;
     }
 }
