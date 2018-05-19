@@ -4,9 +4,12 @@ namespace Tests\Technical\App\Creator;
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
+ *
+ * @group ResponseCreator
  */
 class ResponseCreatorTest extends TestCase
 {

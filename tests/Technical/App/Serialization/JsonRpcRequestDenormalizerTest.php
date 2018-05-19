@@ -9,6 +9,7 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer
  *
  * @group JsonRpcRequestDenormalizer
+ * @group Serialization
  */
 class JsonRpcRequestDenormalizerTest extends TestCase
 {
