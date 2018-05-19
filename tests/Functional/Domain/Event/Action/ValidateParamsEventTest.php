@@ -5,7 +5,6 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent

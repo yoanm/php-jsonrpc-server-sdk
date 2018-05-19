@@ -15,8 +15,7 @@ class BehatRequestLifecycleDispatcher implements JsonRpcServerDispatcherInterfac
     private $eventDispatchedList = [];
 
     /**
-     * @param string                  $eventName
-     * @param JsonRpcServerEvent|null $event
+     * {@inheritdoc}
      */
     public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null)
     {
@@ -31,12 +30,9 @@ class BehatRequestLifecycleDispatcher implements JsonRpcServerDispatcherInterfac
     }
 
     /**
-     * @param string   $eventName
-     * @param callable $listener
-     *
-     * @return BehatRequestLifecycleDispatcher
+     * {@inheritdoc}
      */
-    public function addJsonRpcListener(string $eventName, $listener) : BehatRequestLifecycleDispatcher
+    public function addJsonRpcListener(string $eventName, $listener)
     {
         if (!is_callable($listener)) {
             throw new \InvalidArgumentException(
@@ -47,8 +43,6 @@ class BehatRequestLifecycleDispatcher implements JsonRpcServerDispatcherInterfac
             );
         }
         $this->listenerList[$eventName][] = $listener;
-
-        return $this;
     }
 
     /**

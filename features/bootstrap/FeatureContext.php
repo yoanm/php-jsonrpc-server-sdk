@@ -7,9 +7,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Prophecy\Argument;
-use Tests\Functional\BehatContext\App\BehatRequestLifecycleDispatcher;
 use Tests\Functional\BehatContext\App\FakeEndpointCreator;
-use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 
 /**
  * Defines application features from the specific context.

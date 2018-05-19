@@ -3,7 +3,6 @@ namespace Tests\Functional\App\Creator\ResponseCreator;
 
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
