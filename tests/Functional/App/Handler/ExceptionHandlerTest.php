@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\Infra\Endpoint;
+namespace Tests\Functional\App\Handler;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;

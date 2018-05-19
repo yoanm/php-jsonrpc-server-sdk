@@ -1,23 +1,15 @@
 <?php
-namespace Tests\Functional\Infra\Endpoint;
+namespace Tests\Functional\App\Handler;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
-use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
-use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
-use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnBatchSubRequestProcessedEvent;
-use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnBatchSubRequestProcessingEvent;
-use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnRequestReceivedEvent;
-use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnResponseSendingEvent;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnExceptionEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
-use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Handler\ExceptionHandler
