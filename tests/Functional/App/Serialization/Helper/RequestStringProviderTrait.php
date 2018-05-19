@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\Infra\Serialization\RawRequestSerializer;
+namespace Tests\Functional\App\Serialization\Helper;
 
 trait RequestStringProviderTrait
 {
