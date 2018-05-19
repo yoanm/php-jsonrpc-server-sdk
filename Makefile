@@ -13,7 +13,6 @@ COVERAGE_CLOVER_FILE_PATH ?= ${COVERAGE_DIRECTORY}/clover.xml
 #COMPOSER_OPTIONS=
 ### Phpcs
 PHPCS_REPORT_STYLE ?= full
-PHPCS_BIN ?= ./vendor/bin/phpcs
 PHPCS_DISABLE_WARNING ?= "false"
 #PHPCS_REPORT_FILE=
 #PHPCS_REPORT_FILE_OPTION=
@@ -84,7 +83,7 @@ test-functional:
 	./vendor/bin/behat ${BEHAT_COLOR_OPTION} ${BEHAT_OUTPUT_STYLE_OPTION} --no-snippets
 
 codestyle: create-reports-directory
-	${PHPCS_BIN} ${PHPCS_DISABLE_WARNING_OPTION} --standard=phpcs.xml.dist ${PHPCS_COLOR_OPTION} ${PHPCS_REPORT_FILE_OPTION} --report=${PHPCS_REPORT_STYLE}
+	./vendor/bin/phpcs ${PHPCS_DISABLE_WARNING_OPTION} --standard=phpcs.xml.dist ${PHPCS_COLOR_OPTION} ${PHPCS_REPORT_FILE_OPTION} --report=${PHPCS_REPORT_STYLE}
 
 coverage: create-coverage-directory
 	./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} ${PHPUNIT_COVERAGE_OPTION}
