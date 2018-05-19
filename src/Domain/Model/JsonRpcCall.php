@@ -1,12 +1,10 @@
 <?php
-namespace Yoanm\JsonRpcServer\Infra\RawObject;
-
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
+namespace Yoanm\JsonRpcServer\Domain\Model;
 
 /**
- * Class JsonRpcRawRequest
+ * Class JsonRpcCall
  */
-class JsonRpcRawRequest
+class JsonRpcCall
 {
     /** @var bool */
     private $isBatch;
@@ -14,7 +12,7 @@ class JsonRpcRawRequest
     private $itemList = [];
 
     /**
-     * @param bool|false $isBatch
+     * @param bool $isBatch
      */
     public function __construct(bool $isBatch = false)
     {
@@ -24,9 +22,9 @@ class JsonRpcRawRequest
     /**
      * @param JsonRpcRequest $item
      *
-     * @return JsonRpcRawRequest
+     * @return JsonRpcCall
      */
-    public function addRequestItem(JsonRpcRequest $item) : JsonRpcRawRequest
+    public function addRequestItem(JsonRpcRequest $item) : JsonRpcCall
     {
         $this->itemList[] = $item;
 
@@ -36,9 +34,9 @@ class JsonRpcRawRequest
     /**
      * @param \Exception $item
      *
-     * @return JsonRpcRawRequest
+     * @return JsonRpcCall
      */
-    public function addExceptionItem(\Exception $item) : JsonRpcRawRequest
+    public function addExceptionItem(\Exception $item) : JsonRpcCall
     {
         $this->itemList[] = $item;
 
@@ -46,7 +44,7 @@ class JsonRpcRawRequest
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isBatch() : bool
     {
@@ -56,7 +54,7 @@ class JsonRpcRawRequest
     /**
      * @return (JsonRpcRequest|\Exception)[]
      */
-    public function getItemtList() : array
+    public function getItemList() : array
     {
         return $this->itemList;
     }
