@@ -6,6 +6,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest
+ *
+ * @group Models
  */
 class JsonRpcRequestTest extends TestCase
 {
