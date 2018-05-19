@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Technical\Domain\Model\Exception;
+namespace Tests\Technical\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
