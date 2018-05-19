@@ -30,8 +30,10 @@ class ExceptionHandler
      *
      * @return JsonRpcResponse
      */
-    public function getJsonRpcResponseFromException(\Exception $exception, JsonRpcRequest $fromRequest = null) : JsonRpcResponse
-    {
+    public function getJsonRpcResponseFromException(
+        \Exception $exception,
+        JsonRpcRequest $fromRequest = null
+    ) : JsonRpcResponse {
         $event = new ActionEvent\OnExceptionEvent($exception, $fromRequest);
         $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
 

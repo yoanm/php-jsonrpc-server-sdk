@@ -84,8 +84,10 @@ class JsonRpcEndpoint
      *
      * @return string
      */
-    protected function getResponseString(JsonRpcCallResponse $jsonRpcCallResponse, JsonRpcCall $jsonRpcCall = null) : string
-    {
+    protected function getResponseString(
+        JsonRpcCallResponse $jsonRpcCallResponse,
+        JsonRpcCall $jsonRpcCall = null
+    ) : string {
         $response = $this->jsonRpcCallSerializer->serialize($jsonRpcCallResponse);
 
         $event = new AcknowledgeEvent\OnResponseSendingEvent($response, $jsonRpcCallResponse, $jsonRpcCall);
