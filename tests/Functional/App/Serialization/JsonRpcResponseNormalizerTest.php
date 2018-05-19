@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\App\Creator\JsonRpcResponseNormalizer;
+namespace Tests\Functional\App\Creator;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
@@ -8,8 +8,10 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer
+ *
+ * @group JsonRpcResponseNormalizer
  */
-class NormalizeTest extends TestCase
+class JsonRpcResponseNormalizerTest extends TestCase
 {
     const EXPECTED_KEY_JSONRPC_VERSION = 'jsonrpc';
     const EXPECTED_KEY_ID = 'id';
