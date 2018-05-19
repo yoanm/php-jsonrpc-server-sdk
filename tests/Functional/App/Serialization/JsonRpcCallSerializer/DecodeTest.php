@@ -1,30 +1,39 @@
 <?php
-namespace Tests\Functional\Infra\Serialization\RawRequestSerializer;
+namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
-use Yoanm\JsonRpcServer\App\Serialization\RequestDenormalizer;
+use Tests\Functional\App\Serialization\Helper\RequestStringProviderTrait;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
-use Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer;
 
 /**
- * @covers \Yoanm\JsonRpcServer\Infra\Serialization\RawRequestSerializer
+ * @covers \Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer
+ *
+ * @group JsonRpcCallSerializer
+ * @group Serialization
  */
 class DecodeTest extends TestCase
 {
     use RequestStringProviderTrait;
 
-    /** @var RawRequestSerializer */
-    private $rawRequestSerializer;
-    /** @var RequestDenormalizer|ObjectProphecy */
-    private $requestDenormalizer;
+    /** @var JsonRpcCallSerializer */
+    private $jsonRpcCallSerializer;
+    /** @var JsonRpcCallDenormalizer|ObjectProphecy */
+    private $callDenormalizer;
+    /** @var JsonRpcCallResponseNormalizer|ObjectProphecy */
+    private $callResponseNormalizer;
 
     protected function setUp()
     {
-        $this->requestDenormalizer = $this->prophesize(RequestDenormalizer::class);
-        $this->rawRequestSerializer = new RawRequestSerializer(
-            $this->requestDenormalizer->reveal()
+        $this->callDenormalizer = $this->prophesize(JsonRpcCallDenormalizer::class);
+        $this->callResponseNormalizer = $this->prophesize(JsonRpcCallResponseNormalizer::class);
+        $this->jsonRpcCallSerializer = new JsonRpcCallSerializer(
+            $this->callDenormalizer->reveal(),
+            $this->callResponseNormalizer->reveal()
         );
     }
 
@@ -36,7 +45,7 @@ class DecodeTest extends TestCase
     public function testShouldHandle($content)
     {
         $this->assertTrue(is_array(
-            $this->rawRequestSerializer->decode($content)
+            $this->jsonRpcCallSerializer->decode($content)
         ));
     }
 
@@ -44,7 +53,7 @@ class DecodeTest extends TestCase
     {
         $this->expectException(JsonRpcParseErrorException::class);
 
-        $this->rawRequestSerializer->decode('not-a-json;1:2")');
+        $this->jsonRpcCallSerializer->decode('not-a-json;1:2")');
     }
 
     /**
@@ -56,7 +65,7 @@ class DecodeTest extends TestCase
     {
         $this->expectException(JsonRpcInvalidRequestException::class);
 
-        $this->rawRequestSerializer->decode($invalidContent);
+        $this->jsonRpcCallSerializer->decode($invalidContent);
     }
 
     public function provideNotAnArrayRequestStringData()
