@@ -181,6 +181,8 @@ class SimpleDispatcher implements JsonRpcServerDispatcherInterface
 Then bind your listeners to your dispatcher:
 ```php
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnRequestReceivedEvent;
+use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnResponseSendingEvent;
+use Yoanm\JsonRpcServer\Domain\Event\Action\OnMethodSuccessEvent;
 
 $dispatcher = new SimpleDispatcher();
 
@@ -192,7 +194,9 @@ $listener = function ($event, $eventName) {
     );
 };
 
-$dispatcher->addJsonRpcListener($OnRequestReceivedEvent::EVENT_NAME, $listener);
+$dispatcher->addJsonRpcListener(OnRequestReceivedEvent::EVENT_NAME, $listener);
+$dispatcher->addJsonRpcListener(OnResponseSendingEvent::EVENT_NAME, $listener);
+$dispatcher->addJsonRpcListener(OnMethodSuccessEvent::EVENT_NAME, $listener);
 ```
 
 And bind dispatcher like following :
@@ -213,6 +217,7 @@ use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
 
 $validator = function (ValidateParamsEvent $event) {
     $method = $event->getMethod();
+    $paramList = $event->getParamList();
     if (/** Select the right method */) {
         // Create your violations based on what you want
         $violation = "???";
