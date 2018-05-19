@@ -16,7 +16,7 @@ build:
         stop_on_failure: true
         override:
             - php-scrutinizer-run --enable-security-analysis
-#            - command -v phpcs phpcs-run
+            - command -v phpcs phpcs-run # Seem that it's mandatory to have in order to allow scrutinizer to detect the use of "phpcs-run"
             -
                 command: make codestyle
                 analysis:

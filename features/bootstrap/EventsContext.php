@@ -100,10 +100,8 @@ class EventsContext implements Context
     /**
      * @Given /^I will replace "Action\\OnException" exception by a "(?P<count>-?\d+)" JSON-RPC exception with following message:$/
      */
-    public function iWillReplaceOnexceptionExceptionByAJsonRpcExceptionWithFollowingMessage(
-        $jsonRpcErrorCode,
-        PyStringNode $string
-    ) {
+    public function iWillReplaceOnexceptionExceptionByAJsonRpcExceptionWithFollowingMessage($jsonRpcErrorCode, PyStringNode $string)
+    {
         $this->dispatcher->addJsonRpcListener(
             OnExceptionEvent::EVENT_NAME,
             function (OnExceptionEvent $event) use ($jsonRpcErrorCode, $string) {
@@ -115,9 +113,8 @@ class EventsContext implements Context
     /**
      * @Given /^I will replace "Action\\OnMethodFailure" exception by an exception with following message:$/
      */
-    public function iWillReplaceOnmethodfailureExceptionByAnExceptionWithFollowingMessage(
-        PyStringNode $newExceptionMessage
-    ) {
+    public function iWillReplaceOnmethodfailureExceptionByAnExceptionWithFollowingMessage(PyStringNode $newExceptionMessage)
+    {
         $this->dispatcher->addJsonRpcListener(
             OnMethodFailureEvent::EVENT_NAME,
             function (OnMethodFailureEvent $event) use ($newExceptionMessage) {
@@ -129,10 +126,8 @@ class EventsContext implements Context
     /**
      * @Given /^I will replace "Action\\OnMethodFailure" exception by a "(?P<count>-?\d+)" JSON-RPC exception with following message:$/
      */
-    public function iWillReplaceOnmethodfailureExceptionByAJsonRpcExceptionWithFollowingMessage(
-        $jsonRpcErrorCode,
-        PyStringNode $string
-    ) {
+    public function iWillReplaceOnmethodfailureExceptionByAJsonRpcExceptionWithFollowingMessage($jsonRpcErrorCode, PyStringNode $string)
+    {
         $this->dispatcher->addJsonRpcListener(
             OnMethodFailureEvent::EVENT_NAME,
             function (OnMethodFailureEvent $event) use ($jsonRpcErrorCode, $string) {
