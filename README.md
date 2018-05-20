@@ -139,9 +139,10 @@ $responseString = $endpoint->index($requestString);
    {"jsonrpc":"2.0","id":1,"result":12345}
    ```
 ### Events dispatch example
-*You can use [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php) as example*
 
 #### Simple event dispatcher
+*You can use [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php) as example*
+
 ```php
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
