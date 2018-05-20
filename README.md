@@ -14,8 +14,8 @@ See [JSON-RPC server symfony bundle](https://github.com/yoanm/symfony-jsonrpc-ht
 ## How to use
 
 Sdk requires only two things : 
- - A method resolver : must implement [MethodResolverInterface](./src/Domain/Model/MethodResolverInterface.php), resolving logic's is your own.
- - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/Model/JsonRpcMethodInterface.php)
+ - A method resolver : must implement [JsonRpcMethodResolverInterface](./src/Domain/JsonRpcMethodResolverInterface.php), resolving logic's is your own.
+ - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/JsonRpcMethodInterface.php)
  
 Sdk optionally provide :
  - Events dispatch
