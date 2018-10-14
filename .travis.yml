@@ -19,7 +19,7 @@ matrix:
 
 before_install:
   # remove xdebug to speed up build
-  - phpenv config-rm xdebug.ini
+  - phpenv config-rm xdebug.ini || true
 
 install:
   - make build
