@@ -17,7 +17,7 @@ abstract class AbstractOnMethodEvent implements JsonRpcServerEvent
 
     /**
      * @param JsonRpcMethodInterface $method
-     * @param JsonRpcRequest|null    $jsonRpcRequest
+     * @param JsonRpcRequest         $jsonRpcRequest
      */
     public function __construct(JsonRpcMethodInterface $method, JsonRpcRequest $jsonRpcRequest)
     {

@@ -72,11 +72,11 @@ class JsonRpcCallSerializer
      */
     public function decode(string $requestContent) : array
     {
-        $decodedContent = json_decode($requestContent, true);
+        $decodedContent = \json_decode($requestContent, true);
 
         // Check if parsing is ok => Parse error
-        if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new JsonRpcParseErrorException($requestContent, json_last_error(), json_last_error_msg());
+        if (\JSON_ERROR_NONE !== \json_last_error()) {
+            throw new JsonRpcParseErrorException($requestContent, \json_last_error(), json_last_error_msg());
         }
 
         // Content must be either an array (normal request) or an array of array (batch request)
@@ -95,6 +95,8 @@ class JsonRpcCallSerializer
      * @param array $decodedContent
      *
      * @return JsonRpcCall
+     *
+     * @throws \Exception
      */
     public function denormalize(array $decodedContent) : JsonRpcCall
     {
@@ -106,7 +108,7 @@ class JsonRpcCallSerializer
      *
      * @return array|null
      */
-    public function normalize(JsonRpcCallResponse $jsonRpcCallResponse)
+    public function normalize(JsonRpcCallResponse $jsonRpcCallResponse) : ?array
     {
         return $this->callResponseNormalizer->normalize($jsonRpcCallResponse);
     }

@@ -9,7 +9,8 @@ use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 interface JsonRpcServerDispatcherInterface
 {
     /**
-     * @param JsonRpcServerEvent $event
+     * @param string                  $eventName
+     * @param JsonRpcServerEvent|null $event
      *
      * @return void
      */

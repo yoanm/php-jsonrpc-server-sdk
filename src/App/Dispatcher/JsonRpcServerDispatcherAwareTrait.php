@@ -23,8 +23,10 @@ trait JsonRpcServerDispatcherAwareTrait
     /**
      * @param string                  $eventName
      * @param JsonRpcServerEvent|null $event
+     *
+     * @return void
      */
-    protected function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null)
+    protected function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null) : void
     {
         // Do nothing if dispatcher is not there
         if ($this->jsonRpcServerDispatcher) {

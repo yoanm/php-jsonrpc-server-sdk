@@ -24,7 +24,7 @@ class JsonRpcMethodNotFoundException extends JsonRpcException
     /**
      * @return string
      */
-    public function getMethodName()
+    public function getMethodName() : string
     {
         return $this->methodName;
     }

@@ -36,7 +36,7 @@ class JsonRpcInvalidRequestException extends JsonRpcException
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription() : string
     {
         return $this->description;
     }

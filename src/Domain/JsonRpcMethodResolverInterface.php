@@ -9,7 +9,7 @@ interface JsonRpcMethodResolverInterface
     /**
      * @param string $methodName
      *
-     * @return JsonRpcMethodInterface|null A valid JSON-RPC method, anything else will be considered as invalid
+     * @return JsonRpcMethodInterface|null A valid JSON-RPC method or null if not resolved
      */
     public function resolve(string $methodName) : ?JsonRpcMethodInterface;
 }

@@ -38,8 +38,10 @@ class JsonRpcRequestHandler
 
     /**
      * @param JsonRpcMethodParamsValidatorInterface $methodParamsValidator
+     *
+     * @return void
      */
-    public function setMethodParamsValidator(JsonRpcMethodParamsValidatorInterface $methodParamsValidator)
+    public function setMethodParamsValidator(JsonRpcMethodParamsValidatorInterface $methodParamsValidator) : void
     {
         $this->methodParamsValidator = $methodParamsValidator;
     }
@@ -94,9 +96,11 @@ class JsonRpcRequestHandler
      * @param JsonRpcRequest $jsonRpcRequest
      * @param JsonRpcMethodInterface $method
      *
+     * @return void
+     *
      * @throws JsonRpcInvalidParamsException
      */
-    private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method)
+    private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method) : void
     {
         if (null !== $this->methodParamsValidator) {
             $violationList = $this->methodParamsValidator->validate($jsonRpcRequest, $method);

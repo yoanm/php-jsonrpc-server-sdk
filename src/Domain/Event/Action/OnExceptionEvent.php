@@ -39,7 +39,7 @@ class OnExceptionEvent implements JsonRpcServerEvent
     /**
      * @return null|JsonRpcRequest
      */
-    public function getFromJsonRpcRequest()
+    public function getFromJsonRpcRequest() : ?JsonRpcRequest
     {
         return $this->fromJsonRpcRequest;
     }
