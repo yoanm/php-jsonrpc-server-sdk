@@ -7,19 +7,19 @@
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/yoanm/jsonrpc-server-sdk.svg)](https://packagist.org/packages/yoanm/jsonrpc-server-sdk) [![Packagist PHP version](https://img.shields.io/packagist/php-v/yoanm/jsonrpc-server-sdk.svg)](https://packagist.org/packages/yoanm/jsonrpc-server-sdk)
 
-Simple server SDK to convert a json-rpc request string into json-rpc response string
+Simple server SDK to convert a json-rpc request string into json-rpc response string.
+
+See [JSON-RPC server symfony bundle](https://github.com/yoanm/symfony-jsonrpc-http-server) for automatic dependency injection.
 
 ## How to use
 
 Sdk requires only two things : 
- - A method resolver : must implement [MethodResolverInterface](./src/Domain/Model/MethodResolverInterface.php), resolving logic's is your own.
- - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/Model/JsonRpcMethodInterface.php)
+ - A method resolver : must implement [JsonRpcMethodResolverInterface](./src/Domain/JsonRpcMethodResolverInterface.php), resolving logic's is your own.
+ - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/JsonRpcMethodInterface.php)
  
 Sdk optionally provide :
  - Events dispatch
  - Params validation (thanks to event dispatching)
- 
-:warning: For dependency injection see [JSON-RPC server symfony bundle](https://github.com/yoanm/symfony-jsonrpc-http-server)
 
 ### Simple Example
 #### JSON-RPC Method
@@ -139,9 +139,10 @@ $responseString = $endpoint->index($requestString);
    {"jsonrpc":"2.0","id":1,"result":12345}
    ```
 ### Events dispatch example
-*You can use [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php) as example*
 
 #### Simple event dispatcher
+*You can use [the one used for behat tests](./features/bootstrap/App/BehatRequestLifecycleDispatcher.php) as example*
+
 ```php
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
@@ -205,6 +206,74 @@ $endpoint->setJsonRpcServerDispatcher($dispatcher);
 $requestHandler->setJsonRpcServerDispatcher($dispatcher);
 $exceptionHandler->setJsonRpcServerDispatcher($dispatcher);
 ```
+
+#### Events dispatched 
+
+##### Basic request lifecycle
+
+ - `json_rpc_server_skd.on_request_received` / [`Acknowledge\OnRequestReceivedEvent`](./src/Domain/Event/Acknowledge/OnRequestReceivedEvent.php)
+   
+   Dispatched when a request has been passed to the endpoint and successfully deserialized.
+
+   > N.B. : Lonely cases where this event is not dispatched are when the request string is not a valid JSON-RPC request. 
+   > 
+   > It include :
+   > - Parse error exception (malformed json string)
+   > - For simple request only, in case of Invalid request (not an object / missing required properties / ...). 
+   >   
+   >   *:warning: For batch request containing Invalid SubRequest, this event will still be dispatched*
+ 
+ - `json_rpc_server_skd.validate_params` / [`Action\ValidateParamsEvent`](./src/Domain/Event/Action/ValidateParamsEvent.php)
+   
+   Dispatched before JSON-RPC method will be called, in order to validate params.
+ 
+ - Either
+ 
+   - `json_rpc_server_skd.on_method_success` / [`Action\OnMethodSuccessEvent`](./src/Domain/Event/Action/OnMethodSuccessEvent.php)
+   
+     Dispatched **only in case JSON-RPC method has been successfully executed**.
+
+   - `json_rpc_server_skd.on_method_failure` / [`Action\OnMethodFailureEvent`](./src/Domain/Event/Action/OnMethodFailureEvent.php)
+
+     Dispatched **only in case JSON-RPC method throw an exception during execution**.
+ 
+ - `json_rpc_server_skd.on_response_sending` / [`Acknowledge\OnResponseSendingEvent`](./src/Domain/Event/Acknowledge/OnResponseSendingEvent.php)
+   
+   Dispatched when a response has been successfully serialized by the endpoint and will be returned.
+
+##### Additional events
+
+###### Batch request
+- `json_rpc_server_skd.on_batch_sub_request_processing` / [`Acknowledge\OnBatchSubRequestProcessingEvent`](./src/Domain/Event/Acknowledge/OnBatchSubRequestProcessingEvent.php)
+   
+   Dispatched before that a sub request will be processed.
+
+ - `json_rpc_server_skd.on_batch_sub_request_processed` / [`Acknowledge\OnBatchSubRequestProcessedEvent`](./src/Domain/Event/Acknowledge/OnBatchSubRequestProcessedEvent.php)
+   
+   Dispatched after that a sub request has been processed (regardless of the success or failure of the sub request method execution).
+   
+###### Exception
+`json_rpc_server_skd.on_exception` / [`Action\OnExceptionEvent`](./src/Domain/Event/Action/OnExceptionEvent.php)
+   
+Dispatched when an exception occurred during sdk execution
+
+##### Action vs Acknowledge events
+
+###### Acknowledge
+They have only an acknowledge purpose.
+
+They are grouped under `Yoanm\JsonRpcServer\Domain\Acknowledge` namespace.
+
+###### Action
+They allow you to override stuffs.
+
+They are grouped under `Yoanm\JsonRpcServer\Domain\Acknowledge` namespace.
+
+Here, the list : 
+ - [`Action\ValidateParamsEvent`](./src/Domain/Event/Action/OnMethodSuccessEvent.php) allow you to add/remove/change validation violations.
+ - [`Action\OnMethodSuccessEvent`](./src/Domain/Event/Action/OnMethodSuccessEvent.php) allow you to update/change the result of the method.
+ - [`Action\OnMethodFailureEvent`](./src/Domain/Event/Action/OnMethodFailureEvent.php) allow you to update/change the exception thrown by the method.
+ - [`Action\OnExceptionEvent`](./src/Domain/Event/Action/OnExceptionEvent.php) allow you to update/change the exception thrown.
 
 ### Params validation example
 **Params validation is based on event dispatching and so, requires dispatcher configuration like described in previous section**
