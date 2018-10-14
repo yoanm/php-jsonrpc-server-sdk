@@ -7,6 +7,7 @@ use Yoanm\JsonRpcServer\Domain\Event\Action as ActionEvent;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodParamsValidatorInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
@@ -22,6 +23,8 @@ class JsonRpcRequestHandler
     private $methodResolver;
     /** @var ResponseCreator */
     private $responseCreator;
+    /** @var JsonRpcMethodParamsValidatorInterface|null */
+    private $methodParamsValidator = null;
 
     /**
      * @param JsonRpcMethodResolverInterface $methodResolver
@@ -34,7 +37,17 @@ class JsonRpcRequestHandler
     }
 
     /**
-     * @param JsonRpcRequest $item
+     * @param JsonRpcMethodParamsValidatorInterface $methodParamsValidator
+     *
+     * @return void
+     */
+    public function setMethodParamsValidator(JsonRpcMethodParamsValidatorInterface $methodParamsValidator) : void
+    {
+        $this->methodParamsValidator = $methodParamsValidator;
+    }
+
+    /**
+     * @param JsonRpcRequest $jsonRpcRequest
      *
      * @return JsonRpcResponse
      *
@@ -49,6 +62,7 @@ class JsonRpcRequestHandler
 
         try {
             $result = $method->apply($jsonRpcRequest->getParamList());
+
             $event = new ActionEvent\OnMethodSuccessEvent($result, $method, $jsonRpcRequest);
         } catch (\Exception $exception) {
             $event = new ActionEvent\OnMethodFailureEvent($exception, $method, $jsonRpcRequest);
@@ -56,16 +70,7 @@ class JsonRpcRequestHandler
 
         $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
 
-        if ($event instanceof ActionEvent\OnMethodSuccessEvent) {
-            $response = $this->responseCreator->createResultResponse($event->getResult(), $event->getJsonRpcRequest());
-        } else {
-            $response = $this->responseCreator->createErrorResponse(
-                $event->getException(),
-                $event->getJsonRpcRequest()
-            );
-        }
-
-        return $response;
+        return $this->createResponse($event);
     }
 
     /**
@@ -87,19 +92,40 @@ class JsonRpcRequestHandler
     }
 
     /**
+     *
      * @param JsonRpcRequest $jsonRpcRequest
      * @param JsonRpcMethodInterface $method
      *
+     * @return void
+     *
      * @throws JsonRpcInvalidParamsException
      */
-    private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method)
+    private function validateParamList(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method) : void
     {
-        $event = new ActionEvent\ValidateParamsEvent($method, $jsonRpcRequest->getParamList() ?? []);
+        if (null !== $this->methodParamsValidator) {
+            $violationList = $this->methodParamsValidator->validate($jsonRpcRequest, $method);
 
-        $this->dispatchJsonRpcEvent($event::EVENT_NAME, $event);
+            if (count($violationList)) {
+                throw new JsonRpcInvalidParamsException($violationList);
+            }
+        }
+    }
 
-        if (count($event->getViolationList())) {
-            throw new JsonRpcInvalidParamsException($event->getViolationList());
+    /**
+     * @param ActionEvent\AbstractOnMethodEvent $event
+     *
+     * @return JsonRpcResponse
+     */
+    protected function createResponse(ActionEvent\AbstractOnMethodEvent $event) : JsonRpcResponse
+    {
+        if ($event instanceof ActionEvent\OnMethodSuccessEvent) {
+            return $this->responseCreator->createResultResponse($event->getResult(), $event->getJsonRpcRequest());
+        } else {
+            /** @var $event ActionEvent\OnMethodFailureEvent */
+            return $this->responseCreator->createErrorResponse(
+                $event->getException(),
+                $event->getJsonRpcRequest()
+            );
         }
     }
 }

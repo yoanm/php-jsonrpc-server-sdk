@@ -16,8 +16,10 @@ use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
-use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodParamsValidatorInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 class FakeEndpointCreator
@@ -53,29 +55,21 @@ class FakeEndpointCreator
         $requestHandler = new JsonRpcRequestHandler($methodResolver, $responseCreator);
         $exceptionHandler = new ExceptionHandler($responseCreator);
         $endpoint = new JsonRpcEndpoint($jsonRpcSerializer, $requestHandler, $exceptionHandler);
+        $requestHandler->setMethodParamsValidator(
+            new class implements JsonRpcMethodParamsValidatorInterface
+            {
+                public function validate(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method) : array
+                {
+                    if (!$method instanceof AbstractMethod) {
+                        return [];
+                    }
+
+                    return $method->validateParams($jsonRpcRequest->getParamList());
+                }
+            }
+        );
 
         if ($dispatcher) {
-            /** Add basic params validation */
-            $dispatcher->addJsonRpcListener(
-                ValidateParamsEvent::EVENT_NAME,
-                function (ValidateParamsEvent $event) {
-                    $method = $event->getMethod();
-                    if (!$method instanceof AbstractMethod) {
-                        return;
-                    }
-                    $extraViolationList = $method->validateParams($event->getParamList());
-                    if (count($extraViolationList)) {
-                        // Append violations to current list
-                        $event->setViolationList(
-                            array_merge(
-                                $event->getViolationList(),
-                                $extraViolationList
-                            )
-                        );
-                    }
-                }
-            );
-
             $endpoint->setJsonRpcServerDispatcher($dispatcher);
             $requestHandler->setJsonRpcServerDispatcher($dispatcher);
             $exceptionHandler->setJsonRpcServerDispatcher($dispatcher);

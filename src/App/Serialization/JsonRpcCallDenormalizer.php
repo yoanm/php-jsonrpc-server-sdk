@@ -64,9 +64,11 @@ class JsonRpcCallDenormalizer
      * @param JsonRpcCall $jsonRpcCall
      * @param array       $decodedContent
      *
+     * @return void
+     *
      * @throws \Exception
      */
-    private function populateItem(JsonRpcCall $jsonRpcCall, array $decodedContent)
+    private function populateItem(JsonRpcCall $jsonRpcCall, array $decodedContent) : void
     {
         // convert to array in any cases for simpler use
         $itemList = $jsonRpcCall->isBatch() ? $decodedContent : [$decodedContent];

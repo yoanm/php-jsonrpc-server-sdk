@@ -9,7 +9,6 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
  */
 class JsonRpcRequestDenormalizer
 {
-
     const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
     const KEY_METHOD = 'method';
@@ -44,9 +43,10 @@ class JsonRpcRequestDenormalizer
     /**
      * @param JsonRpcRequest $request
      * @param array $item
-     * @return array
+     *
+     * @return void
      */
-    protected function bindIdIfProvided(JsonRpcRequest $request, array $item)
+    protected function bindIdIfProvided(JsonRpcRequest $request, array $item) : void
     {
         /** If no id defined => request is a notification */
         if (isset($item[self::KEY_ID])) {
@@ -62,14 +62,15 @@ class JsonRpcRequestDenormalizer
      * @param JsonRpcRequest $request
      * @param array          $item
      *
+     * @return void
+     *
      * @throws JsonRpcInvalidRequestException
      */
-    protected function bindParamListIfProvided(JsonRpcRequest $request, array $item)
+    protected function bindParamListIfProvided(JsonRpcRequest $request, array $item) : void
     {
         if (isset($item[self::KEY_PARAM_LIST])) {
-            $paramList = $item[self::KEY_PARAM_LIST];
-            $this->validateArray($paramList, 'Parameter list must be an array');
-            $request->setParamList($paramList);
+            $this->validateArray($item[self::KEY_PARAM_LIST], 'Parameter list must be an array');
+            $request->setParamList($item[self::KEY_PARAM_LIST]);
         }
     }
 
@@ -77,26 +78,26 @@ class JsonRpcRequestDenormalizer
      * @param mixed  $value
      * @param string $errorDescription
      *
-     * @return array
+     * @return void
      *
      * @throws JsonRpcInvalidRequestException
      */
-    private function validateArray($value, string $errorDescription) : array
+    private function validateArray($value, string $errorDescription) : void
     {
         if (!is_array($value)) {
             throw new JsonRpcInvalidRequestException($value, $errorDescription);
         }
-
-        return $value;
     }
 
     /**
      * @param array  $item
      * @param string $key
      *
+     * @return void
+     *
      * @throws JsonRpcInvalidRequestException
      */
-    private function validateRequiredKey(array $item, string $key)
+    private function validateRequiredKey(array $item, string $key) : void
     {
         if (!isset($item[$key])) {
             throw new JsonRpcInvalidRequestException(

@@ -1,4 +1,4 @@
-Feature: Ensure JSON-RPC specifications basics
+Feature: Ensure JSON-RPC specifications
   See http://www.jsonrpc.org/specification#examples
 
   Scenario: rpc call with positional parameters

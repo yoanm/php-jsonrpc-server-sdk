@@ -9,6 +9,7 @@ use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
 use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodParamsValidatorInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
@@ -48,25 +49,24 @@ class JsonRpcRequestHandlerWithDispatcherTest extends TestCase
     {
         $request = new JsonRpcRequest('json-rpc-version', 'method');
         $myViolation = ['violation'];
-        /** @var JsonRpcResponse|ObjectProphecy $response */
-        $response = $this->prophesize(JsonRpcResponse::class);
+        $violationList = [$myViolation];
+
+        /** @var JsonRpcMethodParamsValidatorInterface $methodParamsValidator */
+        $methodParamsValidator = $this->prophesize(JsonRpcMethodParamsValidatorInterface::class);
+        /** @var JsonRpcMethodInterface $method */
+        $method = $this->prophesize(JsonRpcMethodInterface::class);
 
         $this->methodResolver->resolve(Argument::cetera())
-            ->willReturn($this->prophesize(JsonRpcMethodInterface::class)->reveal())
+            ->willReturn($method->reveal())
             ->shouldBeCalled()
         ;
 
-        $this->jsonRpcServerDispatcher->dispatchJsonRpcEvent(
-            ValidateParamsEvent::EVENT_NAME,
-            Argument::type(ValidateParamsEvent::class)
-        )
-            ->will(function ($args) use ($myViolation) {
-                /** @var ValidateParamsEvent $event */
-                $event = $args[1];
-                $event->addViolation($myViolation);
-            })
+        $methodParamsValidator->validate($request, $method)
+            ->willReturn($violationList)
             ->shouldBeCalled()
         ;
+
+        $this->requestHandler->setMethodParamsValidator($methodParamsValidator->reveal());
 
         $this->expectException(JsonRpcInvalidParamsException::class);
 

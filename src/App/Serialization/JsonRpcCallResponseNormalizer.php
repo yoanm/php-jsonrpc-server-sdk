@@ -24,7 +24,7 @@ class JsonRpcCallResponseNormalizer
      *
      * @return array|null
      */
-    public function normalize(JsonRpcCallResponse $jsonRpcCallResponse)
+    public function normalize(JsonRpcCallResponse $jsonRpcCallResponse) : ?array
     {
         $resultList = [];
         foreach ($jsonRpcCallResponse->getResponseList() as $response) {

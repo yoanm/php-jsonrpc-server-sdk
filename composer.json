@@ -15,7 +15,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Yoanm\\JsonRpcServer": "src"
+            "Yoanm\\JsonRpcServer\\": "src"
         }
     },
     "autoload-dev": {
@@ -25,12 +25,18 @@
         }
     },
     "require": {
-        "php": ">7.0"
+        "php": ">=7.1",
+        "ext-json": "*"
+    },
+    "suggest": {
+        "yoanm/jsonrpc-server-doc-sdk": "Create documenation for your server",
+        "yoanm/symfony-jsonrpc-http-server": "JSON-RPC HTTP Symfony server"
     },
     "require-dev": {
         "behat/behat": "~3.0",
         "squizlabs/php_codesniffer": "3.*",
         "phpunit/phpunit": "^6.0 || ^7.0",
-        "yoanm/php-unit-extended": "^1.0"
+        "yoanm/php-unit-extended": "^1.0",
+        "yoanm/jsonrpc-server-doc-sdk": "dev-release/1.0.0"
     }
 }

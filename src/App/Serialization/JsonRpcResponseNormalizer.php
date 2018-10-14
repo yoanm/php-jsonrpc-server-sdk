@@ -23,7 +23,7 @@ class JsonRpcResponseNormalizer
      *
      * @return array|null
      */
-    public function normalize(JsonRpcResponse $response)
+    public function normalize(JsonRpcResponse $response) : ?array
     {
         // Notifications must not have a response, even if they are on error
         if ($response->isNotification()) {
@@ -51,7 +51,7 @@ class JsonRpcResponseNormalizer
      *
      * @return array
      */
-    private function normalizeError(JsonRpcExceptionInterface $error)
+    private function normalizeError(JsonRpcExceptionInterface $error) : array
     {
         $normalizedError = [
             self::SUB_KEY_ERROR_CODE => $error->getErrorCode(),

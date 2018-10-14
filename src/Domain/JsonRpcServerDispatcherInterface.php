@@ -9,11 +9,12 @@ use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 interface JsonRpcServerDispatcherInterface
 {
     /**
-     * @param JsonRpcServerEvent $event
+     * @param string                  $eventName
+     * @param JsonRpcServerEvent|null $event
      *
      * @return void
      */
-    public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null);
+    public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null) : void;
 
     /**
      * @param string   $eventName
@@ -21,5 +22,5 @@ interface JsonRpcServerDispatcherInterface
      *
      * @return void
      */
-    public function addJsonRpcListener(string $eventName, $listener);
+    public function addJsonRpcListener(string $eventName, $listener) : void;
 }

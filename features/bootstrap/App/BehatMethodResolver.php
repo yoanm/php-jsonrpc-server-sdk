@@ -15,7 +15,7 @@ class BehatMethodResolver implements JsonRpcMethodResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(string $methodName)
+    public function resolve(string $methodName) : ?JsonRpcMethodInterface
     {
         return array_key_exists($methodName, $this->methodList)
             ? $this->methodList[$methodName]

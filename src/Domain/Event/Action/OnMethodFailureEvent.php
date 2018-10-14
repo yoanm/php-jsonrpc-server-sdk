@@ -7,7 +7,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 /**
  * Class OnMethodFailureEvent
  *
- * Dispatched only in case JSON-RPC method thrown an exception.
+ * Dispatched only in case JSON-RPC method throw an exception during execution
  */
 class OnMethodFailureEvent extends AbstractOnMethodEvent
 {

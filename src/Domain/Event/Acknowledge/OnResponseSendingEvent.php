@@ -55,7 +55,7 @@ class OnResponseSendingEvent implements JsonRpcServerEvent
     /**
      * @return null|JsonRpcCall
      */
-    public function getJsonRpcCall()
+    public function getJsonRpcCall() : ?JsonRpcCall
     {
         return $this->jsonRpcCall;
     }
