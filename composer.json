@@ -15,9 +15,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Yoanm\\JsonRpcServer\\App\\": "src/App",
-            "Yoanm\\JsonRpcServer\\Domain\\": "src/Domain",
-            "Yoanm\\JsonRpcServer\\Infra\\": "src/Infra"
+            "Yoanm\\JsonRpcServer": "src"
         }
     },
     "autoload-dev": {
