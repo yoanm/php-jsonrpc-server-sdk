@@ -7,7 +7,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 /**
  * Class OnExceptionEvent
  *
- * Dispatched when a response has been successfully serialized by the endpoint and will be returned
+ * Dispatched when an exception occurred during sdk execution (For method execution exception see OnMethodFailureEvent)
  */
 class OnExceptionEvent implements JsonRpcServerEvent
 {

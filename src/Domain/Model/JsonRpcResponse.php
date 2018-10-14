@@ -98,7 +98,7 @@ class JsonRpcResponse
     /**
      * @return JsonRpcExceptionInterface|null
      */
-    public function getError()
+    public function getError() : ?JsonRpcExceptionInterface
     {
         return $this->error;
     }

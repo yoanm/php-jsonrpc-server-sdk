@@ -131,7 +131,7 @@ class JsonRpcEndpoint
     {
         try {
             if ($item instanceof \Exception) {
-                // Exception will be catched just below and converted to response
+                // Exception will be caught just below and converted to response
                 throw $item;
             }
 

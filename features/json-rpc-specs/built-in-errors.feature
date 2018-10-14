@@ -1,5 +1,6 @@
-Feature: Ensure JSON-RPC specifications
+Feature: Ensure JSON-RPC errors specifications
   Verify that each built-in errors are correctly managed
+  See http://www.jsonrpc.org/specification
 
   Scenario: Parse error (-32700)
     When I send following payload:

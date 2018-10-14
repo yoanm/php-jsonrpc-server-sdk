@@ -7,7 +7,7 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 /**
  * Class OnMethodSuccessEvent
  *
- * Dispatched only in case JSON-RPC method return a response
+ * Dispatched only in case JSON-RPC method has been successfully executed.
  */
 class OnMethodSuccessEvent extends AbstractOnMethodEvent
 {

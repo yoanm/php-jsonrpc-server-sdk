@@ -12,9 +12,8 @@ Feature: Events dispatched
       "method": "basic-method"
     }
     """
-    Then 4 events should have been dispatched
+    Then 3 events should have been dispatched
     And a "Acknowledge\OnRequestReceived" event named "json_rpc_server_skd.on_request_received" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodSuccess" event named "json_rpc_server_skd.on_method_success" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
 
@@ -41,18 +40,15 @@ Feature: Events dispatched
       }
     ]
     """
-    Then 14 events should have been dispatched
+    Then 11 events should have been dispatched
     And a "Acknowledge\OnRequestReceived" event named "json_rpc_server_skd.on_request_received" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessing" event named "json_rpc_server_skd.on_batch_sub_request_processing" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodSuccess" event named "json_rpc_server_skd.on_method_success" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessing" event named "json_rpc_server_skd.on_batch_sub_request_processing" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodSuccess" event named "json_rpc_server_skd.on_method_success" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessing" event named "json_rpc_server_skd.on_batch_sub_request_processing" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodSuccess" event named "json_rpc_server_skd.on_method_success" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
@@ -106,9 +102,8 @@ Feature: Events dispatched
       "method": "method-that-throw-an-exception-during-execution"
     }
     """
-    Then 4 events should have been dispatched
+    Then 3 events should have been dispatched
     And a "Acknowledge\OnRequestReceived" event named "json_rpc_server_skd.on_request_received" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodFailure" event named "json_rpc_server_skd.on_method_failure" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
 
@@ -135,18 +130,15 @@ Feature: Events dispatched
       }
     ]
     """
-    Then 14 events should have been dispatched
+    Then 11 events should have been dispatched
     And a "Acknowledge\OnRequestReceived" event named "json_rpc_server_skd.on_request_received" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessing" event named "json_rpc_server_skd.on_batch_sub_request_processing" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodFailure" event named "json_rpc_server_skd.on_method_failure" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessing" event named "json_rpc_server_skd.on_batch_sub_request_processing" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodFailure" event named "json_rpc_server_skd.on_method_failure" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessing" event named "json_rpc_server_skd.on_batch_sub_request_processing" should have been dispatched
-    And a "Action\ValidateParams" event named "json_rpc_server_skd.validate_params" should have been dispatched
     And a "Action\OnMethodFailure" event named "json_rpc_server_skd.on_method_failure" should have been dispatched
     And a "Acknowledge\OnBatchSubRequestProcessed" event named "json_rpc_server_skd.on_batch_sub_request_processed" should have been dispatched
     And a "Acknowledge\OnResponseSending" event named "json_rpc_server_skd.on_response_sending" should have been dispatched
