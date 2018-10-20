@@ -15,14 +15,14 @@ build:
     tests:
         stop_on_failure: true
         override:
-            - php-scrutinizer-run --enable-security-analysis
-            - make codestyle
             -
                 command: make coverage
                 idle_timeout: 1200
                 coverage:
                     file: 'build/coverage/clover.xml'
                     format: 'php-clover'
+            - php-scrutinizer-run --enable-security-analysis
+            - make codestyle
     cache:
         directories:
             - ~/.composer
