@@ -298,5 +298,19 @@ $validator = function (ValidateParamsEvent $event) {
 $dispatcher->addJsonRpcListener(ValidateParamsEvent::EVENT_NAME, $validator);
 ```
 
+## Makefile
+```bash
+# Install and configure project
+make build
+# Launch tests (PHPUnit & behat)
+make test
+# Check project code style
+make codestyle
+# Generate PHPUnit coverage
+make coverage
+# Generate Behat coverage
+make behat-coverage
+```
+
 ## Contributing
 See [contributing note](./CONTRIBUTING.md)
