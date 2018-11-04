@@ -52,30 +52,11 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then last response should be a valid json-rpc result
-     */
-    public function thenLastResponseShouldBeAValidJsonRpcResult()
-    {
-        $this->validateJsonRpcSuccessReponse($this->getLastResponseDecoded());
-    }
-
-    /**
      * @Then last response should be a valid json-rpc error
      */
     public function thenLastResponseShouldBeAValidJsonRpcError()
     {
         $this->validateJsonRpcErrorReponse($this->getLastResponseDecoded());
-    }
-
-    /**
-     * @Then last response should be a valid json-rpc batch response
-     */
-    public function thenLastResponseShouldBeAValidJsonRpcBatchResponse()
-    {
-        // Decode content to get rid of any indentation/spacing/... issues
-        $decoded = $this->getLastResponseDecoded();
-        Assert::assertTrue(is_array($decoded), 'A batch response must be an array');
-        Assert::assertTrue(count($decoded) > 0, 'A batch response must contains at least one sub response');
     }
 
     /**
@@ -97,18 +78,6 @@ class FeatureContext implements Context
     {
         // Decode content to get rid of any indentation/spacing/... issues
         Assert::assertEmpty($this->getLastResponseDecoded());
-    }
-
-    /**
-     * @Then response should contain the following:
-     */
-    public function thenResponseShouldContainTheFollowing(PyStringNode $expectedResult)
-    {
-        // Decode content to get rid of any indentation/spacing/... issues
-        Assert::assertArraySubset(
-            $this->jsonDecode($expectedResult->getRaw()),
-            $this->getLastResponseDecoded()
-        );
     }
 
     private function validateJsonRpcErrorReponse($decoded)
@@ -156,20 +125,6 @@ class FeatureContext implements Context
             $decoded,
             'An error response must not contains any other keys than "'
             .self::KEY_JSON_RPC.'", "'.self::KEY_ID.'" and "'.self::KEY_ERROR.'"'
-        );
-    }
-
-    private function validateJsonRpcSuccessReponse($decoded)
-    {
-        Assert::assertTrue(is_array($decoded), 'A response must be an array');
-        Assert::assertArrayHasKey(self::KEY_JSON_RPC, $decoded, 'A response must have a "'.self::KEY_JSON_RPC.'" key');
-        Assert::assertArrayHasKey(self::KEY_ID, $decoded, 'A response must have an "'.self::KEY_ID.'" key');
-        Assert::assertFalse(is_null($decoded[self::KEY_ID]), 'A response id must not be null');
-        Assert::assertArrayHasKey(self::KEY_RESULT, $decoded, 'A response must have a "'.self::KEY_RESULT.'" key');
-        Assert::assertArrayNotHasKey(
-            self::KEY_ERROR,
-            $decoded,
-            'A response must not have an "'.self::KEY_ERROR.'" key'
         );
     }
 
