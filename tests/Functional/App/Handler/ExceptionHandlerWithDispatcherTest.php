@@ -20,7 +20,7 @@ class ExceptionHandlerWithDispatcherTest extends TestCase
 {
     /** @var ExceptionHandler */
     private $exceptionHandler;
-    /** @var ResponseCreator */
+    /** @var ResponseCreator|ObjectProphecy */
     private $responseCreator;
     /** @var JsonRpcServerDispatcherInterface|ObjectProphecy */
     private $jsonRpcServerDispatcher;

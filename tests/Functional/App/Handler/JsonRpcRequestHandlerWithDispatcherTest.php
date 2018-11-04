@@ -49,9 +49,9 @@ class JsonRpcRequestHandlerWithDispatcherTest extends TestCase
         $myViolation = ['violation'];
         $violationList = [$myViolation];
 
-        /** @var JsonRpcMethodParamsValidatorInterface $methodParamsValidator */
+        /** @var JsonRpcMethodParamsValidatorInterface|ObjectProphecy $methodParamsValidator */
         $methodParamsValidator = $this->prophesize(JsonRpcMethodParamsValidatorInterface::class);
-        /** @var JsonRpcMethodInterface $method */
+        /** @var JsonRpcMethodInterface|ObjectProphecy $method */
         $method = $this->prophesize(JsonRpcMethodInterface::class);
 
         $this->methodResolver->resolve(Argument::cetera())
