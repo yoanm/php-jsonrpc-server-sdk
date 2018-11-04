@@ -35,6 +35,7 @@ class JsonRpcCallSerializer
      *
      * @throws JsonRpcInvalidRequestException
      * @throws JsonRpcParseErrorException
+     * @throws \Exception
      */
     public function deserialize(string $content) : JsonRpcCall
     {

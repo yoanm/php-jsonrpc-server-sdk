@@ -90,7 +90,7 @@ coverage: create-coverage-directory
 	./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} ${PHPUNIT_COVERAGE_OPTION}
 
 behat-coverage: create-behat-coverage-directory
-    composer required leanphp/behat-code-coverage
+	composer required leanphp/behat-code-coverage
 	./vendor/bin/behat ${BEHAT_COLOR_OPTION} ${BEHAT_OUTPUT_STYLE_OPTION} --no-snippets --profile coverage
 
 
