@@ -6,7 +6,6 @@ use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
-use Prophecy\Argument;
 use Tests\Functional\BehatContext\App\FakeEndpointCreator;
 
 /**
@@ -167,8 +166,9 @@ class FeatureContext implements Context
         Assert::assertArrayHasKey(self::KEY_ID, $decoded, 'A response must have an "'.self::KEY_ID.'" key');
         Assert::assertFalse(is_null($decoded[self::KEY_ID]), 'A response id must not be null');
         Assert::assertArrayHasKey(self::KEY_RESULT, $decoded, 'A response must have a "'.self::KEY_RESULT.'" key');
-        Assert::assertArrayHasKey(
-            array_key_exists(self::KEY_ERROR, $decoded),
+        Assert::assertArrayNotHasKey(
+            self::KEY_ERROR,
+            $decoded,
             'A response must not have an "'.self::KEY_ERROR.'" key'
         );
     }

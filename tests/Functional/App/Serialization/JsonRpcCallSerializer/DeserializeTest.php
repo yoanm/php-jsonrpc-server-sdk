@@ -41,10 +41,11 @@ class DeserializeTest extends TestCase
      * @dataProvider provideValidRequestStringData
      *
      * @param string $content
+     * @param bool   $isNotification
+     * @param bool   $isBatch
      */
     public function testShouldHandle($content, $isNotification, $isBatch)
     {
-        $decodedContent = json_decode($content, true);
         $rawRequest = $this->prophesize(JsonRpcCall::class);
 
         $this->callDenormalizer->denormalize(Argument::cetera())

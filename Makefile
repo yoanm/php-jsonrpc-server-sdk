@@ -90,6 +90,7 @@ coverage: create-coverage-directory
 	./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} ${PHPUNIT_COVERAGE_OPTION}
 
 behat-coverage: create-behat-coverage-directory
+	composer required leanphp/behat-code-coverage
 	./vendor/bin/behat ${BEHAT_COLOR_OPTION} ${BEHAT_OUTPUT_STYLE_OPTION} --no-snippets --profile coverage
 
 
@@ -104,5 +105,5 @@ create-reports-directory:
 	mkdir -p ${REPORTS_DIRECTORY}
 
 
-.PHONY: build install configure test test-technical test-functional codestyle coverage create-coverage-directory create-reports-directory
+.PHONY: build install configure test test-technical test-functional codestyle coverage behat-coverage create-coverage-directory create-behat-coverage-directory create-reports-directory
 .DEFAULT: build

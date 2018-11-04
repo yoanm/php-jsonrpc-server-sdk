@@ -2,7 +2,6 @@
 namespace Tests\Functional\App\Dispatcher;
 
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Dispatcher\JsonRpcServerDispatcherAwareTrait;
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;

@@ -6,14 +6,12 @@ use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
-use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidParamsException;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodParamsValidatorInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler

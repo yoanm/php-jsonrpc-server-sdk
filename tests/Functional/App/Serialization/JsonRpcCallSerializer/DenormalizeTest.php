@@ -41,6 +41,8 @@ class DenormalizeTest extends TestCase
      * @dataProvider provideValidRequestStringData
      *
      * @param string $content
+     * @param bool   $isNotification
+     * @param bool   $isBatch
      */
     public function testShouldHandle($content, $isNotification, $isBatch)
     {

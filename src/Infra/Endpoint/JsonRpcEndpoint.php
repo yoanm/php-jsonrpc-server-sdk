@@ -6,6 +6,8 @@ use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
 use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge as AcknowledgeEvent;
+use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
+use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
@@ -28,6 +30,7 @@ class JsonRpcEndpoint
     /**
      * @param JsonRpcCallSerializer $jsonRpcCallSerializer
      * @param JsonRpcRequestHandler $jsonRpcRequestHandler
+     * @param ExceptionHandler      $exceptionHandler
      */
     public function __construct(
         JsonRpcCallSerializer $jsonRpcCallSerializer,
@@ -67,6 +70,9 @@ class JsonRpcEndpoint
      * @param string $request
      *
      * @return JsonRpcCall
+     *
+     * @throws JsonRpcInvalidRequestException
+     * @throws JsonRpcParseErrorException
      */
     protected function getJsonRpcCall(string $request) : JsonRpcCall
     {

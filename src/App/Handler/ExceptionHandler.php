@@ -26,7 +26,8 @@ class ExceptionHandler
     }
 
     /**
-     * @param \Exception $exception
+     * @param \Exception          $exception
+     * @param JsonRpcRequest|null $fromRequest
      *
      * @return JsonRpcResponse
      */
