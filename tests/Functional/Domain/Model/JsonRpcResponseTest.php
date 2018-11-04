@@ -62,7 +62,6 @@ class JsonRpcResponseTest extends TestCase
 
     /**
      * @param string $jsonRpc
-     * @param string $method
      *
      * @return JsonRpcResponse
      */

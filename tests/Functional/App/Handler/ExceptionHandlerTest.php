@@ -2,7 +2,6 @@
 namespace Tests\Functional\App\Handler;
 
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;

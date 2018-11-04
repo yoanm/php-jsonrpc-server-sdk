@@ -1,7 +1,6 @@
 <?php
 namespace Tests\Functional\BehatContext\App;
 
-use Prophecy\Argument;
 use Tests\Functional\BehatContext\App\Method\AbstractMethod;
 use Tests\Functional\BehatContext\App\Method\BasicMethod;
 use Tests\Functional\BehatContext\App\Method\BasicMethodWithRequiredParams;

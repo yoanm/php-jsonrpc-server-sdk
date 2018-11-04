@@ -71,6 +71,8 @@ class JsonRpcResponse
 
     /**
      * @param bool $isNotification
+     *
+     * @return JsonRpcResponse
      */
     public function setIsNotification(bool $isNotification) : JsonRpcResponse
     {

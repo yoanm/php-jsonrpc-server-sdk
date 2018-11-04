@@ -53,8 +53,6 @@ class JsonRpcEndpointTest extends TestCase
         $requestString = 'request-string';
         $expectedResponseString = 'expected-response-string';
 
-        /** @var ObjectProphecy|JsonRpcRequest $fakeRequestItem */
-        $fakeRequestItem = $this->prophesize(JsonRpcRequest::class);
         $fakeException = $this->prophesize($exceptionClass);
         /** @var ObjectProphecy|JsonRpcResponse $fakeResponseItem */
         $fakeResponseItem = $this->prophesize(JsonRpcResponse::class);

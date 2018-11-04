@@ -9,6 +9,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 interface JsonRpcMethodInterface
 {
     /**
+     * @param array|null $paramList
+     *
      * @return mixed
      *
      * @throws \Exception       In case of failure. Code and message will be used to generate custom JSON-RPC error

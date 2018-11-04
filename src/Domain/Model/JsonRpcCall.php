@@ -8,7 +8,7 @@ class JsonRpcCall
 {
     /** @var bool */
     private $isBatch;
-    /** @var mixed[] */
+    /** @var (JsonRpcRequest|\Exception)[] */
     private $itemList = [];
 
     /**

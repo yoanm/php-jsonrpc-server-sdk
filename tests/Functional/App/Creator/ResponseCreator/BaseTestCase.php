@@ -40,6 +40,9 @@ class BaseTestCase extends TestCase
     }
 
     /**
+     * @param string $method
+     * @param string $jsonRpc
+     *
      * @return JsonRpcRequest
      */
     protected function createNotificationRequest(

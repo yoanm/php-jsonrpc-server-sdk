@@ -54,6 +54,8 @@ class JsonRpcRequestDenormalizerTest extends TestCase
      * @dataProvider invalidParamListProvider
      *
      * Should throw a JsonRpcInvalidRequestException if params are not valid
+     *
+     * @param array $paramList
      */
     public function testDenormalizeShouldThrowAnExceptionWhenParamsIs($paramList)
     {
