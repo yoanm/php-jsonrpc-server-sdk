@@ -31,3 +31,7 @@ cache:
   directories:
     - $HOME/.composer
     - vendor
+
+branches:
+  except:
+  - /.*\-dev$/
