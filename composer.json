@@ -28,7 +28,7 @@
     "yoanm/jsonrpc-server-sdk-psr11-resolver": "Compatible PSR11 method resolver",
     "yoanm/jsonrpc-params-symfony-validator-sdk": "Compatible params validator",
     "yoanm/jsonrpc-server-doc-sdk": "Create documentation for your server",
-    "yoanm/symfony-jsonrpc-http-server": "JSON-RPC HTTP Symfony server"
+    "yoanm/symfony-jsonrpc-http-server": "JSON-RPC HTTP Symfony server Bundle"
   },
   "require": {
     "php": ">=7.1",
