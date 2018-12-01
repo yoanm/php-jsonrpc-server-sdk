@@ -14,12 +14,12 @@ See [JSON-RPC server symfony bundle](https://github.com/yoanm/symfony-jsonrpc-ht
 ## How to use
 
 Sdk requires only two things : 
- - A method resolver : must implement [JsonRpcMethodResolverInterface](./src/Domain/JsonRpcMethodResolverInterface.php), resolving logic's is your own.
- - Methods : JsonRpc methods that implement [JsonRpcMethodInterface](./src/Domain/JsonRpcMethodInterface.php)
+ - A method resolver : must implements [JsonRpcMethodResolverInterface](./src/Domain/JsonRpcMethodResolverInterface.php), resolving logic's is your own.
+ - Methods : JsonRpc methods which implements [JsonRpcMethodInterface](./src/Domain/JsonRpcMethodInterface.php)
  
 Sdk optionally provide :
  - Events dispatch
- - Params validation (thanks to event dispatching)
+ - Params validation
 
 ### Simple Example
 #### JSON-RPC Method
@@ -52,7 +52,7 @@ class DummyMethod implements JsonRpcMethodInterface
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
 
-class ArrayMethodResolver implements MethodResolverInterface
+class ArrayMethodResolver implements JsonRpcMethodResolverInterface
 {
     /** @var JsonRpcMethodInterface[] */
     private $methodList = [];
@@ -60,9 +60,9 @@ class ArrayMethodResolver implements MethodResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(string $methodName)
+    public function resolve(string $methodName) : ?JsonRpcMethodInterface
     {
-        return isset($this->methodList[$methodName])
+        return array_key_exists($methodName, $this->methodList)
             ? $this->methodList[$methodName]
             : null
         ;
@@ -92,10 +92,7 @@ use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 $resolver = new ArrayMethodResolver();
-$resolver->addMethod(
-    'dummy-method'
-    new DummyMethod()
-);
+$resolver->addMethod('dummy-method', new DummyMethod());
 
 $jsonRpcSerializer = new JsonRpcCallSerializer(
     new JsonRpcCallDenormalizer(
@@ -114,8 +111,6 @@ $endpoint = new JsonRpcEndpoint($jsonRpcSerializer, $requestHandler, $exceptionH
 
 Once endpoint is ready, you can send it request string : 
 ```php
-use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
-
 $requestString = <<<JSONRPC
 {
     "jsonrpc": "2.0",
@@ -158,21 +153,21 @@ class SimpleDispatcher implements JsonRpcServerDispatcherInterface
     /**
      * {@inheritdoc}
      */
-    public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null)
+    public function dispatchJsonRpcEvent(string $eventName, JsonRpcServerEvent $event = null) : void
     {
         if (!array_key_exists($eventName, $this->listenerList)) {
             return;
         }
 
         foreach ($this->listenerList[$eventName] as $listener) {
-            $listener($eventName, $event);
+            $listener($event, $eventName);
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function addJsonRpcListener(string $eventName, $listener)
+    public function addJsonRpcListener(string $eventName, $listener) : void
     {
         $this->listenerList[$eventName][] = $listener;
     }
@@ -223,10 +218,6 @@ $exceptionHandler->setJsonRpcServerDispatcher($dispatcher);
    >   
    >   *:warning: For batch request containing Invalid SubRequest, this event will still be dispatched*
  
- - `json_rpc_server_skd.validate_params` / [`Action\ValidateParamsEvent`](./src/Domain/Event/Action/ValidateParamsEvent.php)
-   
-   Dispatched before JSON-RPC method will be called, in order to validate params.
- 
  - Either
  
    - `json_rpc_server_skd.on_method_success` / [`Action\OnMethodSuccessEvent`](./src/Domain/Event/Action/OnMethodSuccessEvent.php)
@@ -262,40 +253,45 @@ Dispatched when an exception occurred during sdk execution
 ###### Acknowledge
 They have only an acknowledge purpose.
 
-They are grouped under `Yoanm\JsonRpcServer\Domain\Acknowledge` namespace.
+They are grouped under `Yoanm\JsonRpcServer\Domain\Event\Acknowledge` namespace.
 
 ###### Action
 They allow you to override stuffs.
 
-They are grouped under `Yoanm\JsonRpcServer\Domain\Acknowledge` namespace.
+They are grouped under `Yoanm\JsonRpcServer\Domain\Event\Action` namespace.
 
 Here, the list : 
- - [`Action\ValidateParamsEvent`](./src/Domain/Event/Action/OnMethodSuccessEvent.php) allow you to add/remove/change validation violations.
  - [`Action\OnMethodSuccessEvent`](./src/Domain/Event/Action/OnMethodSuccessEvent.php) allow you to update/change the result of the method.
  - [`Action\OnMethodFailureEvent`](./src/Domain/Event/Action/OnMethodFailureEvent.php) allow you to update/change the exception thrown by the method.
  - [`Action\OnExceptionEvent`](./src/Domain/Event/Action/OnExceptionEvent.php) allow you to update/change the exception thrown.
 
 ### Params validation example
-**Params validation is based on event dispatching and so, requires dispatcher configuration like described in previous section**
 
 *You can use this [JSON-RPC params symfony validator](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk) as example*
 
 To validate params for a given method, do the following :
 ```php
-use Yoanm\JsonRpcServer\Domain\Event\Action\ValidateParamsEvent;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
+use Yoanm\JsonRpcServer\Domain\JsonRpcMethodParamsValidatorInterface;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
-$validator = function (ValidateParamsEvent $event) {
-    $method = $event->getMethod();
-    $paramList = $event->getParamList();
-    if (/** Select the right method */) {
+$validator = new class implements JsonRpcMethodParamsValidatorInterface
+{
+    public function validate(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method) : array
+    {
+        if (!(/** Skip unexpected method */)) {
+            return [];
+        }
+
         // Create your violations based on what you want
+        $paramList = $jsonRpcRequest->getParamList();
         $violation = "???";
-        // Then add it/them to the event
-        $event->addViolation($violation);
+
+        return [$violation];
     }
 };
 
-$dispatcher->addJsonRpcListener(ValidateParamsEvent::EVENT_NAME, $validator);
+$requestHandler->setMethodParamsValidator($validator);
 ```
 
 ## Makefile
