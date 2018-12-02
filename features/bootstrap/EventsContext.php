@@ -4,7 +4,7 @@ namespace Tests\Functional\BehatContext;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
-use Tests\Functional\BehatContext\App\BehatRequestLifecycleDispatcher;
+use DemoApp\Dispatcher\BehatRequestLifecycleDispatcher;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnExceptionEvent;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnMethodFailureEvent;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnMethodSuccessEvent;

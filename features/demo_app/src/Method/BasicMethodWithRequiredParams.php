@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\BehatContext\App\Method;
+namespace DemoApp\Method;
 
 class BasicMethodWithRequiredParams extends AbstractMethod
 {
