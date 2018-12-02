@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\BehatContext\App;
+namespace DemoApp\Dispatcher;
 
 use Yoanm\JsonRpcServer\Domain\Event\JsonRpcServerEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcServerDispatcherInterface;

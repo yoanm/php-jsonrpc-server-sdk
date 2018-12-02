@@ -1,12 +1,13 @@
 <?php
-namespace Tests\Functional\BehatContext\App;
+namespace Tests\Functional\BehatContext\Helper;
 
-use Tests\Functional\BehatContext\App\Method\AbstractMethod;
-use Tests\Functional\BehatContext\App\Method\BasicMethod;
-use Tests\Functional\BehatContext\App\Method\BasicMethodWithRequiredParams;
-use Tests\Functional\BehatContext\App\Method\MethodThatThrowExceptionDuringExecution;
-use Tests\Functional\BehatContext\App\Method\MethodThatThrowJsonRpcExceptionDuringExecution;
-use Tests\Functional\BehatContext\App\Method\MethodWithParamsValidationError;
+use DemoApp\Method\AbstractMethod;
+use DemoApp\Method\BasicMethod;
+use DemoApp\Method\BasicMethodWithRequiredParams;
+use DemoApp\Method\MethodThatThrowExceptionDuringExecution;
+use DemoApp\Method\MethodThatThrowJsonRpcExceptionDuringExecution;
+use DemoApp\Method\MethodWithParamsValidationError;
+use DemoApp\Resolver\BehatMethodResolver;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
 use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
@@ -23,7 +24,8 @@ use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
 class FakeEndpointCreator
 {
-    /**@return JsonRpcEndpoint
+    /**
+     * @return JsonRpcEndpoint
      */
     public function create(JsonRpcServerDispatcherInterface $dispatcher = null) : JsonRpcEndpoint
     {

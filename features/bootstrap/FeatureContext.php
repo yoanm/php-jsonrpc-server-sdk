@@ -1,17 +1,16 @@
 <?php
 namespace Tests\Functional\BehatContext;
 
-use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
-use Tests\Functional\BehatContext\App\FakeEndpointCreator;
+use Tests\Functional\BehatContext\Helper\FakeEndpointCreator;
 
 /**
  * Defines application features from the specific context.
  */
-class FeatureContext implements Context
+class FeatureContext extends AbstractContext
 {
     const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
@@ -131,17 +130,5 @@ class FeatureContext implements Context
     private function getLastResponseDecoded()
     {
         return $this->jsonDecode($this->lastResponse);
-    }
-
-    private function jsonDecode($content)
-    {
-        $result = json_decode($content, true);
-        $error = json_last_error();
-        if ($error !== JSON_ERROR_NONE) {
-            $errorMessage = json_last_error_msg();
-            throw new \Exception("Json parse error ${error} => ${errorMessage} : ${content}");
-        }
-
-        return $result;
     }
 }

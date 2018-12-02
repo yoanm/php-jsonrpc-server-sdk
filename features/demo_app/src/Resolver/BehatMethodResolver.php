@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Functional\BehatContext\App;
+namespace DemoApp\Resolver;
 
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodResolverInterface;
