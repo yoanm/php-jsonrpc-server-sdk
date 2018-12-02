@@ -11,7 +11,7 @@ Simple server SDK to convert a json-rpc request string into json-rpc response st
 
 See [yoanm/symfony-jsonrpc-http-server](https://github.com/yoanm/symfony-jsonrpc-http-server) for automatic dependency injection.
 
-See [yoanm/jsonrpc-params-symfony-validator-sdk](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk) for params validation. And [yoanm/jsonrpc-params-symfony-constraint-doc-sdk](https://github.com/yoanm/jsonrpc-params-symfony-constraint-doc-sdk) for params documentation
+See [yoanm/jsonrpc-params-symfony-validator-sdk](https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk) for params validation.
 
 See [yoanm/jsonrpc-server-doc-sdk](https://github.com/yoanm/php-jsonrpc-server-doc-sdk) for documentation generation.
 
