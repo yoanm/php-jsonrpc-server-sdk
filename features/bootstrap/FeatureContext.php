@@ -1,17 +1,16 @@
 <?php
 namespace Tests\Functional\BehatContext;
 
-use Behat\Behat\Context\Context;
+use Behat\Behat\Context\Environment\InitializedContextEnvironment;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
-use Prophecy\Argument;
-use Tests\Functional\BehatContext\App\FakeEndpointCreator;
-use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
+use Tests\Functional\BehatContext\Helper\FakeEndpointCreator;
 
 /**
  * Defines application features from the specific context.
  */
-class FeatureContext implements Context
+class FeatureContext extends AbstractContext
 {
     const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
@@ -22,21 +21,23 @@ class FeatureContext implements Context
     const SUB_KEY_ERROR_MESSAGE = 'message';
     const SUB_KEY_ERROR_DATA = 'data';
 
-    /** @var JsonRpcEndpoint */
-    private $endpoint;
-    /** @var string */
-    private $lastResponse;
+    /** @var string|null */
+    private $lastResponse = null;
+    /** @var  EventsContext */
+    private $eventsContext;
 
     /**
-     * Initializes context.
+     * @BeforeScenario
      *
-     * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
+     * @param BeforeScenarioScope $scope
      */
-    public function __construct()
+    public function beforeScenario(BeforeScenarioScope $scope)
     {
-        $this->endpoint = (new FakeEndpointCreator())->create();
+        $environment = $scope->getEnvironment();
+
+        if ($environment instanceof InitializedContextEnvironment) {
+            $this->eventsContext = $environment->getContext(EventsContext::class);
+        }
     }
 
     /**
@@ -44,15 +45,9 @@ class FeatureContext implements Context
      */
     public function whenISendTheFollowingPayload(PyStringNode $payload)
     {
-        $this->lastResponse = $this->endpoint->index($payload->getRaw());
-    }
+        $endpoint = (new FakeEndpointCreator())->create($this->eventsContext->getDispatcher());
 
-    /**
-     * @Then last response should be a valid json-rpc result
-     */
-    public function thenLastResponseShouldBeAValidJsonRpcResult()
-    {
-        $this->validateJsonRpcSuccessReponse($this->getLastResponseDecoded());
+        $this->lastResponse = $endpoint->index($payload->getRaw());
     }
 
     /**
@@ -61,17 +56,6 @@ class FeatureContext implements Context
     public function thenLastResponseShouldBeAValidJsonRpcError()
     {
         $this->validateJsonRpcErrorReponse($this->getLastResponseDecoded());
-    }
-
-    /**
-     * @Then last response should be a valid json-rpc batch response
-     */
-    public function thenLastResponseShouldBeAValidJsonRpcBatchResponse()
-    {
-        // Decode content to get rid of any indentation/spacing/... issues
-        $decoded = $this->getLastResponseDecoded();
-        Assert::assertTrue(is_array($decoded), 'A batch response must be an array');
-        Assert::assertTrue(count($decoded) > 0, 'A batch response must contains at least one sub response');
     }
 
     /**
@@ -93,18 +77,6 @@ class FeatureContext implements Context
     {
         // Decode content to get rid of any indentation/spacing/... issues
         Assert::assertEmpty($this->getLastResponseDecoded());
-    }
-
-    /**
-     * @Then response should contain the following:
-     */
-    public function thenResponseShouldContainTheFollowing(PyStringNode $expectedResult)
-    {
-        // Decode content to get rid of any indentation/spacing/... issues
-        Assert::assertArraySubset(
-            $this->jsonDecode($expectedResult->getRaw()),
-            $this->getLastResponseDecoded()
-        );
     }
 
     private function validateJsonRpcErrorReponse($decoded)
@@ -155,33 +127,8 @@ class FeatureContext implements Context
         );
     }
 
-    private function validateJsonRpcSuccessReponse($decoded)
-    {
-        Assert::assertTrue(is_array($decoded), 'A response must be an array');
-        Assert::assertArrayHasKey(self::KEY_JSON_RPC, $decoded, 'A response must have a "'.self::KEY_JSON_RPC.'" key');
-        Assert::assertArrayHasKey(self::KEY_ID, $decoded, 'A response must have an "'.self::KEY_ID.'" key');
-        Assert::assertFalse(is_null($decoded[self::KEY_ID]), 'A response id must not be null');
-        Assert::assertArrayHasKey(self::KEY_RESULT, $decoded, 'A response must have a "'.self::KEY_RESULT.'" key');
-        Assert::assertArrayHasKey(
-            array_key_exists(self::KEY_ERROR, $decoded),
-            'A response must not have an "'.self::KEY_ERROR.'" key'
-        );
-    }
-
     private function getLastResponseDecoded()
     {
         return $this->jsonDecode($this->lastResponse);
-    }
-
-    private function jsonDecode($content)
-    {
-        $result = json_decode($content, true);
-        $error = json_last_error();
-        if ($error !== JSON_ERROR_NONE) {
-            $errorMessage = json_last_error_msg();
-            throw new \Exception("Json parse error ${error} => ${errorMessage} : ${content}");
-        }
-
-        return $result;
     }
 }

@@ -3,25 +3,14 @@ namespace Tests\Functional\App\Creator\ResponseCreator;
 
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
-use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
+ *
+ * @group ResponseCreator
  */
 class CreateErrorResponseTest extends BaseTestCase
 {
-    /**
-     * Should create an instance of JsonRpcResponse
-     */
-    public function testShouldReturnRightInstance()
-    {
-        $response = $this->responseCreator->createErrorResponse(
-            $this->prophesize(JsonRpcException::class)->reveal()
-        );
-
-        $this->assertInstanceOf(JsonRpcResponse::class, $response);
-    }
-
     /**
      * Should handle error
      */

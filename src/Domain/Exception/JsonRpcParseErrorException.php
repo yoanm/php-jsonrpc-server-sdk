@@ -21,11 +21,11 @@ class JsonRpcParseErrorException extends JsonRpcException
     const DATA_ERROR_MESSAGE_KEY = 'message';
 
     /**
-     * @param string $content
-     * @param mixed  $parseErrorCode
-     * @param mixed  $parseErrorMessage
+     * @param mixed       $content
+     * @param mixed       $parseErrorCode
+     * @param string|null $parseErrorMessage
      */
-    public function __construct(string $content, $parseErrorCode = null, $parseErrorMessage = null)
+    public function __construct($content, $parseErrorCode = null, string $parseErrorMessage = null)
     {
         $this->content = $content;
         $this->parseErrorCode = $parseErrorCode;
@@ -51,9 +51,9 @@ class JsonRpcParseErrorException extends JsonRpcException
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getParseErrorMessage()
+    public function getParseErrorMessage() : ?string
     {
         return $this->parseErrorMessage;
     }

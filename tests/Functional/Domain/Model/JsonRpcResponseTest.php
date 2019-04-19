@@ -7,6 +7,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
  * @covers \Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse
+ *
+ * @group Models
  */
 class JsonRpcResponseTest extends TestCase
 {
@@ -60,7 +62,6 @@ class JsonRpcResponseTest extends TestCase
 
     /**
      * @param string $jsonRpc
-     * @param string $method
      *
      * @return JsonRpcResponse
      */

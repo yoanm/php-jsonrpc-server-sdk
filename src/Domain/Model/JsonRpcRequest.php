@@ -30,9 +30,9 @@ class JsonRpcRequest
     /**
      * @param array $paramList
      *
-     * @return JsonRpcRequest
+     * @return self
      */
-    public function setParamList(array $paramList) : JsonRpcRequest
+    public function setParamList(array $paramList) : self
     {
         $this->paramList = $paramList;
 
@@ -43,9 +43,9 @@ class JsonRpcRequest
      * @param mixed $id
      *
      * @throws InvalidArgumentException
-     * @return JsonRpcRequest
+     * @return self
      */
-    public function setId($id) : JsonRpcRequest
+    public function setId($id) : self
     {
         if (!is_string($id) && !is_int($id)) {
             throw new InvalidArgumentException('Id must be either an int or a string');
