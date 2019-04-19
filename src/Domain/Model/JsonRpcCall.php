@@ -22,9 +22,9 @@ class JsonRpcCall
     /**
      * @param JsonRpcRequest $item
      *
-     * @return JsonRpcCall
+     * @return self
      */
-    public function addRequestItem(JsonRpcRequest $item) : JsonRpcCall
+    public function addRequestItem(JsonRpcRequest $item) : self
     {
         $this->itemList[] = $item;
 
@@ -34,9 +34,9 @@ class JsonRpcCall
     /**
      * @param \Exception $item
      *
-     * @return JsonRpcCall
+     * @return self
      */
-    public function addExceptionItem(\Exception $item) : JsonRpcCall
+    public function addExceptionItem(\Exception $item) : self
     {
         $this->itemList[] = $item;
 

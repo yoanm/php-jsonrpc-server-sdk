@@ -47,9 +47,9 @@ class OnExceptionEvent implements JsonRpcServerEvent
     /**
      * @param \Exception $exception
      *
-     * @return OnExceptionEvent
+     * @return self
      */
-    public function setException(\Exception $exception) : OnExceptionEvent
+    public function setException(\Exception $exception) : self
     {
         $this->exception = $exception;
 

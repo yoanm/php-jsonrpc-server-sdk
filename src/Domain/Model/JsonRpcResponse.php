@@ -32,9 +32,9 @@ class JsonRpcResponse
     /**
      * @param mixed $result
      *
-     * @return JsonRpcResponse
+     * @return self
      */
-    public function setResult($result) : JsonRpcResponse
+    public function setResult($result) : self
     {
         $this->result = $result;
 
@@ -44,9 +44,9 @@ class JsonRpcResponse
     /**
      * @param JsonRpcExceptionInterface $error
      *
-     * @return JsonRpcResponse
+     * @return self
      */
-    public function setError(JsonRpcExceptionInterface $error) : JsonRpcResponse
+    public function setError(JsonRpcExceptionInterface $error) : self
     {
         $this->error = $error;
 
@@ -56,9 +56,9 @@ class JsonRpcResponse
     /**
      * @param mixed $id
      *
-     * @return JsonRpcResponse
+     * @return self
      */
-    public function setId($id) : JsonRpcResponse
+    public function setId($id) : self
     {
         if (!is_string($id) && !is_int($id)) {
             throw new \InvalidArgumentException('Id must be either an int or a string');
@@ -72,9 +72,9 @@ class JsonRpcResponse
     /**
      * @param bool $isNotification
      *
-     * @return JsonRpcResponse
+     * @return self
      */
-    public function setIsNotification(bool $isNotification) : JsonRpcResponse
+    public function setIsNotification(bool $isNotification) : self
     {
         $this->isNotification = $isNotification;
 
