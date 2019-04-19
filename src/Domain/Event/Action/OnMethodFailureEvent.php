@@ -42,9 +42,9 @@ class OnMethodFailureEvent extends AbstractOnMethodEvent
     /**
      * @param \Exception $exception
      *
-     * @return OnMethodFailureEvent
+     * @return self
      */
-    public function setException(\Exception $exception) : OnMethodFailureEvent
+    public function setException(\Exception $exception) : self
     {
         $this->exception = $exception;
 

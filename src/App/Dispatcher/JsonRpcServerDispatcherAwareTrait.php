@@ -15,7 +15,7 @@ trait JsonRpcServerDispatcherAwareTrait
     /**
      * @param JsonRpcServerDispatcherInterface $jsonRpcServerDispatcher
      */
-    public function setJsonRpcServerDispatcher(JsonRpcServerDispatcherInterface $jsonRpcServerDispatcher)
+    public function setJsonRpcServerDispatcher(JsonRpcServerDispatcherInterface $jsonRpcServerDispatcher) : void
     {
         $this->jsonRpcServerDispatcher = $jsonRpcServerDispatcher;
     }

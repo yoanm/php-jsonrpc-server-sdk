@@ -21,9 +21,9 @@ class JsonRpcParseErrorException extends JsonRpcException
     const DATA_ERROR_MESSAGE_KEY = 'message';
 
     /**
-     * @param mixed $content
-     * @param mixed $parseErrorCode
-     * @param mixed $parseErrorMessage
+     * @param mixed       $content
+     * @param mixed       $parseErrorCode
+     * @param string|null $parseErrorMessage
      */
     public function __construct($content, $parseErrorCode = null, string $parseErrorMessage = null)
     {

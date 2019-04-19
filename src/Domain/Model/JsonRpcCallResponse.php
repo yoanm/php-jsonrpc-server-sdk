@@ -22,9 +22,9 @@ class JsonRpcCallResponse
     /**
      * @param JsonRpcResponse $response
      *
-     * @return JsonRpcCallResponse
+     * @return self
      */
-    public function addResponse(JsonRpcResponse $response) : JsonRpcCallResponse
+    public function addResponse(JsonRpcResponse $response) : self
     {
         $this->responseList[] = $response;
 
