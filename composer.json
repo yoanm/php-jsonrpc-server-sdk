@@ -40,6 +40,6 @@
     "squizlabs/php_codesniffer": "3.*",
     "phpunit/phpunit": "^6.0 || ^7.0",
     "yoanm/php-unit-extended": "^1.0",
-    "yoanm/jsonrpc-server-doc-sdk": "dev-release/1.0.0"
+    "yoanm/jsonrpc-server-doc-sdk": "dev-release/0.1.0"
   }
 }
