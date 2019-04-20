@@ -35,7 +35,7 @@ class JsonRpcEndpointWithDispatcherTest extends TestCase
     /** @var JsonRpcServerDispatcherInterface|ObjectProphecy */
     private $jsonRpcServerDispatcher;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->jsonRpcCallSerializer = $this->prophesize(JsonRpcCallSerializer::class);
         $this->jsonRpcRequestHandler = $this->prophesize(JsonRpcRequestHandler::class);

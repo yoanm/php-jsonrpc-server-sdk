@@ -26,7 +26,7 @@ class JsonRpcCallDenormalizerTest extends TestCase
     /** @var JsonRpcRequestDenormalizer|ObjectProphecy */
     private $requestDenormalizer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->requestDenormalizer = $this->prophesize(JsonRpcRequestDenormalizer::class);
 

@@ -30,7 +30,7 @@ class JsonRpcEndpointTest extends TestCase
     /** @var ExceptionHandler|ObjectProphecy */
     private $exceptionHandler;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->jsonRpcCallSerializer = $this->prophesize(JsonRpcCallSerializer::class);
         $this->jsonRpcRequestHandler = $this->prophesize(JsonRpcRequestHandler::class);

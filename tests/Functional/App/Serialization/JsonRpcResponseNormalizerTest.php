@@ -25,7 +25,7 @@ class JsonRpcResponseNormalizerTest extends TestCase
     /** @var JsonRpcResponseNormalizer */
     private $responseNormalizer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->responseNormalizer = new JsonRpcResponseNormalizer();
     }

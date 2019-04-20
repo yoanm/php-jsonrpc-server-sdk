@@ -25,7 +25,7 @@ class ExceptionHandlerWithDispatcherTest extends TestCase
     /** @var JsonRpcServerDispatcherInterface|ObjectProphecy */
     private $jsonRpcServerDispatcher;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->responseCreator = $this->prophesize(ResponseCreator::class);
         $this->jsonRpcServerDispatcher = $this->prophesize(JsonRpcServerDispatcherInterface::class);

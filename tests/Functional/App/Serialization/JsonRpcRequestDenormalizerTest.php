@@ -16,7 +16,7 @@ class JsonRpcRequestDenormalizerTest extends TestCase
     /** @var JsonRpcRequestDenormalizer */
     private $requestDenormalizer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->requestDenormalizer = new JsonRpcRequestDenormalizer();
     }
@@ -85,7 +85,7 @@ class JsonRpcRequestDenormalizerTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $this->assertContains(
+            $this->assertStringContainsString(
                 '"method" is a required key',
                 $e->getDescription(),
                 'Exception is not regarding expected field'
@@ -111,7 +111,7 @@ class JsonRpcRequestDenormalizerTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $this->assertContains(
+            $this->assertStringContainsString(
                 '"jsonrpc" is a required key',
                 $e->getDescription(),
                 'Exception is not regarding expected field'

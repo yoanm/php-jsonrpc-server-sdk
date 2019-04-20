@@ -26,7 +26,7 @@ class JsonRpcRequestHandlerTest extends TestCase
     /** @var ResponseCreator|ObjectProphecy */
     private $responseCreator;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->methodResolver = $this->prophesize(JsonRpcMethodResolverInterface::class);
         $this->responseCreator = $this->prophesize(ResponseCreator::class);

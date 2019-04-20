@@ -27,7 +27,7 @@ class DeserializeTest extends TestCase
     /** @var JsonRpcCallResponseNormalizer|ObjectProphecy */
     private $callResponseNormalizer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->callDenormalizer = $this->prophesize(JsonRpcCallDenormalizer::class);
         $this->callResponseNormalizer = $this->prophesize(JsonRpcCallResponseNormalizer::class);
