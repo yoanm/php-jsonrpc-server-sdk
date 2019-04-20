@@ -19,7 +19,7 @@ class JsonRpcServerDispatcherAwareTraitTest extends TestCase
     /** @var JsonRpcServerDispatcherInterface|ObjectProphecy */
     private $jsonRpcServerDispatcher;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->jsonRpcServerDispatcher = $this->prophesize(JsonRpcServerDispatcherInterface::class);
 

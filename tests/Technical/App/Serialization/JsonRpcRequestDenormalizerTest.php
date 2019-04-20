@@ -16,7 +16,7 @@ class JsonRpcRequestDenormalizerTest extends TestCase
     /** @var JsonRpcRequestDenormalizer */
     private $requestDenormalizer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->requestDenormalizer = new JsonRpcRequestDenormalizer();
     }
@@ -72,7 +72,7 @@ class JsonRpcRequestDenormalizerTest extends TestCase
             $this->requestDenormalizer->denormalize($item);
         } catch (JsonRpcInvalidRequestException $e) {
             // Assert error description
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'Parameter list must be an array',
                 $e->getDescription(),
                 'Exception description is not the expected one'

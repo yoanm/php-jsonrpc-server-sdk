@@ -29,7 +29,7 @@ class JsonRpcRequestHandlerWithDispatcherTest extends TestCase
     /** @var JsonRpcServerDispatcherInterface|ObjectProphecy */
     private $jsonRpcServerDispatcher;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->methodResolver = $this->prophesize(JsonRpcMethodResolverInterface::class);
         $this->responseCreator = $this->prophesize(ResponseCreator::class);

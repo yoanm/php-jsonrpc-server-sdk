@@ -20,7 +20,7 @@ class ExceptionHandlerTest extends TestCase
     /** @var ResponseCreator */
     private $responseCreator;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->responseCreator = $this->prophesize(ResponseCreator::class);
 

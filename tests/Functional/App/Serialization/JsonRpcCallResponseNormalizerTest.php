@@ -25,7 +25,7 @@ class JsonRpcCallResponseNormalizerTest extends TestCase
     /** @var JsonRpcResponseNormalizer|ObjectProphecy */
     private $responseNormalizer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->responseNormalizer = $this->prophesize(JsonRpcResponseNormalizer::class);
 

@@ -18,7 +18,7 @@ class ResponseCreatorTest extends TestCase
     private $responseCreator;
 
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->responseCreator = new ResponseCreator();
     }

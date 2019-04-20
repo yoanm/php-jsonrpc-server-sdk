@@ -16,7 +16,7 @@ class BaseTestCase extends TestCase
     protected $responseCreator;
 
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->responseCreator = new ResponseCreator();
     }
