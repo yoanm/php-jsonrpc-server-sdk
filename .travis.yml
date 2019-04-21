@@ -35,3 +35,4 @@ cache:
 branches:
   except:
   - /.*\-dev$/
+  - /.*\-patch(\-\d+)?$/
