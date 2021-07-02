@@ -26,7 +26,7 @@ class ResponseCreator
                 ->setIsNotification($fromRequest->isNotification())
         ;
 
-        if ($fromRequest->getId()) {
+        if (!is_null($fromRequest->getId())) {
             $response->setId($fromRequest->getId());
         }
 
