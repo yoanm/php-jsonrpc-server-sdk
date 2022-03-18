@@ -21,7 +21,7 @@ class JsonRpcResponseNormalizer
     /**
      * @param JsonRpcResponse $response
      *
-     * @return array|null
+     * @return array<string, mixed>|null
      */
     public function normalize(JsonRpcResponse $response) : ?array
     {
@@ -35,7 +35,7 @@ class JsonRpcResponseNormalizer
             self::KEY_ID => $response->getId()
         ];
 
-        if ($response->getError()) {
+        if (null !== $response->getError()) {
             $data[self::KEY_ERROR] = $this->normalizeError(
                 $response->getError()
             );
@@ -49,7 +49,7 @@ class JsonRpcResponseNormalizer
     /**
      * @param JsonRpcExceptionInterface $error
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function normalizeError(JsonRpcExceptionInterface $error) : array
     {
@@ -58,7 +58,7 @@ class JsonRpcResponseNormalizer
             self::SUB_KEY_ERROR_MESSAGE => $error->getErrorMessage()
         ];
 
-        if ($error->getErrorData()) {
+        if (count($error->getErrorData()) > 0) {
             $normalizedError[self::SUB_KEY_ERROR_DATA] = $error->getErrorData();
         }
 

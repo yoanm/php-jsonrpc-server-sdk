@@ -17,7 +17,7 @@ interface JsonRpcExceptionInterface
     public function getErrorMessage() : string;
 
     /**
-     * @return array Optional error data
+     * @return array<mixed> Optional error data
      */
     public function getErrorData() : array;
 }

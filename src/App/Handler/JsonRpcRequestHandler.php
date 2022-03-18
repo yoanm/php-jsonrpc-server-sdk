@@ -105,7 +105,7 @@ class JsonRpcRequestHandler
         if (null !== $this->methodParamsValidator) {
             $violationList = $this->methodParamsValidator->validate($jsonRpcRequest, $method);
 
-            if (count($violationList)) {
+            if (count($violationList) > 0) {
                 throw new JsonRpcInvalidParamsException($violationList);
             }
         }
@@ -120,12 +120,20 @@ class JsonRpcRequestHandler
     {
         if ($event instanceof ActionEvent\OnMethodSuccessEvent) {
             return $this->responseCreator->createResultResponse($event->getResult(), $event->getJsonRpcRequest());
-        } else {
-            /** @var $event ActionEvent\OnMethodFailureEvent */
+        }
+
+        if ($event instanceof ActionEvent\OnMethodFailureEvent) {
             return $this->responseCreator->createErrorResponse(
                 $event->getException(),
                 $event->getJsonRpcRequest()
             );
         }
+
+        throw new \Exception(
+            sprintf(
+                'Unhandled event class, "%s" given !',
+                get_class($event)
+            )
+        );
     }
 }

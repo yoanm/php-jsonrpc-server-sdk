@@ -11,7 +11,7 @@ class JsonRpcInvalidParamsException extends JsonRpcException
     const DATA_VIOLATIONS_KEY = 'violations';
 
     /**
-     * @param array $violationMessageList
+     * @param array<mixed> $violationMessageList
      */
     public function __construct(array $violationMessageList)
     {

@@ -41,8 +41,8 @@ class JsonRpcRequestDenormalizer
     }
 
     /**
-     * @param JsonRpcRequest $request
-     * @param array $item
+     * @param JsonRpcRequest       $request
+     * @param array<string, mixed> $item
      *
      * @return void
      */
@@ -59,8 +59,8 @@ class JsonRpcRequestDenormalizer
     }
 
     /**
-     * @param JsonRpcRequest $request
-     * @param array          $item
+     * @param JsonRpcRequest      $request
+     * @param array<string,mixed> $item
      *
      * @return void
      *
@@ -90,8 +90,8 @@ class JsonRpcRequestDenormalizer
     }
 
     /**
-     * @param array  $item
-     * @param string $key
+     * @param array<string, mixed> $item
+     * @param string               $key
      *
      * @return void
      *

@@ -18,7 +18,7 @@ class JsonRpcInternalErrorException extends JsonRpcException
         parent::__construct(
             self::CODE,
             'Internal error',
-            $previousException ? [self::DATA_PREVIOUS_KEY => $previousException->getMessage()] : []
+            null !== $previousException ? [self::DATA_PREVIOUS_KEY => $previousException->getMessage()] : []
         );
     }
 }

@@ -22,7 +22,7 @@ class JsonRpcCallResponseNormalizer
     /**
      * @param JsonRpcCallResponse $jsonRpcCallResponse
      *
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function normalize(JsonRpcCallResponse $jsonRpcCallResponse) : ?array
     {

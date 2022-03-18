@@ -20,7 +20,7 @@ class JsonRpcCallDenormalizer
     }
 
     /**
-     * @param array $decodedContent
+     * @param array<mixed> $decodedContent
      *
      * @return JsonRpcCall
      *
@@ -38,7 +38,7 @@ class JsonRpcCallDenormalizer
     }
 
     /**
-     * @param array $decodedContent
+     * @param array<mixed> $decodedContent
      *
      * @return bool
      */
@@ -61,8 +61,8 @@ class JsonRpcCallDenormalizer
     }
 
     /**
-     * @param JsonRpcCall $jsonRpcCall
-     * @param array       $decodedContent
+     * @param JsonRpcCall  $jsonRpcCall
+     * @param array<mixed> $decodedContent
      *
      * @return void
      *

@@ -1,6 +1,8 @@
 <?php
 namespace Yoanm\JsonRpcServer\App\Serialization;
 
+use Exception;
+use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
@@ -35,7 +37,7 @@ class JsonRpcCallSerializer
      *
      * @throws JsonRpcInvalidRequestException
      * @throws JsonRpcParseErrorException
-     * @throws \Exception
+     * @throws Exception
      */
     public function deserialize(string $content) : JsonRpcCall
     {
@@ -63,13 +65,25 @@ class JsonRpcCallSerializer
      */
     public function encode($normalizedContent) : string
     {
-        return json_encode($normalizedContent);
+        $result = json_encode($normalizedContent);
+        if (false === $result) {
+            throw new JsonRpcException(
+                json_last_error(),
+                sprintf(
+                    'Error during call encoding : %s',
+                    json_last_error_msg()
+                ),
+                is_array($normalizedContent) ? $normalizedContent : [$normalizedContent]
+            );
+        }
+
+        return $result;
     }
 
     /**
      * @param string $requestContent
      *
-     * @return array Decoded content
+     * @return array<mixed> Decoded content
      *
      * @throws JsonRpcParseErrorException
      * @throws JsonRpcInvalidRequestException
@@ -96,11 +110,11 @@ class JsonRpcCallSerializer
     }
 
     /**
-     * @param array $decodedContent
+     * @param array<mixed> $decodedContent
      *
      * @return JsonRpcCall
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function denormalize(array $decodedContent) : JsonRpcCall
     {
@@ -110,7 +124,7 @@ class JsonRpcCallSerializer
     /**
      * @param JsonRpcCallResponse $jsonRpcCallResponse
      *
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function normalize(JsonRpcCallResponse $jsonRpcCallResponse) : ?array
     {

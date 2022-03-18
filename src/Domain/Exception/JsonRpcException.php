@@ -6,13 +6,13 @@ namespace Yoanm\JsonRpcServer\Domain\Exception;
  */
 class JsonRpcException extends \Exception implements JsonRpcExceptionInterface
 {
-    /** @var array */
+    /** @var array<mixed> */
     private $data;
 
     /**
-     * @param int    $code
-     * @param string $message
-     * @param array  $data
+     * @param int          $code
+     * @param string       $message
+     * @param array<mixed> $data
      */
     public function __construct(int $code, string $message = '', array $data = [])
     {
@@ -32,7 +32,7 @@ class JsonRpcException extends \Exception implements JsonRpcExceptionInterface
     }
 
     /**
-     * @return array
+     * @return array<mixed>
      */
     public function getErrorData() : array
     {

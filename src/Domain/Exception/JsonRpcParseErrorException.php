@@ -12,7 +12,7 @@ class JsonRpcParseErrorException extends JsonRpcException
     private $content;
     /** @var mixed */
     private $parseErrorCode;
-    /** @var string */
+    /** @var string|null */
     private $parseErrorMessage;
 
     const DATA_CONTENT_KEY = 'content';

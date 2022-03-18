@@ -1,0 +1,9 @@
+includes:
+    - tests/PHPStan/.phpstan-tests-baseline.neon # Allow to skip some existing errors
+parameters:
+    level: 6
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    checkMissingClosureNativeReturnTypehintRule: false
+    paths:
+        - tests

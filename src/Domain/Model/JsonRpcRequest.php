@@ -12,7 +12,7 @@ class JsonRpcRequest
     private $jsonRpc;
     /** @var string */
     private $method;
-    /** @var array */
+    /** @var array<mixed> */
     private $paramList = [];
     /** @var int|string|null */
     private $id = null;
@@ -28,7 +28,7 @@ class JsonRpcRequest
     }
 
     /**
-     * @param array $paramList
+     * @param array<mixed> $paramList
      *
      * @return self
      */
@@ -73,7 +73,7 @@ class JsonRpcRequest
     }
 
     /**
-     * @return array
+     * @return array<mixed>
      */
     public function getParamList() : array
     {

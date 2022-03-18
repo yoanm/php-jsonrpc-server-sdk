@@ -9,7 +9,7 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 interface JsonRpcMethodInterface
 {
     /**
-     * @param array|null $paramList
+     * @param array<mixed>|null $paramList
      *
      * @return mixed
      *

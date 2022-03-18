@@ -12,7 +12,7 @@ interface JsonRpcMethodParamsValidatorInterface
      * @param JsonRpcRequest $jsonRpcRequest
      * @param JsonRpcMethodInterface $method
      *
-     * @return array An array of violations
+     * @return array<mixed> An array of violations
      */
     public function validate(JsonRpcRequest $jsonRpcRequest, JsonRpcMethodInterface $method) : array;
 }
