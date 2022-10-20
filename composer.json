@@ -1,10 +1,10 @@
 {
-  "name": "yoanm/jsonrpc-server-sdk",
+  "name": "symfonyx/jsonrpc-server-sdk",
   "description": "Server SDK to convert a json-rpc request string into json-rpc response string",
   "license": "MIT",
   "type": "library",
   "support": {
-    "issues": "https://github.com/yoanm/php-jsonrpc-server-sdk/issues"
+    "issues": "https://github.com/symfonyx/php-jsonrpc-server-sdk/issues"
   },
   "authors": [
     {
@@ -29,7 +29,7 @@
     "yoanm/jsonrpc-server-sdk-psr11-resolver": "Compatible PSR11 method resolver",
     "yoanm/jsonrpc-params-symfony-validator-sdk": "Compatible params validator",
     "yoanm/jsonrpc-server-doc-sdk": "Create documentation for your server",
-    "yoanm/symfony-jsonrpc-http-server": "JSON-RPC HTTP Symfony server Bundle"
+    "symfonyx/symfony-jsonrpc-http-server": "JSON-RPC HTTP Symfony server Bundle"
   },
   "require": {
     "php": ">=7.1",
