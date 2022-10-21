@@ -63,7 +63,7 @@ class JsonRpcCallSerializer
      */
     public function encode($normalizedContent) : string
     {
-        return json_encode($normalizedContent);
+        return json_encode($normalizedContent, JSON_FORCE_OBJECT);
     }
 
     /**
