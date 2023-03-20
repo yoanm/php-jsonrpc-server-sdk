@@ -39,6 +39,7 @@
     "behat/behat": "~3.0",
     "squizlabs/php_codesniffer": "3.*",
     "phpunit/phpunit": "^7.0 || ^8.0",
+    "phpspec/prophecy": "^1.0",
     "yoanm/php-unit-extended": "^1.0",
     "yoanm/jsonrpc-server-doc-sdk": "^0.2"
   }

@@ -34,9 +34,7 @@ class ResponseCreatorTest extends TestCase
         $response = $this->responseCreator->createErrorResponse($exception);
 
         $this->assertInstanceOf(JsonRpcInternalErrorException::class, $response->getError());
-        $this->assertSame(
-            $message,
-            $response->getError()->getErrorData()[JsonRpcInternalErrorException::DATA_PREVIOUS_KEY]
-        );
+        $this->assertEmpty($response->getError()->getErrorData());
+        $this->assertSame($exception, $response->getError()->getPrevious());
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Functional\App\Serialization;
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
+use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
@@ -131,5 +132,56 @@ class JsonRpcResponseNormalizerTest extends TestCase
 
         $this->assertArrayHasKey(self::EXPECTED_SUB_KEY_ERROR_DATA, $errorObject, 'Error data not found');
         $this->assertSame($data, $errorObject[self::EXPECTED_SUB_KEY_ERROR_DATA], 'Error data not expected');
+    }
+
+    public function testShouldConcealErrorDataWithoutDebug()
+    {
+        $this->responseNormalizer = new JsonRpcResponseNormalizer(false);
+
+        $exceptionMessage = 'Test exception';
+        $exceptionCode = 12345;
+
+        try {
+            throw new \RuntimeException($exceptionMessage, $exceptionCode);
+        } catch (\Throwable $exception) {
+            // shutdown test exception as prepared
+        }
+
+        $response = (new JsonRpcResponse())
+            ->setError(new JsonRpcInternalErrorException($exception));
+
+        $result = $this->responseNormalizer->normalize($response);
+
+        $this->assertTrue(empty($result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA]));
+    }
+
+    public function testShouldShowErrorDataWithDebug()
+    {
+        $this->responseNormalizer = new JsonRpcResponseNormalizer(true);
+
+        $exceptionMessage = 'Test exception';
+        $exceptionCode = 12345;
+
+        try {
+            throw new \RuntimeException($exceptionMessage, $exceptionCode);
+        } catch (\Throwable $exception) {
+            // shutdown test exception as prepared
+        }
+
+        $response = (new JsonRpcResponse())
+            ->setError(new JsonRpcInternalErrorException($exception));
+
+        $result = $this->responseNormalizer->normalize($response);
+
+        $this->assertFalse(empty($result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA]));
+
+        $debugData = $result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA];
+
+        $this->assertFalse(empty($debugData['_code']));
+        $this->assertFalse(empty($debugData['_message']));
+        $this->assertFalse(empty($debugData['_trace']));
+
+        $this->assertSame($exceptionMessage, $debugData['_message']);
+        $this->assertSame($exceptionCode, $debugData['_code']);
     }
 }
