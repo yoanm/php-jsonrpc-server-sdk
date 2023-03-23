@@ -2,6 +2,7 @@
 namespace Tests\Functional\App\Serialization;
 
 use PHPUnit\Framework\TestCase;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseErrorNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
@@ -134,9 +135,9 @@ class JsonRpcResponseNormalizerTest extends TestCase
         $this->assertSame($data, $errorObject[self::EXPECTED_SUB_KEY_ERROR_DATA], 'Error data not expected');
     }
 
-    public function testShouldConcealErrorDataWithoutDebug()
+    public function testShouldConcealErrorDataWithoutErrorNormalizer()
     {
-        $this->responseNormalizer = new JsonRpcResponseNormalizer(false);
+        $this->responseNormalizer = new JsonRpcResponseNormalizer();
 
         $exceptionMessage = 'Test exception';
         $exceptionCode = 12345;
@@ -155,9 +156,9 @@ class JsonRpcResponseNormalizerTest extends TestCase
         $this->assertTrue(empty($result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA]));
     }
 
-    public function testShouldShowErrorDataWithDebug()
+    public function testShouldShowErrorDataWithErrorNormalizer()
     {
-        $this->responseNormalizer = new JsonRpcResponseNormalizer(true);
+        $this->responseNormalizer = new JsonRpcResponseNormalizer(new JsonRpcResponseErrorNormalizer());
 
         $exceptionMessage = 'Test exception';
         $exceptionCode = 12345;
@@ -174,14 +175,5 @@ class JsonRpcResponseNormalizerTest extends TestCase
         $result = $this->responseNormalizer->normalize($response);
 
         $this->assertFalse(empty($result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA]));
-
-        $debugData = $result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA];
-
-        $this->assertFalse(empty($debugData['_code']));
-        $this->assertFalse(empty($debugData['_message']));
-        $this->assertFalse(empty($debugData['_trace']));
-
-        $this->assertSame($exceptionMessage, $debugData['_message']);
-        $this->assertSame($exceptionCode, $debugData['_code']);
     }
 }

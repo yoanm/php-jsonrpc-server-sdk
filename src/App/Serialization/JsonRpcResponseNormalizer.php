@@ -18,14 +18,12 @@ class JsonRpcResponseNormalizer
     const SUB_KEY_ERROR_MESSAGE = 'message';
     const SUB_KEY_ERROR_DATA = 'data';
 
-    /**
-     * @var bool whether to display debug data for the errors.
-     */
-    protected $debug = false;
+    /** @var JsonRpcResponseErrorNormalizer */
+    private $responseErrorNormalizer;
 
-    public function __construct(bool $debug = false)
+    public function __construct(?JsonRpcResponseErrorNormalizer $responseErrorNormalizer = null)
     {
-        $this->debug = $debug;
+        $this->responseErrorNormalizer = $responseErrorNormalizer;
     }
 
     /**
@@ -70,8 +68,8 @@ class JsonRpcResponseNormalizer
 
         $errorData = $error->getErrorData();
 
-        if ($this->debug) {
-            $errorData += $this->composeDebugErrorData($error->getPrevious() ?? $error);
+        if (null !== $this->responseErrorNormalizer) {
+            $errorData += $this->responseErrorNormalizer->normalize($error);
         }
 
 
@@ -80,14 +78,5 @@ class JsonRpcResponseNormalizer
         }
 
         return $normalizedError;
-    }
-
-    private function composeDebugErrorData(\Throwable $error) : array
-    {
-        return [
-            '_code' => $error->getCode(),
-            '_message' => $error->getMessage(),
-            '_trace' => $error->getTrace(),
-        ];
     }
 }
