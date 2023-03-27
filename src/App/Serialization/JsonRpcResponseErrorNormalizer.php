@@ -80,7 +80,7 @@ class JsonRpcResponseErrorNormalizer
 
         $result = [];
         foreach ($trace as $entry) {
-            if (!empty($entry['args'])) {
+            if (array_key_exists('args', $entry)) {
                 if ($this->showTraceArguments) {
                     if ($this->simplifyTraceArguments) {
                         $entry['args'] = $this->simplifyArguments($entry['args']);
