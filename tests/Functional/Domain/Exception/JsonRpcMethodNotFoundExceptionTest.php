@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
 
 /**
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcMethodNotFoundException;
  */
 class JsonRpcMethodNotFoundExceptionTest extends TestCase
 {
+    use ProphecyTrait;
+
     const DEFAULT_METHOD = 'default-method';
 
     public function testShouldHaveTheRightJsonRpcErrorCode()

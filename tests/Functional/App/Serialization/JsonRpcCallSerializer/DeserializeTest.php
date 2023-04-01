@@ -3,6 +3,7 @@ namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Tests\Functional\App\Serialization\Helper\RequestStringProviderTrait;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
@@ -18,6 +19,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
  */
 class DeserializeTest extends TestCase
 {
+    use ProphecyTrait;
+
     use RequestStringProviderTrait;
 
     /** @var JsonRpcCallSerializer */

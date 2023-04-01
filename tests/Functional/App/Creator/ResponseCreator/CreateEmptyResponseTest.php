@@ -1,6 +1,8 @@
 <?php
 namespace Tests\Functional\App\Creator\ResponseCreator;
 
+use Prophecy\PhpUnit\ProphecyTrait;
+
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
  *
@@ -11,6 +13,8 @@ namespace Tests\Functional\App\Creator\ResponseCreator;
  */
 class CreateEmptyResponseTest extends BaseTestCase
 {
+    use ProphecyTrait;
+
     /**
      * Should bind following properties  to response :
      *  - json-rpc version from request

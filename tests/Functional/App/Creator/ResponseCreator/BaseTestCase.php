@@ -2,12 +2,15 @@
 namespace Tests\Functional\App\Creator\ResponseCreator;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 class BaseTestCase extends TestCase
 {
+    use ProphecyTrait;
+
     const DEFAULT_JSONRPC = '2.0';
     const DEFAULT_ID = '1234567890';
     const DEFAULT_METHOD = 'defaultMethod';
