@@ -124,10 +124,7 @@ Feature: Ensure JSON-RPC errors specifications
       "id": "297c8498-5a54-471c-ac75-917be6435607",
       "error": {
         "code": -32603,
-        "message": "Internal error",
-        "data": {
-          "previous": "method-that-throw-an-exception-during-execution execution exception"
-        }
+        "message": "Internal error"
       }
     }
     """
