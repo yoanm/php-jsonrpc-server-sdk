@@ -15,13 +15,25 @@ class JsonRpcResponseErrorNormalizerTest extends TestCase
 {
     protected function prepareException($exceptionMessage = 'Test exception', $exceptionCode = 12345) : \Throwable
     {
+        $args = [
+            'object' => new \stdClass(),
+            'bool' => true,
+            'string' => 'a string',
+            // Managed argument count being at 5, create a sub bucket
+            'sub' => [
+                'a too long string' => str_repeat('a', 100),
+                'null' => null,
+                'resource' => tmpfile(),
+                'list' => [0, 3, 345],
+            ],
+        ];
         try {
             // create a long stack trace
-            $closure = function ($exceptionMessage, $exceptionCode) {
+            $closure = function ($exceptionMessage, $exceptionCode, array $allTypesOfArgs) {
                 throw new \RuntimeException($exceptionMessage, $exceptionCode);
             };
 
-            call_user_func($closure, $exceptionMessage, $exceptionCode);
+            call_user_func($closure, $exceptionMessage, $exceptionCode, $args);
         } catch (\Throwable $exception) {
             // shutdown test exception as prepared
         }
