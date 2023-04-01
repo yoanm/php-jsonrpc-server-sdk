@@ -30,6 +30,7 @@ build:
 
     environment:
         variables:
+            XDEBUG_MODE: 'coverage'
             CI: 'true'
             TEST_OUTPUT_STYLE: 'pretty'
             COMPOSER_OPTIONS: '--optimize-autoloader'
