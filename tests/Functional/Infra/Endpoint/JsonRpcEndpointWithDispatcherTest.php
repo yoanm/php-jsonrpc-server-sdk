@@ -3,6 +3,7 @@ namespace Tests\Functional\Infra\Endpoint;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Handler\ExceptionHandler;
 use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
@@ -24,6 +25,8 @@ use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
  */
 class JsonRpcEndpointWithDispatcherTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var JsonRpcEndpoint */
     private $endpoint;
     /** @var JsonRpcCallSerializer|ObjectProphecy */

@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Event\Acknowledge;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnBatchSubRequestProcessedEvent;
 
 /**
@@ -13,6 +14,8 @@ use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnBatchSubRequestProcessedEvent
  */
 class OnBatchSubRequestProcessedEventTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldManageAnItemPosition()
     {
         $itemPosition = 23;

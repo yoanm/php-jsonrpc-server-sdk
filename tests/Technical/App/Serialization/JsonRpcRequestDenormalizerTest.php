@@ -2,6 +2,7 @@
 namespace Tests\Technical\App\Serialization;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 
@@ -13,6 +14,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
  */
 class JsonRpcRequestDenormalizerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var JsonRpcRequestDenormalizer */
     private $requestDenormalizer;
 

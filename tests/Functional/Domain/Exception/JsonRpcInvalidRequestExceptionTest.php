@@ -1,7 +1,8 @@
 <?php
-namespace Tests\Technical\Domain\Exception;
+namespace Tests\Functional\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
 
 /**
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInvalidRequestException;
  */
 class JsonRpcInvalidRequestExceptionTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldHaveTheRightJsonRpcErrorCode()
     {
         $exception = new JsonRpcInvalidRequestException('my-content');
