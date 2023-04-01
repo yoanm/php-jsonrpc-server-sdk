@@ -16,7 +16,7 @@ build:
         stop_on_failure: true
         override:
             -
-                command: make coverage
+                command: make coverage && make test-behat
                 idle_timeout: 1200
                 coverage:
                     file: 'build/coverage/clover.xml'
