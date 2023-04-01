@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Technical\Domain\Exception;
+namespace Tests\Functional\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
