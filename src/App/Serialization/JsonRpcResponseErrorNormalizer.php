@@ -141,7 +141,7 @@ class JsonRpcResponseErrorNormalizer
 
             if (is_string($key)) {
                 $args[$key] = "'" . $key . "' => " . $args[$key];
-            } elseif($isAssoc) {
+            } elseif ($isAssoc) {
                 $args[$key] = $key.' => '.$args[$key];
             }
         }
