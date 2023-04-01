@@ -16,7 +16,7 @@ build:
         stop_on_failure: true
         override:
             -
-                command: make coverage
+                command: make coverage && make test-behat
                 idle_timeout: 1200
                 coverage:
                     file: 'build/coverage/clover.xml'
@@ -30,6 +30,7 @@ build:
 
     environment:
         variables:
+            XDEBUG_MODE: 'coverage'
             CI: 'true'
             TEST_OUTPUT_STYLE: 'pretty'
             COMPOSER_OPTIONS: '--optimize-autoloader'
@@ -37,7 +38,7 @@ build:
             COVERAGE_CLOVER_FILE_PATH: 'build/coverage/clover.xml'
             PHPCS_DISABLE_WARNING: "true"
         php:
-            version: "7.1"
+            version: "8.2"
         timezone: UTC
         postgresql: false
         redis: false

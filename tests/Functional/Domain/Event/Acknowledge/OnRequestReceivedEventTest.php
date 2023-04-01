@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Event\Acknowledge;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnRequestReceivedEvent;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 
@@ -13,6 +14,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
  */
 class OnRequestReceivedEventTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldManageACallStringAndDenormalizedCall()
     {
         $callString = 'my-call-string';

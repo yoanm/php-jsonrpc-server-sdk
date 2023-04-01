@@ -3,6 +3,7 @@ namespace Tests\Functional\App\Handler;
 
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\App\Handler\JsonRpcRequestHandler;
@@ -20,6 +21,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
  */
 class JsonRpcRequestHandlerWithDispatcherTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var JsonRpcRequestHandler */
     private $requestHandler;
     /** @var JsonRpcMethodResolverInterface|ObjectProphecy */

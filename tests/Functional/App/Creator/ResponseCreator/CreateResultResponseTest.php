@@ -1,6 +1,8 @@
 <?php
 namespace Tests\Functional\App\Creator\ResponseCreator;
 
+use Prophecy\PhpUnit\ProphecyTrait;
+
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
  *
@@ -8,6 +10,8 @@ namespace Tests\Functional\App\Creator\ResponseCreator;
  */
 class CreateResultResponseTest extends BaseTestCase
 {
+    use ProphecyTrait;
+
     /**
      * Should handle result
      */
