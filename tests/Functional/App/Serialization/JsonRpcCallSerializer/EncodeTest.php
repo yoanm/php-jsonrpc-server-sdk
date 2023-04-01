@@ -2,6 +2,7 @@
 namespace Tests\Functional\App\Serialization\JsonRpcCallSerializer;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
@@ -15,6 +16,8 @@ use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
  */
 class EncodeTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var JsonRpcCallSerializer */
     private $jsonRpcCallSerializer;
     /** @var JsonRpcCallDenormalizer|ObjectProphecy */

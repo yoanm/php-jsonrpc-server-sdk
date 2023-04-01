@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Event\Acknowledge;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Event\Acknowledge\OnResponseSendingEvent;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
@@ -14,6 +15,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCallResponse;
  */
 class OnResponseSendingEventTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldManageAResponseStringAndNormalizedResponseCall()
     {
         $responseString = 'my-call-string';

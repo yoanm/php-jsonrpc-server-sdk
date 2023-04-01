@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
 
 /**
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcParseErrorException;
  */
 class JsonRpcParseErrorExceptionTest extends TestCase
 {
+    use ProphecyTrait;
+
     const DEFAULT_CONTENT = 'default-content';
 
     public function testShouldHaveTheRightJsonRpcErrorCode()

@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Model;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcCall;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
@@ -12,6 +13,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
  */
 class JsonRpcCallTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldManageBatchProperty()
     {
         $this->assertTrue((new JsonRpcCall(true))->isBatch());

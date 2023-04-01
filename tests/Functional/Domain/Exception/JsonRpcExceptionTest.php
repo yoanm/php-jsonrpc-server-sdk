@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 
 /**
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
  */
 class JsonRpcExceptionTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldHandleACode()
     {
         $code = 4321;

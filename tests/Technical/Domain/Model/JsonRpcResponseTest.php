@@ -2,6 +2,7 @@
 namespace Tests\Technical\Domain\Model;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  */
 class JsonRpcResponseTest extends TestCase
 {
+
+    use ProphecyTrait;
     use IdProviderTrait;
 
     /**
