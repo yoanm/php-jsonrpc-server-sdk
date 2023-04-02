@@ -1,4 +1,11 @@
 default:
+  extensions:
+    DVDoug\Behat\CodeCoverage\Extension:
+      filter:
+        include:
+          directories:
+            'src': ~
+      reports: [] # No reports
   suites:
     default:
       contexts:
@@ -6,15 +13,19 @@ default:
         - Tests\Functional\BehatContext\EventsContext: ~
 coverage:
   extensions:
-    LeanPHP\Behat\CodeCoverage\Extension:
-      drivers:
-      - local
-      filter:
-        whitelist:
-          include:
-            directories:
-              'src': ~
-      report:
-        format:   html
-        options:
-          target: build/behat-coverage
+    DVDoug\Behat\CodeCoverage\Extension:
+      reports:
+        text:
+          showColors: true
+coverage-html:
+  extensions:
+    DVDoug\Behat\CodeCoverage\Extension:
+      reports:
+        html:
+          target: build/coverage-behat
+coverage-clover:
+  extensions:
+    DVDoug\Behat\CodeCoverage\Extension:
+      reports:
+        clover:
+          target: build/coverage-behat/clover.xml
