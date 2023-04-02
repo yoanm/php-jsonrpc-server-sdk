@@ -11,18 +11,27 @@ build_failure_conditions:
 build:
     dependencies:
         override:
-            - make build
+            - command: make build
+              title: Build deps
+              idle_timeout: 240
     tests:
         stop_on_failure: true
         override:
-            -
-                command: make coverage && make test-behat
-                idle_timeout: 1200
-                coverage:
-                    file: 'build/coverage/clover.xml'
-                    format: 'php-clover'
-            - php-scrutinizer-run --enable-security-analysis
-            - make codestyle
+            - command: make codestyle
+              title: Code style
+            - command: make scrutinizer-phpunit
+              idle_timeout: 1200
+              coverage:
+                  file: 'build/coverage-phpunit/scrutinizer.xml'
+                  format: 'php-clover'
+            - command: make scrutinizer-behat
+              idle_timeout: 1200
+              coverage:
+                  file: 'build/coverage-behat/clover.xml'
+                  format: 'php-clover'
+            - command: php-scrutinizer-run --enable-security-analysis
+              title: Scrutinizer checks
+
     cache:
         directories:
             - ~/.composer
@@ -30,15 +39,15 @@ build:
 
     environment:
         variables:
-            XDEBUG_MODE: 'coverage'
             CI: 'true'
             TEST_OUTPUT_STYLE: 'pretty'
             COMPOSER_OPTIONS: '--optimize-autoloader'
             COVERAGE_OUTPUT_STYLE: 'clover'
             COVERAGE_CLOVER_FILE_PATH: 'build/coverage/clover.xml'
-            PHPCS_DISABLE_WARNING: "true"
         php:
             version: "8.2"
+            ini:
+                memory_limit: "-1"
         timezone: UTC
         postgresql: false
         redis: false
