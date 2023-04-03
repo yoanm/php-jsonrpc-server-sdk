@@ -47,6 +47,8 @@ class JsonRpcResponseErrorNormalizer
      */
     public function normalize(JsonRpcExceptionInterface $error) : array
     {
+        // `JsonRpcExceptionInterface` has a little value regarding debug error data composition on its own,
+        // thus use previous exception, if available:
         return $this->composeDebugErrorData($error->getPrevious() ?? $error);
     }
 
@@ -106,8 +108,6 @@ class JsonRpcResponseErrorNormalizer
     {
         $count = 0;
 
-        $isAssoc = $args !== array_values($args);
-
         foreach ($args as $key => $value) {
             $count++;
 
@@ -125,7 +125,7 @@ class JsonRpcResponseErrorNormalizer
 
             if (is_string($key)) {
                 $args[$key] = "'" . $key . "' => " . $args[$key];
-            } elseif ($isAssoc) {
+            } else {
                 $args[$key] = $key.' => '.$args[$key];
             }
         }
