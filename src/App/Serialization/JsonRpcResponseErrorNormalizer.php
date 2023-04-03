@@ -108,6 +108,8 @@ class JsonRpcResponseErrorNormalizer
     {
         $count = 0;
 
+        $isAssoc = $args !== array_values($args);
+
         foreach ($args as $key => $value) {
             $count++;
 
@@ -125,7 +127,8 @@ class JsonRpcResponseErrorNormalizer
 
             if (is_string($key)) {
                 $args[$key] = "'" . $key . "' => " . $args[$key];
-            } else {
+            } elseif ($isAssoc) {
+                // contains both numeric and string keys:
                 $args[$key] = $key.' => '.$args[$key];
             }
         }
