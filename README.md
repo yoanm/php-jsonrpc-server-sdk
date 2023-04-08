@@ -120,7 +120,8 @@ $jsonRpcSerializer = new JsonRpcCallSerializer(
     ),
     new JsonRpcCallResponseNormalizer(
         new JsonRpcResponseNormalizer() 
-        // or `new JsonRpcResponseNormalizer(new JsonRpcResponseErrorNormalizer())` for debug purpose
+        // Or `new JsonRpcResponseNormalizer(new JsonRpcResponseErrorNormalizer())` for debug purpose
+        // To also dump arguments, be sure 'zend.exception_ignore_args' ini option is not at true/1
     )
 );
 $responseCreator = new ResponseCreator();

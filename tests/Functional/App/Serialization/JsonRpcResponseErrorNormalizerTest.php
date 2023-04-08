@@ -99,6 +99,7 @@ class JsonRpcResponseErrorNormalizerTest extends TestCase
      */
     public function testShouldShowTraceArguments()
     {
+        ini_set('zend.exception_ignore_args', 0); // Be sure arguments will be available on the stack trace
         $exception = $this->prepareException();
 
         $normalizer = new JsonRpcResponseErrorNormalizer(99, true);
@@ -120,6 +121,7 @@ class JsonRpcResponseErrorNormalizerTest extends TestCase
      */
     public function testShouldHideTraceArguments()
     {
+        ini_set('zend.exception_ignore_args', 0); // Be sure arguments will be available on the stack trace
         $exception = $this->prepareException();
 
         $normalizer = new JsonRpcResponseErrorNormalizer(99, false);
