@@ -28,13 +28,7 @@ class JsonRpcInternalErrorExceptionTest extends TestCase
 
         $exception = new JsonRpcInternalErrorException($previousException);
 
-        $this->assertArrayHasKey(
-            JsonRpcInternalErrorException::DATA_PREVIOUS_KEY,
-            $exception->getErrorData()
-        );
-        $this->assertSame(
-            $message,
-            $exception->getErrorData()[JsonRpcInternalErrorException::DATA_PREVIOUS_KEY]
-        );
+        $this->assertEmpty($exception->getErrorData());
+        $this->assertSame($previousException, $exception->getPrevious());
     }
 }
