@@ -21,11 +21,16 @@ class JsonRpcResponseErrorNormalizerTest extends TestCase
             'string' => 'a string',
             // Managed argument count being at 5, create a sub bucket
             'sub' => [
-                'a too long string' => str_repeat('a', 100),
+                'a_too_long_string' => str_repeat('a', 100),
                 'null' => null,
                 'resource' => tmpfile(),
-                'list' => [0, 3, 345],
+                'sub' => [
+                    'list' => ['foo', 'bar'],
+                    'list_with_holes' => [9 => 'nine', 5 => 'five'],
+                    'mixed_array' => ['foo', 'name' => 'bar']
+                ]
             ],
+            'extra_param' => 'will not be normalized!'
         ];
         try {
             // create a long stack trace
