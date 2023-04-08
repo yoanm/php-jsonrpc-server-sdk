@@ -43,10 +43,7 @@ Feature: Actions through events
       "id": null,
       "error": {
         "code": -32603,
-        "message": "Internal error",
-        "data": {
-          "previous": "my custom exception message"
-        }
+        "message": "Internal error"
       }
     }
     """
@@ -94,10 +91,7 @@ Feature: Actions through events
       "id": 1,
       "error": {
         "code": -32603,
-        "message": "Internal error",
-        "data": {
-          "previous": "my custom exception message"
-        }
+        "message": "Internal error"
       }
     }
     """

@@ -4,6 +4,7 @@ namespace Tests\Functional\BehatContext;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use DemoApp\Dispatcher\BehatRequestLifecycleDispatcher;
 use PHPUnit\Framework\Assert;
 use Tests\Functional\BehatContext\Helper\FakeEndpointCreator;
 
@@ -26,6 +27,8 @@ class FeatureContext extends AbstractContext
     /** @var  EventsContext */
     private $eventsContext;
 
+    private bool $enableJsonRpcResponseErrorNormalizer = false;
+
     /**
      * @BeforeScenario
      *
@@ -41,11 +44,20 @@ class FeatureContext extends AbstractContext
     }
 
     /**
+     * @Given JsonRpcResponseErrorNormalizer is enabled
+     */
+    public function givenJsonRpcResponseErrorNormalizerIsEnabled()
+    {
+        $this->enableJsonRpcResponseErrorNormalizer =  true;
+    }
+
+    /**
      * @When I send following payload:
      */
     public function whenISendTheFollowingPayload(PyStringNode $payload)
     {
-        $endpoint = (new FakeEndpointCreator())->create($this->eventsContext->getDispatcher());
+        $endpoint = (new FakeEndpointCreator())
+            ->create($this->eventsContext->getDispatcher(), $this->enableJsonRpcResponseErrorNormalizer);
 
         $this->lastResponse = $endpoint->index($payload->getRaw());
     }
