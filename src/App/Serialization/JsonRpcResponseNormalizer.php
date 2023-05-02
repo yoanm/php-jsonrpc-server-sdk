@@ -18,6 +18,14 @@ class JsonRpcResponseNormalizer
     const SUB_KEY_ERROR_MESSAGE = 'message';
     const SUB_KEY_ERROR_DATA = 'data';
 
+    /** @var JsonRpcResponseErrorNormalizer */
+    private $responseErrorNormalizer;
+
+    public function __construct(?JsonRpcResponseErrorNormalizer $responseErrorNormalizer = null)
+    {
+        $this->responseErrorNormalizer = $responseErrorNormalizer;
+    }
+
     /**
      * @param JsonRpcResponse $response
      *
@@ -58,8 +66,15 @@ class JsonRpcResponseNormalizer
             self::SUB_KEY_ERROR_MESSAGE => $error->getErrorMessage()
         ];
 
-        if ($error->getErrorData()) {
-            $normalizedError[self::SUB_KEY_ERROR_DATA] = $error->getErrorData();
+        $errorData = $error->getErrorData();
+
+        if (null !== $this->responseErrorNormalizer) {
+            $errorData += $this->responseErrorNormalizer->normalize($error);
+        }
+
+
+        if (!empty($errorData)) {
+            $normalizedError[self::SUB_KEY_ERROR_DATA] = $errorData;
         }
 
         return $normalizedError;

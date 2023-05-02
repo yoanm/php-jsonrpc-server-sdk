@@ -107,6 +107,7 @@ use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseErrorNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Infra\Endpoint\JsonRpcEndpoint;
 
@@ -118,7 +119,9 @@ $jsonRpcSerializer = new JsonRpcCallSerializer(
         new JsonRpcRequestDenormalizer()
     ),
     new JsonRpcCallResponseNormalizer(
-        new JsonRpcResponseNormalizer()
+        new JsonRpcResponseNormalizer() 
+        // Or `new JsonRpcResponseNormalizer(new JsonRpcResponseErrorNormalizer())` for debug purpose
+        // To also dump arguments, be sure 'zend.exception_ignore_args' ini option is not at true/1
     )
 );
 $responseCreator = new ResponseCreator();
@@ -325,21 +328,6 @@ $validator = new class implements JsonRpcMethodParamsValidatorInterface
 };
 
 $requestHandler->setMethodParamsValidator($validator);
-```
-
-## Makefile
-
-```bash
-# Install and configure project
-make build
-# Launch tests (PHPUnit & behat)
-make test
-# Check project code style
-make codestyle
-# Generate PHPUnit coverage
-make coverage
-# Generate Behat coverage
-make behat-coverage
 ```
 
 ## Contributing

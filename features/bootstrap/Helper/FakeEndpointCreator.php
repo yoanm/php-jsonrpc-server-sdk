@@ -15,6 +15,7 @@ use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallDenormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallResponseNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcCallSerializer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcRequestDenormalizer;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseErrorNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodParamsValidatorInterface;
@@ -27,8 +28,10 @@ class FakeEndpointCreator
     /**
      * @return JsonRpcEndpoint
      */
-    public function create(JsonRpcServerDispatcherInterface $dispatcher = null) : JsonRpcEndpoint
-    {
+    public function create(
+        JsonRpcServerDispatcherInterface $dispatcher = null,
+        bool $enableJsonRpcResponseErrorNormalizer = false
+    ) : JsonRpcEndpoint {
         /** @var AbstractMethod[] $methodList */
         $methodList = [
             'basic-method' => new BasicMethod(),
@@ -37,6 +40,10 @@ class FakeEndpointCreator
             'method-that-throw-an-exception-during-execution' => new MethodThatThrowExceptionDuringExecution(),
             'method-that-throw-a-custom-jsonrpc-exception-during-execution' => new MethodThatThrowJsonRpcExceptionDuringExecution(),
         ];
+        $jsonRpcResponseErrorNormalizer = $enableJsonRpcResponseErrorNormalizer
+            ? new JsonRpcResponseErrorNormalizer(0)
+            : null
+        ;
 
         $methodResolver = new BehatMethodResolver();
 
@@ -49,7 +56,7 @@ class FakeEndpointCreator
                 new JsonRpcRequestDenormalizer()
             ),
             new JsonRpcCallResponseNormalizer(
-                new JsonRpcResponseNormalizer()
+                new JsonRpcResponseNormalizer($jsonRpcResponseErrorNormalizer)
             )
         );
         $responseCreator = new ResponseCreator();
