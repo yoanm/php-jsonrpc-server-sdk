@@ -42,8 +42,6 @@ class CreateResultResponseTest extends BaseTestCase
         $this->assertFromRequestBinding($fromRequest, $response);
     }
 
-
-
     /**
      * Bug fix: https://github.com/yoanm/php-jsonrpc-server-sdk/issues/94
      */
