@@ -50,11 +50,7 @@ class JsonRpcRequestDenormalizer
     {
         /** If no id defined => request is a notification */
         if (isset($item[self::KEY_ID])) {
-            $request->setId(
-                $item[self::KEY_ID] == (string)((int)$item[self::KEY_ID])
-                    ? (int)$item[self::KEY_ID] // Convert it in case it's a string containing an int
-                    : (string)$item[self::KEY_ID] // Convert to string in all other cases
-            );
+            $request->setId($item[self::KEY_ID]);
         }
     }
 

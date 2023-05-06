@@ -36,6 +36,7 @@
   },
   "require-dev": {
     "behat/behat": "^3.9.0",
+    "coduo/php-matcher": "^6.0",
     "dvdoug/behat-code-coverage": "^5.0",
     "phpspec/prophecy": "^1.15",
     "phpspec/prophecy-phpunit": "^2.0",
