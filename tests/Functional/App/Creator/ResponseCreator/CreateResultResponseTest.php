@@ -2,6 +2,7 @@
 namespace Tests\Functional\App\Creator\ResponseCreator;
 
 use Prophecy\PhpUnit\ProphecyTrait;
+use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
 
 /**
  * @covers \Yoanm\JsonRpcServer\App\Creator\ResponseCreator
@@ -39,5 +40,18 @@ class CreateResultResponseTest extends BaseTestCase
 
         $this->assertSame($result, $response->getResult());
         $this->assertFromRequestBinding($fromRequest, $response);
+    }
+
+
+
+    /**
+     * Bug fix: https://github.com/yoanm/php-jsonrpc-server-sdk/issues/94
+     */
+    public function testShouldConvertRequestWithZeroIdToResponseWithZeroId() {
+        $fromRequest = $this->createRequest(self::DEFAULT_METHOD, self::DEFAULT_JSONRPC, 0);
+
+        $response = $this->responseCreator->createEmptyResponse($fromRequest);
+
+        $this->assertSame(0, $response->getId());
     }
 }

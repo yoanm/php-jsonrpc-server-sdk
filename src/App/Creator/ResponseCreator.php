@@ -26,7 +26,8 @@ class ResponseCreator
                 ->setIsNotification($fromRequest->isNotification())
         ;
 
-        if (!is_null($fromRequest->getId())) {
+        // Notification response doesn't have any ID defined (notification request doesn't either)
+        if (!$fromRequest->isNotification()) {
             $response->setId($fromRequest->getId());
         }
 
