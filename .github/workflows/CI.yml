@@ -83,7 +83,6 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      # Upload to codacy first as codecov action always remove coverage files despite move_coverage_to_trash at false
       # And only if it's not a PR from a fork => Can't work as codacy secret is not accessible in that context
       - name: Upload coverages to Codacy
         if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'yoanm/php-jsonrpc-server-sdk') && env.COVERAGE_TYPE == 'xdebug' }}
@@ -94,11 +93,10 @@ jobs:
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: codecov/codecov-action@v4
         with:
-          file: "build/coverage-phpunit/unit.clover"
+          files: "build/coverage-phpunit/unit.clover"
           name: "unit-tests-${{ matrix.php-version }}"
           flags: "unit-tests,php-${{ matrix.php-version }}"
           fail_ci_if_error: true
-          move_coverage_to_trash: false
           verbose: ${{ runner.debug == '1' }}
 
       - name: Upload functional tests coverage to codecov
@@ -109,7 +107,6 @@ jobs:
           name: "functional-tests-${{ matrix.php-version }}"
           flags: "functional-tests,php-${{ matrix.php-version }}"
           fail_ci_if_error: true
-          move_coverage_to_trash: false
           verbose: ${{ runner.debug == '1' }}
 
   static-checks:
