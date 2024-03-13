@@ -96,6 +96,7 @@ jobs:
           files: "build/coverage-phpunit/unit.clover"
           name: "unit-tests-${{ matrix.php-version }}"
           flags: "unit-tests,php-${{ matrix.php-version }}"
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: ${{ runner.debug == '1' }}
 
@@ -106,6 +107,7 @@ jobs:
           files: "build/coverage-behat/clover.xml,build/coverage-phpunit/functional.clover"
           name: "functional-tests-${{ matrix.php-version }}"
           flags: "functional-tests,php-${{ matrix.php-version }}"
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: ${{ runner.debug == '1' }}
 
