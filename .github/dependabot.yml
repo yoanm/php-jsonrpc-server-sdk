@@ -35,7 +35,7 @@ updates:
     schedule: # Create PRs during week-ends, they will be ready on monday morning
       interval: weekly
       day: sunday
-    versioning-strategy: increase # @TODO - Use "increase" for an app, but "widen" is better for a library !
+    versioning-strategy: widen
     commit-message:
       prefix: '[dependabot][prod][composer] - '
       prefix-development: '[dependabot][dev][composer] - '
@@ -60,5 +60,22 @@ updates:
         patterns: ['*']
       dev-others:
         applies-to: version-updates
+        dependency-type: development
+        patterns: ['*']
+# Split security updates by:
+#  - prod vs dev
+# @TODO - Uncomment the following group (and keep comment header below for explanation !) in case repository is for a library, else remove it !
+#  - Major prod updates vs other prod updates
+#      SECURITY-prod-major:
+#        applies-to: security-updates
+#        dependency-type: production
+#        update-types: ['major']
+#        patterns: ['*']
+      SECURITY-prod:
+        applies-to: security-updates
+        dependency-type: production
+        patterns: ['*']
+      SECURITY-dev:
+        applies-to: security-updates
         dependency-type: development
         patterns: ['*']
