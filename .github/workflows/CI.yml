@@ -27,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COVERAGE_TYPE: none
+      COVERAGE_ARTIFACT_NAME: coverage-php${{ matrix.php-version }}
+    outputs:
+      "php${{ matrix.php-version }}": ${{ steps.output-data.outputs.data }}
     strategy:
       fail-fast: true
       max-parallel: 4
@@ -35,7 +38,7 @@ jobs:
           # Bare minimum => Lowest versions allowed by composer config
           - php-version: '8.0'
             composer-flag: --prefer-lowest
-          # Up to date versions => Latest versions allowed by composer config
+          # Up-to-date versions => Latest versions allowed by composer config
           - php-version: '8.2'
     steps:
       - name: Check out code
@@ -49,13 +52,13 @@ jobs:
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
+        env:
+          update: true # Always use latest available patch for the version
         with:
           php-version: '${{ matrix.php-version }}'
+          fail-fast: true # Fails if an extension or tool fails to set up
           tools: composer
           coverage: ${{ env.COVERAGE_TYPE }}
-        env:
-          # Always use latest available patch for the version
-          update: true
 
       - name: Setup cache
         id: cache
@@ -64,17 +67,8 @@ jobs:
           path: |
             ~/.composer
             ./vendor
-            ${{ env.CODACY_CACHE_PATH }}
           # Clear the cache if composer json (as composer.lock is in the repo) has been updated
           key: tests-${{ matrix.php-version }}-${{ matrix.composer-flag }}-${{ hashFiles('composer.json') }}
-
-      - name: Download codacy binary
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ${{ env.CODACY_CACHE_PATH }} \
-          && curl -LN https://coverage.codacy.com/get.sh -o ${{ env.CODACY_BIN }} \
-          && chmod +x ${{ env.CODACY_BIN }} \
-          && ${{ env.CODACY_BIN }} download
 
       - name: Build
         run: |
@@ -83,136 +77,93 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      # Upload to codacy first as codecov action always remove coverage files despite move_coverage_to_trash at false
-      # And only if it's not a PR from a fork => Can't work as codacy secret is not accessible in that context
-      - name: Upload coverages to Codacy
-        if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'yoanm/php-jsonrpc-server-sdk') && env.COVERAGE_TYPE == 'xdebug' }}
-        run: ${{ env.CODACY_BIN }} report -r build/coverage-phpunit/unit.clover -r build/coverage-behat/clover.xml -r build/coverage-phpunit/functional.clover -t ${{ secrets.CODACY_PROJECT_TOKEN }} --partial
-
-      # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
-      - name: Upload unit tests coverage to codecov
-        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage as artifact
+        uses: actions/upload-artifact@v4
         with:
-          file: "build/coverage-phpunit/unit.clover"
-          name: "unit-tests-${{ matrix.php-version }}"
-          flags: "unit-tests,php-${{ matrix.php-version }}"
-          fail_ci_if_error: true
-          move_coverage_to_trash: false
-          verbose: ${{ runner.debug == '1' }}
+          name: ${{ env.COVERAGE_ARTIFACT_NAME }}
+          path: "build/coverage-*"
+          if-no-files-found: error
 
-      - name: Upload functional tests coverage to codecov
-        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        uses: codecov/codecov-action@v3
-        with:
-          files: "build/coverage-behat/clover.xml,build/coverage-phpunit/functional.clover"
-          name: "functional-tests-${{ matrix.php-version }}"
-          flags: "functional-tests,php-${{ matrix.php-version }}"
-          fail_ci_if_error: true
-          move_coverage_to_trash: false
-          verbose: ${{ runner.debug == '1' }}
+      - name: Prepare output
+        id: output-data
+        run: |
+          echo 'data={ "matrix": {"php-version": "${{ matrix.php-version }}", "artifact": "${{ env.COVERAGE_ARTIFACT_NAME }}"}}' >> $GITHUB_OUTPUT
 
-  static-checks:
-    name: Static checks
+  debug-output:
+    name: DEBUG
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup PHP 8.2
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.2 # Latest supported
-          tools: composer
-          coverage: none
-        env:
-          # Always use latest available patch for the version
-          update: true
-
-      - name: Setup cache
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.composer
-          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
-          key: tests-${{ env.PHP_VERSION }}-${{ hashFiles('composer.json') }}
-
-      - name: Build
-        run: make build
-
-      - name: ComposerRequireChecker
-        uses: docker://webfactory/composer-require-checker:4.5.0
-
-      - name: Dependencies check
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/dependency-review-action@v1
-
-  finalize-codacy-coverage-report:
-    runs-on: ubuntu-latest
-    name: Finalize Codacy coverage report
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'yoanm/php-jsonrpc-server-sdk' }}
     needs: [ tests ]
     steps:
-      - name: Setup cache
-        id: cache
-        uses: actions/cache@v3
+      - run: echo "${{ toJson(needs.tests.outputs.*.matrix) }}"
+      - uses: actions/download-artifact@v4
         with:
-          path: |
-            ${{ env.CODACY_CACHE_PATH }}
-          key: codacy-final
+          pattern: coverage-php*
+          path: coverage-data
+      - run: ls -ail coverage-data
 
-      - name: Download codacy binary
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ${{ env.CODACY_CACHE_PATH }} \
-          && curl -LN https://coverage.codacy.com/get.sh -o ${{ env.CODACY_BIN }} \
-          && chmod +x ${{ env.CODACY_BIN }} \
-          && ${{ env.CODACY_BIN }} download
+#  codecov-coverage-report:
+#    name: Codecov coverage report
+#    runs-on: ubuntu-latest
+#    environment: ci-codecov
+#    needs: [tests]
+#    strategy:
+#      fail-fast: true
+#      max-parallel: 4
+#      matrix:
+#        include: ${{ needs.tests.outputs.*.matrix }}
+#    steps:
+#      - name: Download PHP ${{ matrix.php-version }} coverage artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: ${{ matrix.artifact }}
+#          path: coverage-data
+#
+#      - name: DEBUG
+#        run: ls -ail coverage-data
+#
+#      # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
+#      - name: Upload unit tests coverage to codecov
+#        uses: codecov/codecov-action@v3
+#        with:
+#          files: "coverage-data/coverage-phpunit/unit.clover"
+#          name: "unit-tests-${{ matrix.php-version }}"
+#          flags: "unit-tests,php-${{ matrix.php-version }}"
+#          fail_ci_if_error: true
+#          token: ${{ secrets.ENV_CODECOV_TOKEN }}
+#          verbose: ${{ runner.debug == '1' }}
+#
+#      - name: Upload functional tests coverage to codecov
+#        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
+#        uses: codecov/codecov-action@v4
+#        with:
+#          files: "coverage-data/coverage-behat/clover.xml,coverage-data/coverage-phpunit/functional.clover"
+#          name: "functional-tests-${{ matrix.php-version }}"
+#          flags: "functional-tests,php-${{ matrix.php-version }}"
+#          token: ${{ secrets.ENV_CODECOV_TOKEN }}
+#          verbose: ${{ runner.debug == '1' }}
 
-      - name: Finalize reporting
-        run: ${{ env.CODACY_BIN }} final -t ${{ secrets.CODACY_PROJECT_TOKEN }}
 
-  nightly-tests:
-    name: Nightly - PHP ${{ matrix.php-version }}
-    runs-on: ubuntu-latest
-    env:
-      COMPOSER_OPTIONS: '--optimize-autoloader --ignore-platform-req=php+'
-    continue-on-error: true
-    needs: [ static-checks, tests ]
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        php-version:
-          - '8.3' # Current php dev version
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Setup PHP ${{ matrix.php-version }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '${{ matrix.php-version }}'
-          tools: composer
-          coverage: none
-        env:
-          # Always use latest available patch for the version
-          update: true
-
-      - name: Setup cache
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.composer
-            ./vendor
-          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
-          key: tests-${{ matrix.php-version }}-${{ hashFiles('composer.json') }}
-
-      - name: Build
-        run: |
-          make build
-
-      - name: Test
-        run: make test-unit && make test-functional
+#  codacy-coverage-report:
+#    name: Codacy coverage report
+#    runs-on: ubuntu-latest
+#    environment: ci-codacy
+#    needs: [ tests ]
+#    steps:
+#      - name: Download all PHP coverage artifacts
+#        uses: actions/download-artifact@v4
+#       with:
+#          pattern: coverage-php*
+#          path: coverage-data
+#
+#      - name: DEBUG
+#        run: ls -ail coverage-data
+#
+#      - name: Find available files
+#        run: |
+#          ls -ail coverage-data/*/coverage-phpunit/unit.clover coverage-data/*/coverage-behat/clover.xml coverage-data/*/coverage-phpunit/functional.clover
+#
+#      - name: Run codacy-coverage-reporter
+#        uses: codacy/codacy-coverage-reporter-action@v1
+#        with:
+#          project-token: ${{ secrets.ENV_CODACY_PROJECT_TOKEN }}
+#          coverage-reports: coverage-data/*/coverage-phpunit/unit.clover,coverage-data/*/coverage-behat/clover.xml,coverage-data/*/coverage-phpunit/functional.clover
