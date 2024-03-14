@@ -1,0 +1,53 @@
+name: Grouped reports matrix
+description: TODO
+inputs:
+  root:
+    description: Where to look for grouped reports
+    required: false
+    default: '.'
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/github-script@v7
+      env:
+        ROOT: ${{ inputs.root }}
+      with:
+        script: |
+          const path = require('path');
+          const { ROOT } = process.env;
+
+          await core.group('Validate inputs', async () => {
+            core.debug(`root='${ROOT}'`);
+            if (0 === ROOT.trim().length) {
+              core.setFailed('You must provide a root path !');
+            }
+          });
+
+          const metadataFileList = await core.group('Find metadata files', async () => {
+            const res = [];
+            const globber = await glob.create(`${pattern}/**/metadata.json`);
+            for await (const file of globber.globGenerator()) {
+              core.debug(`Found ${file}`);
+              res.push(file);
+            }
+            return res;
+          });
+
+          core.debug(`metadataFileList='${JSON.stringify(metadataFileList)}'`);
+
+          const matrix = await core.group('Build matrix', async () => {
+            const res = [];
+            for (const file of metadataFileList) {
+              core.debug(`Found ${file}`);
+              const groupDirectory = path.dirname(file);
+              const reports = await glob.create(`${groupDirectory}/report-*`).glob();
+
+              res.push({path: groupDirectory, metadata: file, reports: reports});
+            }
+          });
+          core.debug(`matrix='${JSON.stringify(matrix)}'`);

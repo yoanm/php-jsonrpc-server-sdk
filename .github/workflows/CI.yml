@@ -75,29 +75,47 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      - name: Create coverage artifact content
+      - name: Create "unit tests" coverage report group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        run: |
-          echo "::group::Coverage files for PHP ${{ matrix.php-version }}"
-          ls -l build/coverage-*
-          echo "::endgroup::"
+        uses: ./.github/actions/group-coverage-reports
+        with:
+          name: unit-tests-php${{ matrix.php-version }}
+          files: build/coverage-phpunit/unit.clover
+          flags: unit-tests,php-${{ matrix.php-version }}
+          root: build/coverage-reports-groups
 
-          mkdir -p build/coverage-report/{unit,functional}
-          echo '{"php": "${{ matrix.php-version }}"}' > build/coverage-report/metadata.json
-          mv build/coverage-phpunit/unit.clover build/coverage-report/unit/phpunit-clover.xml
-          mv build/coverage-phpunit/functional.clover build/coverage-report/functional/phpunit-clover.xml
-          mv build/coverage-behat/clover.xml build/coverage-report/functional/behat-clover.xml
+      - name: Create "functional tests" coverage report group
+        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
+        uses: ./.github/actions/group-coverage-reports
+        with:
+          name: functional-tests-php${{ matrix.php-version }}
+          files: build/coverage-phpunit/functional.clover,build/coverage-behat/clover.xml
+          flags: functional-tests,php-${{ matrix.php-version }}
+          root: build/coverage-reports-groups
+
+#        run: |
+#          echo "::group::Coverage files for PHP ${{ matrix.php-version }}"
+#          ls -l build/coverage-*
+#          echo "::endgroup::"
+#          mkdir -p build/coverage-report/{unit,functional}
+#          # Unit tests
+#          echo '{"name": "unit-tests-php${{ matrix.php-version }}", "format": "clover", "flags": ["unit-tests", "php-${{ matrix.php-version }}"]}' > build/coverage-report/unit/metadata.json
+#          mv build/coverage-phpunit/unit.clover build/coverage-report/unit/phpunit-clover.xml
+#          # Functional tests
+#          echo '{"format": "clover", "flags": ["unit-tests", "php-${{ matrix.php-version }}"]}' > build/coverage-report/unit/metadata.json
+#          mv build/coverage-phpunit/functional.clover build/coverage-report/functional-tests-php${{ matrix.php-version }}/phpunit-clover.xml
+#          mv build/coverage-behat/clover.xml build/coverage-report/functional-tests-php${{ matrix.php-version }}/behat-clover.xml
 
       - name: Upload coverage as artifact
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-php${{ matrix.php-version }}
-          path: build/coverage-report
+          path: build/coverage-reports-groups
           if-no-files-found: error
 
-  codecov-coverage-report:
-    name: Codecov coverage report
+  prepare-codecov-coverage-report:
+    name: Prepare Codecov coverage report
     runs-on: ubuntu-latest
     needs: [ tests ]
     steps:
@@ -106,9 +124,31 @@ jobs:
         with:
           pattern: coverage-report-*
           path: coverage-reports
+          merge-multiple: true
 
       - name: DEBUG
         run: ls -ail coverage-reports/* coverage-reports/*/*
+
+#      - name: DEBUG2
+#        uses: ./.github/actions/grouped-reports-matrix
+#        with:
+#          root: coverage-reports
+
+#      - name: Build upload metadata
+#        id: upload-metadata
+#        run: |
+#          METADATA_FILE_LIST=$(find ./coverage-reports -type f -name "metadata.json")
+#          for METADATA_FILE in $METADATA_FILE_LIST;
+#          do
+#            echo "Processing $METADATA_FILE file...";
+#            WS=$(dirname $METADATA_FILE)
+#            UNIT_REPORT_FILE_LIST=$(find $WS -type f -name "*-clover.xml")
+#            echo "unit-files=$(echo FILES | tr "\n" ",") >> "$GITHUB_OUTPUT"
+#            echo "unit-flags=$(find ./coverage-reports -type f -name "*-clover.xml" | tr "\n" ",") >> "$GITHUB_OUTPUT"
+#          done
+#
+#      - name: DEBUG2
+#        run: echo "${{ steps.step1.file-list-builder.files }}"
 #
 #      # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
 #      - name: Upload unit tests coverage to codecov
@@ -132,8 +172,8 @@ jobs:
 #          verbose: ${{ runner.debug == '1' }}
 
 
-  codacy-coverage-report:
-    name: Codacy coverage report
+  upload-codacy-coverage-report:
+    name: Upload Codacy coverage report
     runs-on: ubuntu-latest
     needs: [ tests ]
     steps:
@@ -142,13 +182,19 @@ jobs:
         with:
           pattern: coverage-report-*
           path: coverage-reports
+          merge-multiple: true
 
       - name: DEBUG
         run: ls -ail coverage-reports/* coverage-reports/*/*
 
-#      - name: Find available files
-#        run: |
-#          ls -ail coverage-reports/*/coverage-phpunit/unit.clover coverage-reports/*/coverage-behat/clover.xml coverage-reports/*/coverage-phpunit/functional.clover
+      - name: Find available files
+        id: list-builder
+        run: |
+          find ./coverage-reports -type f -name "report-*" | tr "\n" ","
+          echo "files=$(find ./coverage-reports -type f -name "report-*" | tr "\n" ",")" >> "$GITHUB_OUTPUT"
+
+#      - name: DEBUG2
+#        run: echo "${{ steps.step1.file-list-builder.files }}"
 #
 #      - name: Run codacy-coverage-reporter
 #        uses: codacy/codacy-coverage-reporter-action@v1
