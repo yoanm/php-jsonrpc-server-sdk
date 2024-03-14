@@ -52,9 +52,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         env:
           update: true # Always use latest available patch for the version
+          fail-fast: true # step will fail if an extension or tool fails to set up
         with:
           php-version: '${{ matrix.php-version }}'
-          fail-fast: true # Fails if an extension or tool fails to set up
           tools: composer
           coverage: ${{ env.COVERAGE_TYPE }}
 
@@ -76,6 +76,7 @@ jobs:
         run: make test-unit && make test-functional
 
       - name: Upload coverage as artifact
+        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.COVERAGE_ARTIFACT_NAME }}
@@ -83,12 +84,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload matrix output
+        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: cloudposse/github-action-matrix-outputs-write@v1
         id: out
         with:
-          matrix-step-name: ${{ github.job }}
+          matrix-step-name: php-version-and-artifact
           matrix-key: ${{ matrix.php-version }}
-          outputs: ${{ env.COVERAGE_ARTIFACT_NAME }}
+          outputs: |-
+            artifact: ${{ env.COVERAGE_ARTIFACT_NAME }}
 
   debug-output:
     name: DEBUG
@@ -98,12 +101,15 @@ jobs:
       - uses: cloudposse/github-action-matrix-outputs-read@v1
         id: fetch-data
         with:
-          matrix-step-name: build
+          matrix-step-name: php-version-and-artifact
+
       - run: echo "${{ steps.fetch-data.outputs.result }}"
+
 #      - uses: actions/download-artifact@v4
 #        with:
 #          pattern: coverage-php*
 #          path: coverage-data
+#
 #      - run: ls -ail coverage-data
 
 #  codecov-coverage-report:
