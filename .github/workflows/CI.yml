@@ -75,19 +75,25 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      - name: Add coverage metadata
+      - name: Create coverage artifact content
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         run: |
-          echo '{"php": "${{ matrix.php-version }}"}' > build/coverage-metadata.json
+          echo "::group::Coverage files for PHP ${{ matrix.php-version }}"
+          ls -l build/coverage-*
+          echo "::endgroup::"
+
+          mkdir -p build/coverage-report/{unit,functional}
+          echo '{"php": "${{ matrix.php-version }}"}' > build/coverage-report/metadata.json
+          mv build/coverage-phpunit/unit.clover build/coverage-report/unit/phpunit-clover.xml
+          mv build/coverage-phpunit/functional.clover build/coverage-report/functional/phpunit-clover.xml
+          mv build/coverage-behat/clover.xml build/coverage-report/functional/behat-clover.xml
 
       - name: Upload coverage as artifact
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-php${{ matrix.php-version }}
-          path: |
-            build/coverage-*/*
-            build/coverage-metadata.json
+          path: build/coverage-report
           if-no-files-found: error
 
   codecov-coverage-report:
@@ -102,7 +108,7 @@ jobs:
           path: coverage-reports
 
       - name: DEBUG
-        run: ls -ail coverage-reports/*
+        run: ls -ail coverage-reports/* coverage-reports/*/*
 #
 #      # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
 #      - name: Upload unit tests coverage to codecov
@@ -138,7 +144,7 @@ jobs:
           path: coverage-reports
 
       - name: DEBUG
-        run: ls -ail coverage-reports/*
+        run: ls -ail coverage-reports/* coverage-reports/*/*
 
 #      - name: Find available files
 #        run: |
