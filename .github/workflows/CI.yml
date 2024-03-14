@@ -91,12 +91,15 @@ jobs:
           matrix-step-name: php-version-and-artifact
           matrix-key: ${{ matrix.php-version }}
           outputs: |-
+            version: ${{ matrix.php-version }}
             artifact: ${{ env.COVERAGE_ARTIFACT_NAME }}
 
   debug-output:
     name: DEBUG
     runs-on: ubuntu-latest
     needs: [ tests ]
+    outputs:
+      matrix: ${{ steps.fetch-data.outputs.result }}
     steps:
       - uses: cloudposse/github-action-matrix-outputs-read@v1
         id: fetch-data
