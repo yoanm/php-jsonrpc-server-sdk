@@ -6,19 +6,25 @@ inputs:
     required: false
     default: '.'
 outputs:
-  random-number:
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-number }}
+  info:
+    description: Info
+    value: ${{ steps.main.outputs.info }}
+  matrix:
+    description: Matrix
+    value: ${{ steps.main.outputs.matrix }}
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/github-script@v7
+    - id: main
+      uses: actions/github-script@v7
       env:
         ROOT: ${{ inputs.root }}
       with:
         script: |
           const path = require('path');
+          const fs = require('fs');
+
           const { ROOT } = process.env;
 
           await core.group('Validate inputs', async () => {
@@ -28,30 +34,59 @@ runs:
             }
           });
 
+          const absoluteRoot = path.resolve(ROOT);
+
           const metadataFileList = await core.group('Find metadata files', async () => {
             const res = [];
-            const globber = await glob.create(`${ROOT}/**/metadata.json`);
+            const globber = await glob.create(`${absoluteRoot}/**/metadata.json`);
             for await (const file of globber.globGenerator()) {
               core.info(`Found ${file}`);
-              res.push(file);
+              const filepath = file.replace(`${absoluteRoot}/`, '');
+              core.debug(`filepath='${filepath}'`);
+              res.push(filepath);
             }
             return res;
           });
 
           core.debug(`metadataFileList='${JSON.stringify(metadataFileList)}'`);
 
-          const matrix = await core.group('Build matrix', async () => {
-            const res = [];
+          const info = await core.group('Gather info', async () => {
+            const res = {};
             for (const file of metadataFileList) {
-              core.debug(`file=${file}`);
+              core.debug(`file='${file}'`);
               const groupDirectory = path.dirname(file);
               core.info(`Process ${groupDirectory}`);
-              const globber = await glob.create(`${groupDirectory}/report-*`);
-              const reports = await globber.glob();
 
-              res.push({path: groupDirectory, metadata: file, reports: reports});
+              const globber = await glob.create(`${absoluteRoot}/${groupDirectory}/report-*`);
+              const reportList = (await globber.glob()).map(fp => fp.replace(`${absoluteRoot}/${groupDirectory}/`, ''));
+              const metadataContent = fs.readFileSync(`${absoluteRoot}/${file}`);
+
+              res[groupDirectory] = {metadata: JSON.parse(metadataContent), reports: reportList};
             }
 
             return res;
           });
-          core.info(`matrix='${JSON.stringify(matrix)}'`);
+          const infoString = JSON.stringify(info);
+          core.debug(`info='${infoString}'`);
+          core.setOutput("info", infoString);
+
+          const matrix = await core.group('Build matrix', async () => {
+            const res = [];
+            for (const path of Object.keys(info)) {
+              const data = info[path];
+              const item = {name: data.metadata.name, format: data.metadata.format, flags: JSON.stringify(data.metadata.flags), path, reports: JSON.stringify(data.reports)};
+              core.info(`debug data='${JSON.stringify(data)}'`);
+              core.info(`debug item='${JSON.stringify(item)}'`);
+              res.push(item);
+            }
+
+            return res;
+          });
+          const matrixString = JSON.stringify(matrix);
+          core.debug(`matrix='${matrixString}'`);
+          core.setOutput("matrix", matrixString);
+
+    - shell: bash
+      run: |
+        echo "'${{ steps.main.outputs.info }}'";
+        echo "'${{ steps.main.outputs.matrix }}'";

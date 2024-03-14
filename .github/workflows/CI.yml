@@ -118,6 +118,9 @@ jobs:
     name: Prepare Codecov coverage report
     runs-on: ubuntu-latest
     needs: [ tests ]
+    outputs:
+      info: ${{ steps.debug2.outputs.info }}
+      matrix: ${{ steps.debug2.outputs.matrix }}
     steps:
       - name: Check out code # Just to be able to load custom action below !
         uses: actions/checkout@v3
@@ -133,9 +136,30 @@ jobs:
         run: ls -ail coverage-reports/* coverage-reports/*/*
 
       - name: DEBUG2
+        id: debug2
         uses: ./.github/actions/grouped-reports-matrix
         with:
           root: coverage-reports
+
+      - name: DEBUG3
+        run: |
+          echo "${{ steps.debug2.outputs.info }}"
+          echo "${{ steps.debug2.outputs.matrix }}"
+          echo "${{ toJson(steps.debug2.outputs) }}"
+
+  upload-codecov-coverage-report:
+    name: UTs & FTs - PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+    needs: [ prepare-codecov-coverage-report ]
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix:
+        include: ${{ fromJson(needs.prepare-codecov-coverage-report.outputs.matrix) }}
+    steps:
+      - name: DEBUG
+        run: |
+          echo "${{ toJson(matrix) }}"
 
 #      - name: Build upload metadata
 #        id: upload-metadata

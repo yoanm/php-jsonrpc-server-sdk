@@ -7,7 +7,7 @@ inputs:
     description: Name for the group of reports
     required: true
   files:
-    description: List of files to include, separated by `file-separator`. Glob pattern supported.
+    description: List of files to include, separated by `file-separator`
     required: true
   format:
     description: clover, cobertura, lcov, etc (default to clover)
@@ -114,14 +114,10 @@ runs:
 
           const res = []; 
           let counter = 0;
-          for (const pattern of RAW_LIST.split(SEPARATOR)) {
-            const globber = await glob.create(pattern, {followSymbolicLinks: FOLLOW_SYMLINK})
-            for await (const source of globber.globGenerator()) {
-              // @TODO remove base path from source !
-              const dest = `${{ inputs.root }}/${{ inputs.name }}/report-${++counter}`;
-              core.info(`'${source}' => '${dest}'`);
-              res.push({source, dest});
-            }
+          for (const file of RAW_LIST.split(SEPARATOR)) {
+            const dest = `report-${++counter}`;
+            core.info(`'${file}' => '${dest}'`);
+            res.push({source: file, file: dest});
           }
 
           core.debug(`map=${JSON.stringify(res)}`);
@@ -149,8 +145,9 @@ runs:
 
           const { FILE_MAP } = process.env;
           JSON.parse(FILE_MAP).forEach(async function (v) {
-            core.info(`${v.source} => ${v.dest}`);
-            await io.cp(v.source, v.dest);
+            const dest = `${{ inputs.root }}/${{ inputs.name }}/${v.file}`
+            core.info(`${v.source} => ${dest}`);
+            await io.cp(v.source, dest);
           });
 
           core.endGroup();
