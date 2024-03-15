@@ -8,13 +8,18 @@ on:
     secrets:
       PROJECT_TOKEN:
         required: true
+    outputs:
+      files:
+        description: JSON array of reports sent
+        value: ${{ jobs.upload.outputs.json-files }}
 
 jobs:
-  prepare:
+  upload:
     name: Upload all reports
     runs-on: ubuntu-latest
     outputs:
       files: ${{ steps.build-metadata.outputs.files }}
+      json-files: ${{ steps.build-metadata.outputs.json-files }}
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -35,10 +40,10 @@ jobs:
 
             const options = {
               listeners: {
-                stdout: (data: Buffer) => {
+                stdout: (data/* : Buffer */) => {
                   stdout += data.toString();
                 },
-                stderr: (data: Buffer) => {
+                stderr: (data/* : Buffer */) => {
                   stderr += data.toString();
                 }
               },
@@ -52,8 +57,9 @@ jobs:
               core.error(stderr)
               core.setFailed('Error during find execution !');
             }
-
-            core.setOutput("files", stdout.split("\n").join(','));
+            const fileList = stdout.split("\n");
+            core.setOutput("json-files", JSON.stringify(fileList));
+            core.setOutput("files", fileList.join(','));
 
       - name: Upload reports
         uses: codacy/codacy-coverage-reporter-action@v1

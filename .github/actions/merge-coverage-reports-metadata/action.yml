@@ -1,4 +1,4 @@
-name: Grouped reports matrix
+name: TODO
 description: TODO
 inputs:
   root:
@@ -52,7 +52,9 @@ runs:
             for await (const file of globber.globGenerator()) {
               core.info(`Found ${file}`);
               const filepath = file.replace(`${absoluteRoot}/`, '');
+
               core.debug(`filepath='${filepath}'`);
+
               res.push(filepath);
             }
             return res;
@@ -63,20 +65,20 @@ runs:
             const res = [];
             for (const file of metadataFileList) {
               core.debug(`file='${file}'`);
+
               const fullPath = pathDirname(file);
-              const fullPathItems = fullPath.split('/');
-              const artifactName = fullPathItems[0];
-              const pathInsideArtifact = fullPath.replace(`${artifactName}/`, '');
-              const groupDirectory = fullPathItems[fullPathItems.lenght - 1];
-              core.info(`Process ${artifactName}: ${pathInsideArtifact}`);
+
+              core.info(`Process ${fullPath} directory`);
 
               const globber = await glob.create(`${absoluteRoot}/${fullPath}/report-*`);
-              const reportList = (await globber.glob()).map(fp => fp.replace(`${absoluteRoot}/${fullPath}/`, ''));
-              const metadataContent = fs.readFileSync(`${absoluteRoot}/${file}`);
+              const reportList = JSON.parse(REPORTS).map(fp => fp.replace(`${absoluteRoot}/${fullPath}/`, ''));
+              const metadataContent = fs.readFileSync(file);
 
-              const filepath = file.replace(`${artifactName}/`, '');
+              const item = {path: fullPath, metadata: JSON.parse(metadataContent), reports: reportList};
 
-              res.push({artifact: artifactName, path: pathInsideArtifact, metadata: JSON.parse(metadataContent), reports: reportList});
+              core.debug(`item='${JSON.stringify(item)}'`);
+
+              res.push(item);
             }
 
             return res;
@@ -90,14 +92,15 @@ runs:
             const res = [];
             for (const data of info) {
               const item = {
-                artifact: data.artifact,
                 name: data.metadata.name,
                 format: data.metadata.format,
-                flags: JSON.stringify(data.metadata.flags),
                 path: data.path,
                 reports: JSON.stringify(data.reports),
+                flags: JSON.stringify(data.metadata.flags),
               };
+
               core.debug(`item='${JSON.stringify(item)}'`);
+
               res.push(item);
             }
 
@@ -113,8 +116,10 @@ runs:
           const allReports = await core.group('Build full report list', async () => {
             const res = [];
             for (const data of info) {
-              const item = data.reports.map(fp => `${data.artifact}/${data.path}/${fp}`);
+              const item = data.reports.map(fp => `${data.path}/${fp}`);
+
               core.debug(`item='${JSON.stringify(item)}'`);
+
               res.push(item);
             }
 

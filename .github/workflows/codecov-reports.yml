@@ -8,6 +8,10 @@ on:
     secrets:
       TOKEN:
         required: true
+    outputs:
+      files:
+        description: JSON array of reports sent
+        value: ${{ jobs.upload.outputs.json-files }}
 
 jobs:
   prepare:
@@ -18,8 +22,11 @@ jobs:
       matrix: ${{ steps.build-metadata.outputs.matrix }}
       reports: ${{ steps.build-metadata.outputs.reports }}
     steps:
-      # @TODO move coverage-reports-metadata-from-artifacts action to a dedicated repo and remove the checkout
+      # @TODO remove the checkout and fill right values directly (sha, branch, pr, etc)
+      # @TODO move merge-coverage-reports-metadata action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v3
+        with:
+          path: custom-action-repo
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -29,7 +36,7 @@ jobs:
 
       - name: Build metadata
         id: build-metadata
-        uses: ./.github/actions/coverage-reports-metadata-from-artifacts
+        uses: ./custom-action-repo/.github/actions/merge-coverage-reports-metadata
         with:
           root: ${{ runner.temp }}/coverage-reports
 
@@ -43,8 +50,9 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       # @TODO remove the checkout and fill right values directly (sha, branch, pr, etc)
-      - name: Check out code # Mostly to retrieve codecov config file and to figure out some stuff automatically
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          path: tmp-repo
 
       - name: Download the artifact
         uses: actions/download-artifact@v4
@@ -73,6 +81,7 @@ jobs:
           name: ${{ matrix.name }}
           files: ${{ steps.build-metadata.outputs.files }}
           flags: ${{ steps.build-metadata.outputs.flags }}
+          root_dir: tmp-repo
           disable_search: true
           fail_ci_if_error: true
           verbose: ${{ runner.debug == '1' }}
