@@ -51,14 +51,14 @@ runs:
             for (const data of original) {
               let directory = data.path;
               while (directory.length > 0 && PATH !== directory) {
-                knownDirectory[directory] = (knownDirectory[directory] ?? 0) + 1;
+                counterByDirectory[directory] = (counterByDirectory[directory] ?? 0) + 1;
                 directory = pathDirname(directory);
               }
             }
-            core.info(`knownDirectory='${JSON.stringify(knownDirectory)}'`);
+            core.info(`counterByDirectory='${JSON.stringify(counterByDirectory)}'`);
             const directorySetByCounter = [];
-            for (const directory of Object.keys(knownDirectory)) {
-              const counter = knownDirectory[directory];
+            for (const directory of Object.keys(counterByDirectory)) {
+              const counter = counterByDirectory[directory];
               if (!Array.isArray(directorySetByCounter[counter])) {
                 directorySetByCounter[counter] = new Set();
               }
@@ -122,13 +122,13 @@ runs:
 
           const matrixInclude = await core.group('Build matrix', async () => {
             const res = [];
-            for (const data of info) {
+            for (const metadata of metadataList) {
               const item = {
-                format: data.format,
-                name: data.name,
-                path: data.path,
-                reports: JSON.stringify(data.reports),
-                flags: JSON.stringify(data.flags),
+                format: metadata.format,
+                name: metadata.name,
+                path: metadata.path,
+                reports: JSON.stringify(metadata.reports),
+                flags: JSON.stringify(metadata.flags),
               };
 
               core.debug(`item='${JSON.stringify(item)}'`);
@@ -147,8 +147,8 @@ runs:
 
           const reportList = await core.group('Build full report list', async () => {
             const res = [];
-            for (const data of info) {
-              const item = data.reports.map(fp => `${data.path}/${fp}`);
+            for (const metadata of metadataList) {
+              const item = metadata.reports.map(fp => `${metadata.path}/${fp}`);
 
               core.debug(`item='${JSON.stringify(item)}'`);
 

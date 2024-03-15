@@ -137,18 +137,18 @@ jobs:
 ## <<< Insecure
 ## Secure >>>
   codacy-uploader:
-    name: Upload coverage group - Codacy
+    name: Coverage groups to Codacy
     needs: [ tests ]
-    uses: ./.github/workflows/codacy-uploader.yml
+    uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   codecov-uploader:
-    name: Upload coverage group - Codecov
+    name: Coverage groups to Codecov
     needs: [ tests ]
-    uses: ./.github/workflows/codecov-uploader.yml
+    uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
     secrets:

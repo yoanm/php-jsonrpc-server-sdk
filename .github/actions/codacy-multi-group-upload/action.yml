@@ -64,14 +64,15 @@ runs:
           core.setOutput("reports", files.join(','));
 
     - name: Upload reports
-      if: ${{ "" != steps.build-uploader-options.outputs.reports }}
+      if: ${{ '' != steps.build-uploader-options.outputs.reports }}
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         coverage-reports: ${{ steps.build-uploader-options.outputs.reports }}
         project-token: ${{ inputs.project-token }}
 
-    - name: No report warning
-      if: ${{ "" == steps.build-uploader-options.outputs.reports }}
+    - name: No report error
+      if: ${{ '' == steps.build-options.outputs.files }}
       uses: actions/github-script@v7
       with:
-        script: core.warning('No report found !');
+        script: core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
+
