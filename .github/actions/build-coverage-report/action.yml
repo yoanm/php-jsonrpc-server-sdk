@@ -133,7 +133,7 @@ runs:
     - name: Create metadata file
       shell: bash
       run: |
-        echo '{"name": "${{ inputs.name }}", "format": "${{ inputs.format }}", "flags": ${{ steps.build-flag-list.outputs.result }}, "file-map": ${{ steps.build-file-map.outputs.result }} }' > ${{ inputs.root }}/${{ inputs.name }}/metadata.json
+        echo '{"name": "${{ inputs.name }}", "format": "${{ inputs.format }}", "flags": ${{ steps.build-flag-list.outputs.result }}, "file-map": ${{ steps.build-file-map.outputs.result }} }' > ${{ inputs.root }}/${{ inputs.name }}/coverage-report-metadata.json
 
     - id: copy-report-files
       uses: actions/github-script@v7

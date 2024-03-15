@@ -53,7 +53,7 @@ runs:
 
           const metadataFileList = await core.group('Find metadata files', async () => {
             const res = [];
-            const globber = await glob.create(`${absoluteRoot}/**/metadata.json`);
+            const globber = await glob.create(`${absoluteRoot}/**/coverage-report-metadata.json`);
             for await (const file of globber.globGenerator()) {
               core.info(`Found ${file}`);
               const filepath = file.replace(`${absoluteRoot}/`, '');

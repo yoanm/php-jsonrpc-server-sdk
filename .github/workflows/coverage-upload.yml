@@ -1,0 +1,16 @@
+name: 'Coverage upload'
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  plopl:
+    name: Codacy - Upload reports
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "OK"
