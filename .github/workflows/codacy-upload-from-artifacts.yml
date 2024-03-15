@@ -10,16 +10,19 @@ on:
         required: true
     outputs:
       files:
-        description: JSON array of reports sent
+        description: TODO
         value: ${{ jobs.upload.outputs.json-files }}
+      result:
+        description: TODO
+        value: ${{ jobs.upload.outputs.result }}
 
 jobs:
   upload:
     name: Upload reports
     runs-on: ubuntu-latest
     outputs:
-      files: ${{ steps.merge-metadata.outputs.files }}
-      json-files: ${{ steps.merge-metadata.outputs.json-files }}
+      files: ${{ steps.upload.outputs.files }}
+      result: ${{ steps.upload.result }}
     steps:
       # @TODO move codacy-multi-group-upload action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v3
@@ -30,15 +33,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: ${{ inputs.artifacts-pattern }}
-          path: codacy-uploader-artifacts
+          path: codacy-upload-from-artifacts-workflow-artefacts
 
       - name: DEBUG artifacts
         run: |
-          ls -ail codacy-uploader-artifacts/*
-          ls -ail codacy-uploader-artifacts/*/*
+          ls -ail codacy-upload-from-artifacts-workflow-artefacts/*
+          ls -ail codacy-upload-from-artifacts-workflow-artefacts/*/*
 
       - name: Upload reports
+        id: upload
         uses: ./custom-action-repo/.github/actions/codacy-multi-group-upload
         with:
           project-token: ${{ secrets.PROJECT_TOKEN }}
-          root: codacy-uploader-artifacts
+          root: codacy-upload-from-artifacts-workflow-artefacts
+
+      - name: DEBUG Upload reports
+        run: |
+          echo 'files=\'${{ steps.upload.outputs.files }}\''
+          echo 'result=\'${{ steps.upload.outputs.result }}\''

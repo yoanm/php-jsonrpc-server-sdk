@@ -5,9 +5,9 @@ inputs:
     description: TODO
     required: true
 outputs:
-  metadata-list:
+  list:
     description: Info
-    value: ${{ steps.main.outputs.metadata-list }}
+    value: ${{ steps.main.outputs.list }}
   matrix:
     description: Matrix
     value: ${{ steps.main.outputs.matrix }}
@@ -78,9 +78,9 @@ runs:
             return original;
           }
 
-          const metadataFileList = await core.group('Find metadata files', async () => {
+          const metadataFileList = await core.group(`Look for metadata files under '${ROOT}'`, async () => {
             const res = [];
-            const globber = await glob.create(`${absWorkspace}/**/.coverage-reports-metadata.json`);
+            const globber = await glob.create(`${absWorkspace}/**/.reports-group-metadata.json`);
             for await (const file of globber.globGenerator()) {
               core.info(`Found ${file}`);
               const filepath = file.replace(`${absWorkspace}/`, '');
@@ -113,51 +113,50 @@ runs:
               res.push(item);
             }
 
-            return enhanceMetadataListWithGroup(res);
+            const metadataList = enhanceMetadataListWithGroup(res);
+            
+            const metadataListString = JSON.stringify(metadataList);
+            core.debug(`metadataList='${metadataListString}'`);
+            
+            core.setOutput("list", metadataListString)
+          
+            return metadataList;
           });
-          const metadataListString = JSON.stringify(metadataList);
-          core.debug(`metadataList='${metadataListString}'`);
 
-          core.setOutput("metadata-list", metadataListString);
-
-          const matrixInclude = await core.group('Build matrix', async () => {
-            const res = [];
+          await core.group('Build matrix', async () => {
+            const matrixInclude = [];
             for (const metadata of metadataList) {
               const item = {
-                format: metadata.format,
-                name: metadata.name,
-                path: metadata.path,
+                ...metadata,
                 reports: JSON.stringify(metadata.reports),
                 flags: JSON.stringify(metadata.flags),
               };
 
               core.debug(`item='${JSON.stringify(item)}'`);
 
-              res.push(item);
+              matrixInclude.push(item);
             }
 
-            return res;
+            const matrix = {include: matrixInclude};
+  
+            const matrixString = JSON.stringify(matrix);
+            core.debug(`matrix='${matrixString}'`);
+  
+            core.setOutput("matrix", matrixString);
           });
-          const matrix = {include: matrixInclude};
 
-          const matrixString = JSON.stringify(matrix);
-          core.debug(`matrix='${matrixString}'`);
-
-          core.setOutput("matrix", matrixString);
-
-          const reportList = await core.group('Build full report list', async () => {
-            const res = [];
+          await core.group('Build full report list', async () => {
+            const reportList = [];
             for (const metadata of metadataList) {
               const item = metadata.reports.map(fp => `${metadata.path}/${fp}`);
 
               core.debug(`item='${JSON.stringify(item)}'`);
 
-              res.push(item);
+              reportList.push(item);
             }
 
-            return res;
+            const reportListString = JSON.stringify(reportList);
+            core.debug(`reportList='${reportListString}'`);
+  
+            core.setOutput("reports", reportListString);
           });
-          const reportListString = JSON.stringify(reportList);
-          core.debug(`reportList='${reportListString}'`);
-
-          core.setOutput("reports", reportListString);

@@ -202,7 +202,7 @@ runs:
           const metadataString = JSON.stringify(metadata);
           core.debug(`metadata='${metadataString}'`);
 
-          fs.writeFileSync(`${DIRECTORY}/.coverage-reports-metadata.json`, metadataString);
+          fs.writeFileSync(`${DIRECTORY}/.reports-group-metadata.json`, metadataString);
 
           core.setOutput('metadata', metadataString)
           core.info(`metadata generated with:\n name='${NAME}'\n format='${FORMAT}'\n reports='${JSON_REPORTS}'\n flags='${JSON_FLAGS}'`);

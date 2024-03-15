@@ -10,21 +10,24 @@ inputs:
     required: true
 
 outputs:
+  name:
+    description: TODO
+    value: ${{ steps.build-uploader-options.outputs.name }}
+  files:
+    description: TODO
+    value: ${{ steps.build-uploader-options.outputs.files-json }}
+  flags:
+    description: TODO
+    value: ${{ steps.build-uploader-options.outputs.flags-json }}
   result:
     description: TODO
     value: ${{ steps.upload.outputs.result }}
-  matrix:
-    description: TODO # Matrix of artifacts along with their group reports metadata
-    value: ${{ steps.main.outputs.matrix }}
-  reports:
-    description: TODO # Map of reports indexed by artifact name
-    value: ${{ steps.main.outputs.reports }}
 
 runs:
   using: "composite"
   steps:
     - name: Build uploader options
-      id: build-options
+      id: build-uploader-options
       uses: actions/github-script@v7
       env:
         PATH: ${{ inputs.path }}
@@ -33,28 +36,31 @@ runs:
           const fs = require('fs');
           const { PATH } = process.env;
           
-          const metadata = JSON.parse(fs.readFileSync(`${PATH}/.coverage-reports-metadata.json`));
+          const metadata = JSON.parse(fs.readFileSync(`${PATH}/.reports-group-metadata.json`));
 
           core.setOutput("name", metadata.name);
-          core.setOutput("files", metadata.reports.map(f => `${PATH}/${f}`).join(','));
+          const files = metadata.reports.map(f => `${PATH}/${f}`);
+          core.setOutput("files-json", JSON.stringify(files));
+          core.setOutput("files", files.join(','));
+          core.setOutput("flags-json", JSON.stringify(metadata.flags));
           core.setOutput("flags", metadata.flags.join(','));
 
+    - name: No report error
+      if: ${{ '' == steps.build-uploader-options.outputs.files }}
+      uses: actions/github-script@v7
+      with:
+        script: core.setFailed('Unable to retrieve any report for the group. Something wrong most likely happened !');
+
     - name: Upload group reports
-      if: ${{ '' != steps.build-options.outputs.files }}
+      id: upload
       uses: codecov/codecov-action@v4
       with:
         token: ${{ inputs.token }}
-        name: ${{ steps.build-options.outputs.name }}
-        files: ${{ steps.build-options.outputs.files }}
-        flags: ${{ steps.build-options.outputs.flags }}
+        name: ${{ steps.build-uploader-options.outputs.name }}
+        files: ${{ steps.build-uploader-options.outputs.files }}
+        flags: ${{ steps.build-uploader-options.outputs.flags }}
         # underlying CLI behavior
         disable_search: true
         # GHAction behavior
         fail_ci_if_error: true
         verbose: ${{ runner.debug == '1' }}
-
-    - name: No report error
-      if: ${{ '' == steps.build-options.outputs.files }}
-      uses: actions/github-script@v7
-      with:
-        script: core.setFailed('Unable to retrieve any report for the group. Something wrong most likely happened !');

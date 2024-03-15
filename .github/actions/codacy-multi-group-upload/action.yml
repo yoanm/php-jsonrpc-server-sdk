@@ -12,9 +12,12 @@ inputs:
     required: true
 
 outputs:
-  reports:
+  files:
     description: TODO
-    value: ${{ steps.main.outputs.reports-json }}
+    value: ${{ steps.build-uploader-options.outputs.files-json }}
+  result:
+    description: TODO
+    value: ${{ steps.upload.outputs.result }}
 
 runs:
   using: "composite"
@@ -36,7 +39,7 @@ runs:
           core.info(`DEBUG absoluteRoot='${absoluteRoot}'`);
 
           const metadataFileList = [];
-          const globber = await glob.create(`${ROOT}/**/.coverage-reports-metadata.json`);
+          const globber = await glob.create(`${ROOT}/**/.reports-group-metadata.json`);
           for await (const fp of globber.globGenerator()) {
             metadataFileList.push(fp)
           }
@@ -60,19 +63,19 @@ runs:
 
           core.info(`Files: ${files.join("\n")}`);
 
-          core.setOutput("reports-json", JSON.stringify(files));
-          core.setOutput("reports", files.join(','));
-
-    - name: Upload reports
-      if: ${{ '' != steps.build-uploader-options.outputs.reports }}
-      uses: codacy/codacy-coverage-reporter-action@v1
-      with:
-        coverage-reports: ${{ steps.build-uploader-options.outputs.reports }}
-        project-token: ${{ inputs.project-token }}
+          core.setOutput("files-json", JSON.stringify(files));
+          core.setOutput("coverage-reports", files.join(','));
 
     - name: No report error
-      if: ${{ '' == steps.build-options.outputs.files }}
+      if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports }}
       uses: actions/github-script@v7
       with:
         script: core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
+
+    - name: Upload reports
+      id: upload
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        coverage-reports: ${{ steps.build-uploader-options.outputs.coverage-reports }}
+        project-token: ${{ inputs.project-token }}
 
