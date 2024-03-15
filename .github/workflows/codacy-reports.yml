@@ -10,9 +10,11 @@ on:
         required: true
 
 jobs:
-  main:
-    name: Upload reports
+  prepare:
+    name: Upload all reports
     runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.build-metadata.outputs.files }}
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -22,12 +24,38 @@ jobs:
 
       - name: Build metadata
         id: build-metadata
-        run: |
-          FILES=$(find ./coverage-reports -type f -name "report-*" | tr "\n" ",")
-          echo "::debug::files='$FILES'"
-          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {resolve: pathResolve} = require('path');
+            const absoluteRoot = pathResolve('./coverage-reports');
 
-      - name: Upload
+            let stdout = '';
+            let stderr = '';
+
+            const options = {
+              listeners: {
+                stdout: (data: Buffer) => {
+                  stdout += data.toString();
+                },
+                stderr: (data: Buffer) => {
+                  stderr += data.toString();
+                }
+              },
+            };
+
+            const globber = await glob.create(`${absoluteRoot}/**/report-*`);
+            const reportList = (await globber.glob()).map(fp => fp.replace(`${absoluteRoot}/`, ''));
+            core.debug(`find stdout='${stdout}'`);
+            core.debug(`find stderr='${stderr}'`);
+            if (stderr.length > 0) {
+              core.error(stderr)
+              core.setFailed('Error during find execution !');
+            }
+
+            core.setOutput("files", stdout.split("\n").join(','));
+
+      - name: Upload reports
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           coverage-reports: ${{ steps.build-metadata.outputs.files }}

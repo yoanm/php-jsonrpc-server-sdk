@@ -27,7 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COVERAGE_TYPE: none
-      COVERAGE_ARTIFACT_NAME: coverage-php${{ matrix.php-version }}
     strategy:
       fail-fast: true
       max-parallel: 4
@@ -75,22 +74,22 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      - name: Create "unit tests" coverage report group
+      - name: Create "unit tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: ./.github/actions/build-coverage-report
         with:
-          name: unit-tests-php${{ matrix.php-version }}
+          name: unit-tests
           files: build/coverage-phpunit/unit.clover
-          flags: unit-tests,php-${{ matrix.php-version }}
+          flags: unit-tests php-${{ matrix.php-version }}
           root: build/coverage-reports-groups
 
-      - name: Create "functional tests" coverage report group
+      - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: ./.github/actions/build-coverage-report
         with:
-          name: functional-tests-php${{ matrix.php-version }}
-          files: build/coverage-phpunit/functional.clover,build/coverage-behat/clover.xml
-          flags: functional-tests,php-${{ matrix.php-version }}
+          name: functional-tests
+          files: build/coverage-phpunit/functional.clover build/coverage-behat/clover.xml
+          flags: functional-tests php-${{ matrix.php-version }}
           root: build/coverage-reports-groups
 
       - name: Upload coverage as artifact
