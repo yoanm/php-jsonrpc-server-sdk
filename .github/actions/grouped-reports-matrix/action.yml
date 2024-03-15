@@ -1,10 +1,9 @@
 name: Grouped reports matrix
 description: TODO
 inputs:
-  root:
-    description: Where to look for grouped reports
-    required: false
-    default: '.'
+  pattern:
+    description: TODO
+    required: true
 outputs:
   info:
     description: Info
@@ -12,29 +11,49 @@ outputs:
   matrix:
     description: Matrix
     value: ${{ steps.main.outputs.matrix }}
+  reports:
+    description: Reports
+    value: ${{ steps.main.outputs.reports }}
 
 runs:
   using: "composite"
   steps:
+    - id: validate
+      uses: actions/github-script@v7
+      env:
+        PATTERN: ${{ inputs.pattern }}
+      with:
+        script: |
+          const { PATTERN } = process.env;
+
+          await core.group('Validate inputs', async () => {
+            core.debug(`pattern='${PATTERN}'`);
+            if (0 === PATTERN.trim().length) {
+              core.setFailed('You must provide an artifact pattern !');
+            }
+          });
+
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: ${{ inputs.pattern }}
+        path: ${{ runner.temp }}/coverage-reports
+
+    - name: DEBUG
+      shell: bash
+      run: ls -ail ${{ runner.temp }}/coverage-reports/* ${{ runner.temp }}/coverage-reports/*/*
+
     - id: main
       uses: actions/github-script@v7
       env:
-        ROOT: ${{ inputs.root }}
+        ROOT: ${{ runner.temp }}/coverage-reports
       with:
         script: |
-          const path = require('path');
+          const {resolve: pathResolve, dirname: pathDirname} = require('path');
           const fs = require('fs');
 
           const { ROOT } = process.env;
 
-          await core.group('Validate inputs', async () => {
-            core.debug(`root='${ROOT}'`);
-            if (0 === ROOT.trim().length) {
-              core.setFailed('You must provide a root path !');
-            }
-          });
-
-          const absoluteRoot = path.resolve(ROOT);
+          const absoluteRoot = pathResolve(ROOT);
 
           const metadataFileList = await core.group('Find metadata files', async () => {
             const res = [];
@@ -47,46 +66,70 @@ runs:
             }
             return res;
           });
-
           core.debug(`metadataFileList='${JSON.stringify(metadataFileList)}'`);
 
           const info = await core.group('Gather info', async () => {
-            const res = {};
+            const res = [];
             for (const file of metadataFileList) {
               core.debug(`file='${file}'`);
-              const groupDirectory = path.dirname(file);
-              core.info(`Process ${groupDirectory}`);
+              const fullPath = pathDirname(file);
+              const fullPathItems = fullPath.split('/');
+              const artifactName = fullPathItems[0];
+              const pathInsideArtifact = fullPath.replace(`${artifactName}/`, '');
+              const groupDirectory = fullPathItems[fullPathItems.lenght - 1];
+              core.info(`Process ${artifactName}: ${pathInsideArtifact}`);
 
-              const globber = await glob.create(`${absoluteRoot}/${groupDirectory}/report-*`);
-              const reportList = (await globber.glob()).map(fp => fp.replace(`${absoluteRoot}/${groupDirectory}/`, ''));
+              const globber = await glob.create(`${absoluteRoot}/${fullPath}/report-*`);
+              const reportList = (await globber.glob()).map(fp => fp.replace(`${absoluteRoot}/${fullPath}/`, ''));
               const metadataContent = fs.readFileSync(`${absoluteRoot}/${file}`);
 
-              res[groupDirectory] = {metadata: JSON.parse(metadataContent), reports: reportList};
+              const filepath = file.replace(`${artifactName}/`, '');
+
+              res.push({artifact: artifactName, path: pathInsideArtifact, metadata: JSON.parse(metadataContent), reports: reportList});
             }
 
             return res;
           });
           const infoString = JSON.stringify(info);
           core.debug(`info='${infoString}'`);
+
           core.setOutput("info", infoString);
 
-          const matrix = await core.group('Build matrix', async () => {
+          const matrixInclude = await core.group('Build matrix', async () => {
             const res = [];
-            for (const path of Object.keys(info)) {
-              const data = info[path];
-              const item = {name: data.metadata.name, format: data.metadata.format, flags: JSON.stringify(data.metadata.flags), path, reports: JSON.stringify(data.reports)};
-              core.info(`debug data='${JSON.stringify(data)}'`);
-              core.info(`debug item='${JSON.stringify(item)}'`);
+            for (const data of info) {
+              const item = {
+                artifact: data.artifact,
+                name: data.metadata.name,
+                format: data.metadata.format,
+                flags: JSON.stringify(data.metadata.flags),
+                path: data.path,
+                reports: JSON.stringify(data.reports),
+              };
+              core.debug(`item='${JSON.stringify(item)}'`);
               res.push(item);
             }
 
             return res;
           });
+          const matrix = {include: matrixInclude};
+
           const matrixString = JSON.stringify(matrix);
           core.debug(`matrix='${matrixString}'`);
+
           core.setOutput("matrix", matrixString);
 
-    - shell: bash
-      run: |
-        echo "'${{ steps.main.outputs.info }}'";
-        echo "'${{ steps.main.outputs.matrix }}'";
+          const allReports = await core.group('Build full report list', async () => {
+            const res = [];
+            for (const data of info) {
+              const item = data.reports.map(fp => `${data.path}/${fp}`);
+              core.debug(`item='${JSON.stringify(item)}'`);
+              res.push(item);
+            }
+
+            return res;
+          });
+          const allReportsString = JSON.stringify(allReports);
+          core.debug(`allReports='${allReportsString}'`);
+
+          core.setOutput("reports", allReportsString);

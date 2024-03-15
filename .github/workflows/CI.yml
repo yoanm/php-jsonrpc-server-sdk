@@ -114,48 +114,32 @@ jobs:
           path: build/coverage-reports-groups
           if-no-files-found: error
 
-  prepare-codecov-coverage-report:
-    name: Prepare Codecov coverage report
+  prepare-coverage-reports:
+    name: Prepare coverage reports
     runs-on: ubuntu-latest
     needs: [ tests ]
     outputs:
-      info: ${{ steps.debug2.outputs.info }}
-      matrix: ${{ steps.debug2.outputs.matrix }}
+      info: ${{ steps.fetch-info.outputs.info }}
+      matrix: ${{ steps.fetch-info.outputs.matrix }}
+      reports: ${{ steps.fetch-info.outputs.reports }}
     steps:
       - name: Check out code # Just to be able to load custom action below !
         uses: actions/checkout@v3
 
-      - name: Download all PHP coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-report-*
-          path: coverage-reports
-          merge-multiple: true
-
-      - name: DEBUG
-        run: ls -ail coverage-reports/* coverage-reports/*/*
-
-      - name: DEBUG2
-        id: debug2
+      - name: Fetch info
+        id: fetch-info
         uses: ./.github/actions/grouped-reports-matrix
         with:
-          root: coverage-reports
-
-      - name: DEBUG3
-        run: |
-          echo "${{ steps.debug2.outputs.info }}"
-          echo "${{ steps.debug2.outputs.matrix }}"
-          echo "${{ toJson(steps.debug2.outputs) }}"
+          pattern: coverage-report-*
 
   upload-codecov-coverage-report:
-    name: UTs & FTs - PHP ${{ matrix.php-version }}
+    name: Upload ${{ matrix.name }} reports
     runs-on: ubuntu-latest
-    needs: [ prepare-codecov-coverage-report ]
+    needs: [ prepare-coverage-reports ]
     strategy:
       fail-fast: true
       max-parallel: 4
-      matrix:
-        include: ${{ fromJson(needs.prepare-codecov-coverage-report.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.prepare-coverage-reports.outputs.matrix) }}
     steps:
       - name: DEBUG
         run: |
