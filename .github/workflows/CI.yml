@@ -130,6 +130,9 @@ jobs:
       max-parallel: 4
       matrix: ${{ fromJson(needs.prepare-coverage-reports.outputs.matrix) }}
     steps:
+      - name: Check out code # Mostly to retrieve codecov config file and to figure out some stuff automatically
+        uses: actions/checkout@v3
+
       - name: DEBUG
         run: |
           echo "${{ toJson(matrix) }}"
@@ -156,13 +159,14 @@ jobs:
 
       # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
       - name: Upload unit tests coverage to codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           name: ${{ matrix.name }}
           files: ${{ steps.build-metadata.outputs.files }}
           flags: ${{ steps.build-metadata.outputs.flags }}
+          disable_search: true
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: ${{ runner.debug == '1' }}
 
 
