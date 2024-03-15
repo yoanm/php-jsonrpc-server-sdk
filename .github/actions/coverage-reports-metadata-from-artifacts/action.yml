@@ -1,7 +1,7 @@
 name: Grouped reports matrix
 description: TODO
 inputs:
-  pattern:
+  root:
     description: TODO
     required: true
 outputs:
@@ -21,27 +21,22 @@ runs:
     - id: validate
       uses: actions/github-script@v7
       env:
-        PATTERN: ${{ inputs.pattern }}
+        ROOT: ${{ inputs.root }}
       with:
         script: |
-          const { PATTERN } = process.env;
+          const { ROOT } = process.env;
 
           await core.group('Validate inputs', async () => {
-            core.debug(`pattern='${PATTERN}'`);
-            if (0 === PATTERN.trim().length) {
-              core.setFailed('You must provide an artifact pattern !');
+            core.debug(`ROOT='${ROOT}'`);
+            if (0 === ROOT.trim().length) {
+              core.setFailed('You must provide a root directory !');
             }
           });
-
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: ${{ inputs.pattern }}
-        path: ${{ runner.temp }}/coverage-reports
 
     - id: main
       uses: actions/github-script@v7
       env:
-        ROOT: ${{ runner.temp }}/coverage-reports
+        ROOT: ${{ inputs.root }}
       with:
         script: |
           const {resolve: pathResolve, dirname: pathDirname} = require('path');

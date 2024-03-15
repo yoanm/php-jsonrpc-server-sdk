@@ -1,0 +1,38 @@
+name: 'Prepare coverage uploads'
+on:
+  workflow_call:
+    inputs:
+      artifacts-pattern:
+        required: true
+        type: string
+    outputs:
+      info:
+        description: TODO
+        value: ${{ jobs.main.outputs.info }}
+      matrix:
+        description: TODO
+        value: ${{ jobs.main.outputs.matrix }}
+      reports:
+        description: TODO
+        value: ${{ jobs.main.outputs.reports }}
+
+jobs:
+  main:
+    name: Fetch metadata
+    runs-on: ubuntu-latest
+    outputs:
+      info: ${{ steps.fetch-info.outputs.info }}
+      matrix: ${{ steps.fetch-info.outputs.matrix }}
+      reports: ${{ steps.fetch-info.outputs.reports }}
+    steps:
+      - uses: actions/checkout@v3 # Just to be able to run the custom coverage-reports-metadata-from-artifacts action !
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.artifacts-pattern }}
+          path: ${{ runner.temp }}/coverage-reports
+
+      - id: fetch-info
+        uses: ./.github/actions/coverage-reports-metadata-from-artifacts
+        with:
+          root: ${{ runner.temp }}/coverage-reports

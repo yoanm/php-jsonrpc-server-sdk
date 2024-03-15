@@ -102,21 +102,11 @@ jobs:
           if-no-files-found: error
 
   prepare-coverage-upload:
-    name: Prepare
-    runs-on: ubuntu-latest
-    outputs:
-      info: ${{ steps.fetch-info.outputs.info }}
-      matrix: ${{ steps.fetch-info.outputs.matrix }}
-      reports: ${{ steps.fetch-info.outputs.reports }}
-    steps:
-      - name: Check out code # Just to be able to load custom action below !
-        uses: actions/checkout@v3
-
-      - name: Fetch metadata
-        id: fetch-info
-        uses: ./.github/actions/coverage-reports-metadata-from-artifacts
-        with:
-          pattern: coverage-report-*
+    name: Coverage upload
+    needs: [ tests ]
+    uses: ./.github/workflows/prepare-coverage-uploads.yml
+    with:
+      artifacts-pattern: coverage-report-*
 
   codecov-upload:
     name: Codecov - Upload ${{ matrix.name }} reports
