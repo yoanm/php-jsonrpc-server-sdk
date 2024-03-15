@@ -101,6 +101,15 @@ jobs:
           path: build/coverage-reports-groups
           if-no-files-found: error
 
+  codacy-upload:
+    name: Codacy
+    needs: [ tests ]
+    uses: ./.github/workflows/codacy-upload.yml
+    with:
+      artifacts-pattern: coverage-report-*
+    secrets:
+      PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
   prepare-coverage-upload:
     name: Coverage upload
     needs: [ tests ]
@@ -153,35 +162,4 @@ jobs:
           disable_search: true
           fail_ci_if_error: true
           verbose: ${{ runner.debug == '1' }}
-
-
-  codacy-upload:
-    name: Codacy - Upload reports
-    runs-on: ubuntu-latest
-    needs: [ prepare-coverage-upload ]
-    env:
-      ARTIFACTS_PATH: coverage-reports
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-report-*
-          path: ${{ env.ARTIFACTS_PATH }}
-
-      - name: Build metadata
-        id: build-metadata
-        uses: actions/github-script@v7
-        env:
-          REPORTS: ${{ needs.prepare-coverage-upload.outputs.reports }}
-        with:
-          script: |
-            const { ARTIFACTS_PATH, REPORTS } = process.env;
-
-            core.setOutput("files", JSON.parse(REPORTS).map(f => `${ARTIFACTS_PATH}/${f}`).join(','));
-
-      - name: Upload
-        uses: codacy/codacy-coverage-reporter-action@v1
-        with:
-          coverage-reports: ${{ steps.build-metadata.outputs.files }}
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
