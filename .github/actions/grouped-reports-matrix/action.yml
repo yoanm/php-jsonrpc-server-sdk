@@ -122,7 +122,7 @@ runs:
           const allReports = await core.group('Build full report list', async () => {
             const res = [];
             for (const data of info) {
-              const item = data.reports.map(fp => `${data.path}/${fp}`);
+              const item = data.reports.map(fp => `${data.artifact}/${data.path}/${fp}`);
               core.debug(`item='${JSON.stringify(item)}'`);
               res.push(item);
             }
