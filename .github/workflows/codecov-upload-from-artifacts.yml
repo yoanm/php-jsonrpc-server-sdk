@@ -17,6 +17,10 @@ jobs:
   prepare:
     name: Prepare
     runs-on: ubuntu-latest
+    outputs:
+      map: ${{ steps.find-groups-metadata.outputs.map }}
+      matrix: ${{ steps.find-groups-metadata.outputs.matrix }}
+      reports: ${{ steps.find-groups-metadata.outputs.reports }}
     steps:
       # @TODO move find-groups-metadata action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v3
@@ -27,19 +31,24 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: ${{ inputs.artifacts-pattern }}
-          path: ${{ github.action }}-artifacts
+          path: job-artifacts
+
+      - name: DEBUG artifacts
+        run: |
+          ls -ail job-artifacts/*
+          ls -ail job-artifacts/*/*
 
       - name: Find groups metadata
         id: find-groups-metadata
         uses: ./custom-action-repo/.github/actions/find-groups-metadata
         with:
-          root: ${{ github.action }}-artifacts
+          root: job-artifacts
 
       - name: DEBUG Find groups metadata
         run: |
-          echo 'info=\'${{ steps.find-groups-metadata.outputs.list }}\''
-          echo 'matrix=\'${{ steps.find-groups-metadata.outputs.matrix }}\''
-          echo 'reports=\'${{ steps.find-groups-metadata.outputs.reports }}\''
+          echo 'map='"'"'${{ steps.find-groups-metadata.outputs.map }}'"'"
+          echo 'matrix='"'"'${{ steps.find-groups-metadata.outputs.matrix }}'"'"
+          echo 'reports='"'"'${{ steps.find-groups-metadata.outputs.reports }}'"'"
 
   upload:
     name: "Upload '${{ matrix.name }}' reports group"
@@ -55,6 +64,9 @@ jobs:
       flags: ${{ steps.upload.outputs.flags }}
       result: ${{ steps.upload.outputs.result }}
     steps:
+      - name: DEBUG matrix
+        run: echo 'matrix='"'"'${{ toJson(matrix) }}'"'"
+
       # @TODO move codecov-group-upload action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v3
         with:
@@ -68,33 +80,39 @@ jobs:
         with:
           script: |
             const { PATH } = process.env;
-
-            const artifactName = PATH.split('/')[0];
+            const pathComponents = PATH.split('/');
+            const artifactName = '/' === PATH[0] ? pathComponents[1] : pathComponents[0];
+            // Remove leading slash if it exists, the artifact name (=directory name) and the trealing slash
+            const groupPathFromArtifact = PATH.substr(('/' === PATH[0] ? 1 : 0) + artifactName.lentgth + 1);
 
             core.setOutput("name", artifactName);
-            core.setOutput("path-from-artifact", PATH.substr(artifactName.length + 1);
+            if (groupPathFromArtifact.trim().lentgh > 0) {
+              core.setOutput("group-path-from-artifact", groupPathFromArtifact);
+            } else {
+              core.setOutput("group-path-from-artifact", '.');
+            }
 
-      - name: Download '${{ steps.guess-artifact.output.name }}' artifact
+      - name: Download '${{ steps.guess-artifact.outputs.name }}' artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ steps.guess-artifact.output.name }}
-          path: codecov-upload-from-artifacts-workflow-artefacts
+          name: ${{ steps.guess-artifact.outputs.name }}
+          path: job-artifacts
 
-      - name: DEBUG artifact
+      - name: DEBUG artifacts
         run: |
-          ls -ail codecov-upload-from-artifacts-workflow-artefacts/*
-          ls -ail codecov-upload-from-artifacts-workflow-artefacts/**/
+          ls -ail job-artifacts/*
+          ls -ail job-artifacts/*/*
 
       - name: Upload group reports
         id: upload
         uses: ./custom-action-repo/.github/actions/codecov-group-upload
         with:
           token: ${{ secrets.TOKEN }}
-          path: codecov-upload-from-artifacts-workflow-artefacts/${{ steps.guess-artifact.output.path-from-artifact }}
+          path: job-artifacts/${{ steps.guess-artifact.outputs.group-path-from-artifact }}
 
       - name: DEBUG Upload group reports
         run: |
-          echo 'name=\'${{ steps.upload.outputs.name }}\''
-          echo 'files=\'${{ steps.upload.outputs.files }}\''
-          echo 'flags=\'${{ steps.upload.outputs.flags }}\''
-          echo 'result=\'${{ steps.upload.outputs.result }}\''
+          echo 'name='"'"'${{ steps.upload.outputs.name }}'"'"
+          echo 'files='"'"'${{ steps.upload.outputs.files }}'"'"
+          echo 'flags='"'"'${{ steps.upload.outputs.flags }}'"'"
+          echo 'result='"'"'${{ steps.upload.outputs.result }}'"'"

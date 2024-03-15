@@ -88,18 +88,10 @@ jobs:
 
       - name: DEBUG Create "unit tests" reports directory
         run: |
-          echo -e "outcome='"
-          echo -e "${{ steps.unit-tests-coverage-group.outcome }}"
-          echo -e "'\n"
-          echo -e "conclusion='"
-          echo -e "${{ steps.unit-tests-coverage-group.conclusion }}"
-          echo -e "'\n"
-          echo -e "outputs='"
-          echo -e "${{ toJson(steps.unit-tests-coverage-group.outputs) }}"
-          echo -e "'\n"
-          echo -e "metadata='"
-          echo -e "${{ toJson(steps.unit-tests-coverage-group.outputs.metadata) }}"
-          echo -e "'\n"
+          echo 'outcome='"'"'${{ steps.unit-tests-coverage-group.outcome }}'"'"
+          echo 'conclusion='"'"'${{ steps.unit-tests-coverage-group.conclusion }}'"'"
+          echo 'outputs='"'"'${{ toJson(steps.unit-tests-coverage-group.outputs) }}'"'"
+          echo 'metadata='"'"'${{ steps.unit-tests-coverage-group.outputs.metadata }}'"'"
 
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
@@ -114,18 +106,10 @@ jobs:
 
       - name: DEBUG Create "functional tests" coverage group
         run: |
-          echo -e "outcome='"
-          echo -e "${{ steps.functional-tests-coverage-group.outcome }}"
-          echo -e "'\n"
-          echo -e "conclusion='"
-          echo -e "${{ steps.functional-tests-coverage-group.conclusion }}"
-          echo -e "'\n"
-          echo -e "outputs='"
-          echo -e "${{ toJson(steps.functional-tests-coverage-group.outputs) }}"
-          echo -e "'\n"
-          echo -e "metadata='"
-          echo -e "${{ toJson(steps.functional-tests-coverage-group.outputs.metadata) }}"
-          echo -e "'\n"
+          echo 'outcome='"'"'${{ steps.functional-tests-coverage-group.outcome }}'"'"
+          echo 'conclusion='"'"'${{ steps.functional-tests-coverage-group.conclusion }}'"'"
+          echo 'outputs='"'"'${{ toJson(steps.functional-tests-coverage-group.outputs) }}'"'"
+          echo 'metadata='"'"'${{ steps.functional-tests-coverage-group.outputs.metadata }}'"'"
 
       - name: Upload coverage reports
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
@@ -159,6 +143,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ codacy-uploader, codecov-uploader ]
     steps:
-      - run: echo "codecov='${{ toJson(needs.codecov-uploader) }}'"
-      - run: echo "codacy='${{ toJson(needs.codacy-uploader) }}'"
+      - run: echo 'codecov='"'"'${{ toJson(needs.codecov-uploader) }}'"'"
+      - run: echo 'codacy='"'"'${{ toJson(needs.codacy-uploader) }}'"'"
 ## <<< Secure

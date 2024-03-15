@@ -129,7 +129,7 @@ runs:
             const item = {source: file, report: `${pathBasename(pathDirname(file))}-report-${++counter}`};
 
             core.debug(`item='${JSON.stringify(item)}'`);
-            core.info(`'Found ${item.source}' report. Will be duplicated as '${item.report}' report file`);
+            core.info(`'Found ${item.source}' report. Will be duplicated as '${item.report}' group report file`);
 
             res.push(item);
           }
@@ -151,7 +151,7 @@ runs:
           const { JSON_FILE_MAP } = process.env;
           
           const res = JSON.parse(JSON_FILE_MAP).map(v => {
-            core.info(`Add ${v.report} report`);
+            core.info(`Add ${v.report} group report`);
 
             return v.report;
           });
@@ -198,7 +198,7 @@ runs:
 
           core.startGroup('Create metadata file');
 
-          const metadata = {name: NAME, format: FORMAT, reports: JSON_REPORTS, flags: JSON_FLAGS};
+          const metadata = {name: NAME, format: FORMAT, reports: JSON.parse(JSON_REPORTS), flags: JSON.parse(JSON_FLAGS)};
           const metadataString = JSON.stringify(metadata);
           core.debug(`metadata='${metadataString}'`);
 
@@ -217,7 +217,7 @@ runs:
       with:
         script: |
           const { JSON_FILE_MAP, DIRECTORY } = process.env;
-          core.startGroup('Copy report files');
+          core.startGroup('Copy group reports');
 
           JSON.parse(JSON_FILE_MAP).forEach(async function (v) {
             const dest = `${DIRECTORY}/${v.report}`
