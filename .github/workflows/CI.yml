@@ -102,9 +102,9 @@ jobs:
           if-no-files-found: error
 
   codacy-upload:
-    name: Codacy
+    name: Codacy reports
     needs: [ tests ]
-    uses: ./.github/workflows/codacy-upload.yml
+    uses: ./.github/workflows/codacy-reports.yml
     with:
       artifacts-pattern: coverage-report-*
     secrets:
@@ -112,9 +112,9 @@ jobs:
 
 
   codecov-upload:
-    name: Codecov
+    name: Codecov reports
     needs: [ tests ]
-    uses: ./.github/workflows/codecov-upload.yml
+    uses: ./.github/workflows/codecov-reports.yml
     with:
       artifacts-pattern: coverage-report-*
     secrets:

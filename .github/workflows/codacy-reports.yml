@@ -11,22 +11,20 @@ on:
 
 jobs:
   main:
-    name: Upload
+    name: Upload reports
     runs-on: ubuntu-latest
-    env:
-      ARTIFACTS_PATH: coverage-reports
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: ${{ inputs.artifacts-pattern }}
-          path: ${{ env.ARTIFACTS_PATH }}
+          path: coverage-reports
 
       - name: Build metadata
         id: build-metadata
         run: |
           FILES=$(find ./coverage-reports -type f -name "report-*" | tr "\n" ",")
-          echo "info::files='$FILES'"
+          echo "::debug::files='$FILES'"
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
 
       - name: Upload
