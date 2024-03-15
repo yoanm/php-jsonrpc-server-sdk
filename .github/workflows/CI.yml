@@ -22,6 +22,7 @@ env:
   CODACY_BIN: ~/.cache/codacy/codacy.sh
 
 jobs:
+## Insecure >>>
   tests:
     name: UTs & FTs - PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
@@ -74,48 +75,90 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      - name: Create "unit tests" coverage group
+      - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        uses: ./.github/actions/build-coverage-report
+        id: unit-tests-coverage-group
+        uses: ./.github/actions/create
         with:
-          name: unit-tests
+          name: unit-tests-php${{ matrix.php-version }}
+          format: clover
           files: build/coverage-phpunit/unit.clover
           flags: unit-tests php-${{ matrix.php-version }}
-          root: build/coverage-reports-groups
+          path: build/coverage-groups
+
+      - name: DEBUG Create "unit tests" reports directory
+        run: |
+          echo -e "outcome='"
+          echo -e "${{ steps.unit-tests-coverage-group.outcome }}"
+          echo -e "'\n"
+          echo -e "conclusion='"
+          echo -e "${{ steps.unit-tests-coverage-group.conclusion }}"
+          echo -e "'\n"
+          echo -e "outputs='"
+          echo -e "${{ toJson(steps.unit-tests-coverage-group.outputs) }}"
+          echo -e "'\n"
+          echo -e "metadata='"
+          echo -e "${{ toJson(steps.unit-tests-coverage-group.outputs.metadata) }}"
+          echo -e "'\n"
 
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        uses: ./.github/actions/build-coverage-report
+        id: functional-tests-coverage-group
+        uses: ./.github/actions/create
         with:
-          name: functional-tests
+          name: functional-tests-php${{ matrix.php-version }}
+          format: clover
           files: build/coverage-phpunit/functional.clover build/coverage-behat/clover.xml
           flags: functional-tests php-${{ matrix.php-version }}
-          root: build/coverage-reports-groups
+          path: build/coverage-groups
 
-      - name: Upload coverage as artifact
+      - name: DEBUG Create "functional tests" coverage group
+        run: |
+          echo -e "outcome='"
+          echo -e "${{ steps.functional-tests-coverage-group.outcome }}"
+          echo -e "'\n"
+          echo -e "conclusion='"
+          echo -e "${{ steps.functional-tests-coverage-group.conclusion }}"
+          echo -e "'\n"
+          echo -e "outputs='"
+          echo -e "${{ toJson(steps.functional-tests-coverage-group.outputs) }}"
+          echo -e "'\n"
+          echo -e "metadata='"
+          echo -e "${{ toJson(steps.functional-tests-coverage-group.outputs.metadata) }}"
+          echo -e "'\n"
+
+      - name: Upload coverage reports
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-php${{ matrix.php-version }}
-          path: build/coverage-reports-groups
+          name: coverage-groups-php${{ matrix.php-version }}
+          path: build/coverage-groups
           if-no-files-found: error
-
-  codacy-upload:
-    name: Codacy reports
+## <<< Insecure
+## Secure >>>
+  codacy-uploader:
+    name: Upload coverage group - Codacy
     needs: [ tests ]
-    uses: ./.github/workflows/codacy-reports.yml
+    uses: ./.github/workflows/codacy-uploader.yml
     with:
-      artifacts-pattern: coverage-report-*
+      artifacts-pattern: coverage-groups-*
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
-
-  codecov-upload:
-    name: Codecov reports
+  codecov-uploader:
+    name: Upload coverage group - Codecov
     needs: [ tests ]
-    uses: ./.github/workflows/codecov-reports.yml
+    uses: ./.github/workflows/codecov-uploader.yml
     with:
-      artifacts-pattern: coverage-report-*
+      artifacts-pattern: coverage-groups-*
     secrets:
       TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  debug-uploads:
+    name: DEBUG - Uploaders
+    runs-on: ubuntu-latest
+    needs: [ codacy-uploader, codecov-uploader ]
+    steps:
+      - run: echo "codecov='${{ toJson(needs.codecov-uploader) }}'"
+      - run: echo "codacy='${{ toJson(needs.codacy-uploader) }}'"
+## <<< Secure

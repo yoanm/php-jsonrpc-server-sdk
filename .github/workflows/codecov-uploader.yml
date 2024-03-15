@@ -1,0 +1,115 @@
+name: 'Codecov upload'
+on:
+  workflow_call:
+    inputs:
+      artifacts-pattern:
+        required: true
+        type: string
+    secrets:
+      TOKEN:
+        required: true
+    outputs:
+      files:
+        description: JSON array of reports sent
+        value: ${{ jobs.upload.outputs.json-files }}
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      info: ${{ steps.build-metadata.outputs.info }}
+      matrix: ${{ steps.build-metadata.outputs.matrix }}
+      reports: ${{ steps.build-metadata.outputs.reports }}
+    steps:
+      # @TODO move merge-metadata action to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v3
+        with:
+          path: custom-action-repo
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.artifacts-pattern }}
+          path: ${{ github.action }}-artifacts
+
+      - name: Merge report groups metadata
+        id: build-metadata
+        uses: ./custom-action-repo/.github/actions/merge-metadata
+        with:
+          root: ${{ github.action }}-artifacts
+
+  upload:
+    name: "Upload '${{ matrix.name }}' reports group"
+    runs-on: ubuntu-latest
+    needs: [ prepare ]
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      # @TODO move codecov-group-upload action to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v3
+        with:
+          path: custom-action-repo
+
+      # @TODO remove the checkout and fill right values directly (sha, branch, pr, etc)
+      - uses: actions/checkout@v3
+        with:
+          path: tmp-repo
+
+      - name: Guess artifact
+        id: guess-artifact
+        uses: actions/github-script@v7
+        env:
+          PATH: ${{ matrix.path }}
+        with:
+          script: |
+            const { PATH } = process.env;
+
+            const artifactName = PATH.split('/')[0];
+
+            core.setOutput("name", artifactName);
+            core.setOutput("path-from-artifact", PATH.substr(artifactName.length + 1);
+
+      - name: Download '${{ steps.guess-artifact.output.name }}' artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.guess-artifact.output.name }}
+          path: coverage-group
+
+      - name: DEBUG artifact
+        run: |
+          ls -ail coverage-group/*
+          ls -ail coverage-group/**/
+
+      - name: Upload reports
+        uses: ./custom-action-repo/.github/actions/codecov-group-upload
+        with:
+          path: codacy-uploader-artifacts/${{ steps.guess-artifact.output.path-from-artifact }}
+
+      - name: Build uploader options
+        id: build-uploader-options
+        uses: actions/github-script@v7
+        env:
+          ROOT: coverage-group
+          REPORTS: ${{ matrix.reports }}
+          FLAGS: ${{ matrix.flags }}
+        with:
+          script: |
+            const { ROOT, REPORTS, FLAGS } = process.env;
+
+            core.setOutput("files", JSON.parse(REPORTS).map(f => `${ROOT}/${f}`).join(','));
+            core.setOutput("flags", JSON.parse(FLAGS).join(','));
+
+      - name: Upload group reports
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.TOKEN }}
+          name: ${{ matrix.name }}
+          files: ${{ steps.build-uploader-options.outputs.files }}
+          flags: ${{ steps.build-uploader-options.outputs.flags }}
+          root_dir: tmp-repo
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: ${{ runner.debug == '1' }}
