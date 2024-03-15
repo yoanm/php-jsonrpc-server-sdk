@@ -110,56 +110,13 @@ jobs:
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
-  prepare-coverage-upload:
-    name: Coverage upload
-    needs: [ tests ]
-    uses: ./.github/workflows/prepare-coverage-uploads.yml
-    with:
-      artifacts-pattern: coverage-report-*
 
   codecov-upload:
-    name: Codecov - Upload ${{ matrix.name }} reports
-    runs-on: ubuntu-latest
-    needs: [ prepare-coverage-upload ]
-    env:
-      ARTIFACTS_PATH: coverage-reports
-    strategy:
-      fail-fast: true
-      max-parallel: 4
-      matrix: ${{ fromJson(needs.prepare-coverage-upload.outputs.matrix) }}
-    steps:
-      - name: Check out code # Mostly to retrieve codecov config file and to figure out some stuff automatically
-        uses: actions/checkout@v3
-
-      - name: Download the artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: ${{ env.ARTIFACTS_PATH }}
-
-      - name: Build metadata
-        id: build-metadata
-        uses: actions/github-script@v7
-        env:
-          PATH: ${{ matrix.path }}
-          REPORTS: ${{ matrix.reports }}
-          FLAGS: ${{ matrix.flags }}
-        with:
-          script: |
-            const { ARTIFACTS_PATH, PATH, REPORTS, FLAGS } = process.env;
-
-            core.setOutput("files", JSON.parse(REPORTS).map(f => `${ARTIFACTS_PATH}/${PATH}/${f}`).join(','));
-            core.setOutput("flags", JSON.parse(FLAGS).join(','));
-
-      # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
-      - name: Upload
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          name: ${{ matrix.name }}
-          files: ${{ steps.build-metadata.outputs.files }}
-          flags: ${{ steps.build-metadata.outputs.flags }}
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: ${{ runner.debug == '1' }}
+    name: Codecov
+    needs: [ tests ]
+    uses: ./.github/workflows/codecov-upload.yml
+    with:
+      artifacts-pattern: coverage-report-*
+    secrets:
+      TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

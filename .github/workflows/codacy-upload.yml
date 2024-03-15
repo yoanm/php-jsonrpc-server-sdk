@@ -8,16 +8,6 @@ on:
     secrets:
       PROJECT_TOKEN:
         required: true
-    outputs:
-      info:
-        description: TODO
-        value: ${{ jobs.main.outputs.info }}
-      matrix:
-        description: TODO
-        value: ${{ jobs.main.outputs.matrix }}
-      reports:
-        description: TODO
-        value: ${{ jobs.main.outputs.reports }}
 
 jobs:
   main:
