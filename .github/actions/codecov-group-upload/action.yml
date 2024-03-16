@@ -23,6 +23,8 @@ outputs:
     description: TODO
     value: ${{ steps.upload.outputs.result }}
 
+# @TODO create a "load-group-metadata" action (to avoid manually loading the metadata file)
+
 runs:
   using: "composite"
   steps:

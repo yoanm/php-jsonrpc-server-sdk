@@ -19,6 +19,8 @@ outputs:
     description: TODO
     value: ${{ steps.upload.outputs.result }}
 
+# @TODO rely on load-groups-metadata to fetch all reports available
+
 runs:
   using: "composite"
   steps:
