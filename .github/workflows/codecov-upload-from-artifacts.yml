@@ -1,4 +1,4 @@
-name: 'Codecov upload'
+name: 'Codecov report groups upload'
 on:
   workflow_call:
     inputs:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   prepare:
-    name: Prepare
+    name: Prepare uploads
     runs-on: ubuntu-latest
     outputs:
       map: ${{ steps.load-groups-metadata.outputs.map }}
@@ -46,12 +46,15 @@ jobs:
 
       - name: DEBUG Load groups metadata
         run: |
-          echo 'map='"'"'${{ steps.find-groups-metadata.outputs.map }}'"'"
-          echo 'matrix='"'"'${{ steps.find-groups-metadata.outputs.matrix }}'"'"
-          echo 'reports='"'"'${{ steps.find-groups-metadata.outputs.reports }}'"'"
+          echo 'outcome='"'"'${{ steps.load-groups-metadata.outcome }}'"'"
+          echo 'conclusion='"'"'${{ steps.load-groups-metadata.conclusion }}'"'"
+          echo 'outputs='"'"'${{ toJson(steps.load-groups-metadata.outputs) }}'"'"
+          echo 'map='"'"'${{ steps.load-groups-metadata.outputs.map }}'"'"
+          echo 'matrix='"'"'${{ steps.load-groups-metadata.outputs.matrix }}'"'"
+          echo 'reports='"'"'${{ steps.load-groups-metadata.outputs.reports }}'"'"
 
   upload:
-    name: "Upload '${{ matrix.name }}' reports group"
+    name: "Upload '${{ matrix.name }}' group reports"
     runs-on: ubuntu-latest
     needs: [ prepare ]
     strategy:
@@ -109,6 +112,9 @@ jobs:
 
       - name: DEBUG Upload group reports
         run: |
+          echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
+          echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"
+          echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
           echo 'name='"'"'${{ steps.upload.outputs.name }}'"'"
           echo 'files='"'"'${{ steps.upload.outputs.files }}'"'"
           echo 'flags='"'"'${{ steps.upload.outputs.flags }}'"'"

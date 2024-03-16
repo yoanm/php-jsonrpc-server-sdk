@@ -4,13 +4,29 @@ on:
     workflows: ["CI"]
     types: [completed]
 
-concurrency:
-  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
-  cancel-in-progress: true
-
 jobs:
-  plopl:
-    name: Codacy - Upload reports
+  codacy-uploader:
+    name: Codacy
+    needs: [ tests ]
+    uses: ./.github/workflows/codacy-upload-from-artifacts.yml
+    with:
+      artifacts-pattern: coverage-groups-*
+    secrets:
+      PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+  codecov-uploader:
+    name: Codecov
+    needs: [ tests ]
+    uses: ./.github/workflows/codecov-upload-from-artifacts.yml
+    with:
+      artifacts-pattern: coverage-groups-*
+    secrets:
+      TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  debug-uploads:
+    name: DEBUG - Uploaders
     runs-on: ubuntu-latest
+    needs: [ codacy-uploader, codecov-uploader ]
     steps:
-      - run: echo "OK"
+      - run: echo 'codecov='"'"'${{ toJson(needs.codecov-uploader) }}'"'"
+      - run: echo 'codacy='"'"'${{ toJson(needs.codacy-uploader) }}'"'"

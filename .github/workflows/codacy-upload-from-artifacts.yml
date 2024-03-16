@@ -1,4 +1,4 @@
-name: 'Codacy upload'
+name: 'Codacy report groups upload'
 on:
   workflow_call:
     inputs:
@@ -11,14 +11,14 @@ on:
     outputs:
       files:
         description: TODO
-        value: ${{ jobs.upload.outputs.json-files }}
+        value: ${{ jobs.upload.outputs.files }}
       result:
         description: TODO
         value: ${{ jobs.upload.outputs.result }}
 
 jobs:
   upload:
-    name: Upload reports
+    name: Upload all reports
     runs-on: ubuntu-latest
     outputs:
       files: ${{ steps.upload.outputs.files }}
@@ -40,14 +40,17 @@ jobs:
           ls -ail job-artifacts/*
           ls -ail job-artifacts/*/*
 
-      - name: Upload reports
+      - name: Upload all reports
         id: upload
         uses: ./custom-action-repo/.github/actions/codacy-multi-group-upload
         with:
           project-token: ${{ secrets.PROJECT_TOKEN }}
           root: job-artifacts
 
-      - name: DEBUG Upload reports
+      - name: DEBUG Upload all reports
         run: |
+          echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
+          echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"
+          echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
           echo 'files='"'"'${{ steps.upload.outputs.files }}'"'"
           echo 'result='"'"'${{ steps.upload.outputs.result }}'"'"

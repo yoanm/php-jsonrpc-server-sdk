@@ -22,7 +22,7 @@ env:
   CODACY_BIN: ~/.cache/codacy/codacy.sh
 
 jobs:
-## Insecure >>>
+## Untrusted >>>
   tests:
     name: UTs & FTs - PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
@@ -118,10 +118,10 @@ jobs:
           name: coverage-groups-php${{ matrix.php-version }}
           path: build/coverage-groups
           if-no-files-found: error
-## <<< Insecure
-## Secure >>>
+## <<< Untrusted
+## Trusted - to move to a workflow_run workflow >>>
   codacy-uploader:
-    name: Coverage groups to Codacy
+    name: Codacy
     needs: [ tests ]
     uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
@@ -130,7 +130,7 @@ jobs:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   codecov-uploader:
-    name: Coverage groups to Codecov
+    name: Codecov
     needs: [ tests ]
     uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
@@ -145,4 +145,4 @@ jobs:
     steps:
       - run: echo 'codecov='"'"'${{ toJson(needs.codecov-uploader) }}'"'"
       - run: echo 'codacy='"'"'${{ toJson(needs.codacy-uploader) }}'"'"
-## <<< Secure
+## <<< Trusted - to move to a workflow_run workflow
