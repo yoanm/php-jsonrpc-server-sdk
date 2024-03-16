@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COVERAGE_TYPE: none
+      TEST: ${{ matrix.php-version }}
     strategy:
       fail-fast: true
       max-parallel: 4
@@ -38,7 +39,18 @@ jobs:
             composer-flag: --prefer-lowest
           # Up-to-date versions => Latest versions allowed by composer config
           - php-version: '8.2'
+    outputs:
+      PLOP: PLIP
+      PLOP_${{ inputs.plop }}: ${{ inputs.plop }}
     steps:
+      - name: DEBUG matrix outputs
+        id: debug-matrix-outputs
+        run: |
+          echo "TEST_ENV_${{ matrix.php-version }}=${{ matrix.php-version }}" >> "$GITHUB_ENV"
+
+      - name: DEBUG env
+        run: env
+
       - name: Check out code
         uses: actions/checkout@v3
 
@@ -118,6 +130,15 @@ jobs:
           name: coverage-groups-php${{ matrix.php-version }}
           path: build/coverage-groups
           if-no-files-found: error
+
+  debug-outputs:
+    name: DEBUG - matrix outputs
+    runs-on: ubuntu-latest
+    needs: [ tests ]
+    steps:
+      - run: echo 'codecov='"'"'${{ toJson(needs.tests) }}'"'"
+      - run: env
+
 ## <<< Untrusted
 ## Trusted - to move to a workflow_run workflow >>>
   codacy-uploader:
