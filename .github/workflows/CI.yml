@@ -39,7 +39,7 @@ jobs:
           - php-version: '8.2'
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Enable coverage
         if: ${{ matrix.php-version == '8.2' }}
@@ -59,7 +59,7 @@ jobs:
 
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.composer
@@ -92,7 +92,7 @@ jobs:
       # See the reports at https://codecov.io/gh/yoanm/php-jsonrpc-server-sdk
       - name: Upload unit tests coverage to codecov
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: "build/coverage-phpunit/unit.clover"
           name: "unit-tests-${{ matrix.php-version }}"
@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload functional tests coverage to codecov
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: "build/coverage-behat/clover.xml,build/coverage-phpunit/functional.clover"
           name: "functional-tests-${{ matrix.php-version }}"
@@ -116,7 +116,7 @@ jobs:
     name: Static checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup PHP 8.2
         uses: shivammathur/setup-php@v2
@@ -130,7 +130,7 @@ jobs:
 
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.composer
@@ -145,7 +145,7 @@ jobs:
 
       - name: Dependencies check
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/dependency-review-action@v1
+        uses: actions/dependency-review-action@v4
 
   finalize-codacy-coverage-report:
     runs-on: ubuntu-latest
@@ -155,7 +155,7 @@ jobs:
     steps:
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ env.CODACY_CACHE_PATH }}
@@ -188,7 +188,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
@@ -202,7 +202,7 @@ jobs:
 
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.composer
