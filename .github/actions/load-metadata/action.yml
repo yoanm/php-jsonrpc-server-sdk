@@ -40,7 +40,7 @@ runs:
             core.exportVariable(envName, value);
           });
 
-    # @TODO move load-metadata action to a dedicated repo and remove the checkout
+    # @TODO move reports-group/find action to a dedicated repo and remove the checkout
     - uses: actions/checkout@v4
       with:
         path: custom-action-repo
@@ -82,7 +82,7 @@ runs:
           
           const metadataList = [...JSON.parse(METADATA_LIST).values()]; // .values() + spread to ensure array rather than object ....
           
-          if ('string' !== core.getInput('format')) {
+          if ('json' === core.getInput('format')) {
             // Detect if provided `paths` was a group directory 
             const isSingleMetadata = metadataList.length === 1 && pathResolve(metadataList[0].path) === pathResolve(core.getInput('path', {required: true}));
             const result = isSingleMetadata ? metadataList.shift() : metadataList;

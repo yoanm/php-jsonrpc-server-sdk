@@ -1,5 +1,6 @@
 name: find
-description: 🔎 Find 🗃️ reports group directory under the provided `path` 🔍
+description: |
+  Find reports group directory under the provided `path`
 inputs:
   path:
     description: A group directory or a glob pattern in order to find group directories and merge their metadata
@@ -48,7 +49,7 @@ runs:
           core.debug('pattern: ' + pattern);
           const globber = await glob.create(pattern, {followSymbolicLinks: core.getBooleanInput('follow-symbolic-links', {required: true})});
           const result = (await globber.glob()).map(p => pathDirname(p).replace(`${absWorkspace}/`, ''));
-          result.forEach(p => core.info(`🗃️ Found a reports group directory at ${p}`));
+          result.forEach(p => core.info('Found a reports group directory at ' + p));
           if (0 === result.length) {
             core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
           }

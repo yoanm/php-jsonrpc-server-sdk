@@ -20,8 +20,8 @@ jobs:
     outputs:
       uploaded-reports: ${{ steps.upload.outputs.uploaded-reports }}
     steps:
-      # @TODO move codacy-uploader action to a dedicated repo and remove the checkout
-      - uses: actions/checkout@v3
+      # @TODO move reports-group/codacy-uploader action to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v4
         with:
           path: custom-action-repo
 
@@ -38,7 +38,7 @@ jobs:
           path: job-artifacts
           project-token: ${{ secrets.PROJECT_TOKEN }}
 
-      - name: DEBUG Upload all reports
+      - name: DEBUG
         run: |
           echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
           echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"

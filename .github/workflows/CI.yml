@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COVERAGE_TYPE: none
-      TEST: ${{ matrix.php-version }}
     strategy:
       fail-fast: true
       max-parallel: 4
@@ -76,6 +75,7 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
+      # @TODO move reports-group/create action to a dedicated repo and remove the checkout
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
