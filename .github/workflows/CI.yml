@@ -89,9 +89,6 @@ jobs:
             php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      - name: DEBUG
-        run: echo 'outputs='"'"'${{ toJson(steps.unit-tests-coverage-group.outputs) }}'"'"
-
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
@@ -106,9 +103,6 @@ jobs:
             functional-tests
             php-${{ matrix.php-version }}
           path: build/coverage-groups
-
-      - name: DEBUG
-        run: echo 'outputs='"'"'${{ toJson(steps.functional-tests-coverage-group.outputs) }}'"'"
 
       - name: Upload coverage reports
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}

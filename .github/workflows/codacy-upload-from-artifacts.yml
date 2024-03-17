@@ -31,16 +31,11 @@ jobs:
           pattern: ${{ inputs.artifacts-pattern }}
           path: job-artifacts
 
-      - name: DEBUG artifacts
-        run: |
-          ls -ail job-artifacts/*
-          ls -ail job-artifacts/*/*
-
       - name: Upload all reports
         id: upload
         uses: ./custom-action-repo/.github/actions/codacy-uploader
         with:
-          from: job-artifacts/**
+          path: job-artifacts
           project-token: ${{ secrets.PROJECT_TOKEN }}
 
       - name: DEBUG Upload all reports

@@ -1,7 +1,7 @@
-name: TODO
-description: TODO
+name: find
+description: 🔎 Find 🗃️ reports group directory under the provided `path` 🔍
 inputs:
-  from:
+  path:
     description: A group directory or a glob pattern in order to find group directories and merge their metadata
     required: false
   format:
@@ -14,7 +14,7 @@ inputs:
     default: ','
   follow-symbolic-links:
     description: |
-      Indicates whether to follow symbolic links when resolving `from`
+      Indicates whether to follow symbolic links when resolving `path`
     default: 'true'
 outputs:
   list:
@@ -39,19 +39,16 @@ runs:
 
     - id: resolve-paths
       uses: actions/github-script@v7
-      env:
-        ROOT_PATH: ${{ inputs.from }}
       with:
         script: |
           const {resolve: pathResolve, dirname: pathDirname, join: pathJoin} = require('path');
-          const {ROOT_PATH} = process.env;
           const absWorkspace = pathResolve('.');
-          
-          const pattern = pathJoin(ROOT_PATH, '**', '.reports-group-metadata.json');
+          const fromList = core.getMultilineInput('path', {required: true});
+          const pattern = fromList.map(item => pathJoin(item, '**', '.reports-group-metadata.json')).join('\n');
           core.debug('pattern: ' + pattern);
           const globber = await glob.create(pattern, {followSymbolicLinks: core.getBooleanInput('follow-symbolic-links', {required: true})});
           const result = (await globber.glob()).map(p => pathDirname(p).replace(`${absWorkspace}/`, ''));
-          result.forEach(p => core.info(`Found a group at ${p}`));
+          result.forEach(p => core.info(`🗃️ Found a reports group directory at ${p}`));
           if (0 === result.length) {
             core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
           }
@@ -62,12 +59,11 @@ runs:
       uses: actions/github-script@v7
       env:
         PATH_LIST: ${{ steps.resolve-paths.outputs.paths }}
-        FORMAT: ${{ inputs.format }}
-        GLUE_STRING: ${{ inputs.glue-string }}
       with:
         script: |
-          const {PATH_LIST, FORMAT, GLUE_STRING} = process.env;
+          const {PATH_LIST, } = process.env;
+          const GLUE_STRING = core.getInput('glue-string', {required: true, trimWhitespace: false});
           
           const result = [...JSON.parse(PATH_LIST).values()]; // .values() + spread to ensure array rather than object ....
           
-          core.setOutput('list', 'json' === FORMAT ? JSON.stringify(result) : result.join(GLUE_STRING));
+          core.setOutput('list', 'json' === core.getInput('format') ? JSON.stringify(result) : result.join(GLUE_STRING));

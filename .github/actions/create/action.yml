@@ -1,7 +1,23 @@
-name: Create a coverage report group
+# Inputs 📥 (inbox-tray)
+# Outputs (outbox-tray)
+# Create, Copy, Move ✏️ (pencil)
+# Build 🏗️ (building-construction) / 🛠️ (hammer-and-wrench) / 🔧 (wrench) / ⚙️ (gear)
+# Artifact  📦 (package)          / 🧊 (ice)
+# Directory 📂 (open-file-folder) / 📁 (file-folder)
+# Path 📍
+# Report 🗒️ (spiral-notepad)
+# Reports 🗃️ (card-file-box)
+# Metadata (or file) 📝 (memo)
+# Group (or directory) 🗄️ (file-cabinet)
+# Error 🚨 (police-car-light)
+#
+# Lookup 🔎 🔍 (magnifier) / 🔭 (telescope) / / 🔬 (microscope)
+# Validate 🩺
+# Resolve 📡
+name: create
 description: |
-  Create a directory under provided path holding a copy all reports to upload and a metada file.
-  Reports are expected to share the same format !
+  Create a 🗃️ reports group directory under provided `path`, with a 📝 metada file and a copy of all 🗃️ `files`
+  🗒️ Reports are expected to share the same format !
 inputs:
   name:
     description: Group name
@@ -53,7 +69,7 @@ runs:
     - uses: actions/github-script@v7
       with:
         script: |
-          core.info('Validate required inputs')
+          core.info('🩺 📤 Validate required inputs')
           core.getInput('name', {required: true});
           core.getInput('format', {required: true});
           core.getInput('files', {required: true});
@@ -65,7 +81,7 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          core.info('Resolve path');
+          core.info('📡 📍 Resolve group directory path');
           const {resolve: pathResolve} = require('path');
           
           const result = pathResolve(core.getInput('path'), core.getInput('name', {required: true}));
@@ -76,7 +92,7 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          core.info('Resolve files');
+          core.info('📡 🗒️ Resolve reports');
           const {resolve: pathResolve} = require('path');
           const {GITHUB_WORKSPACE} = process.env;
           
@@ -91,9 +107,9 @@ runs:
           );
           const result = (await globber.glob()).map(fp => pathFromGHWorkspace(fp));
           if (0 === result.length) {
-            core.setFailed('You must provide at least one report !');
+            core.setFailed('🚨 You must provide at least one report !');
           }
-          result.forEach(fp => core.info(`Found ${fp}`));
+          result.forEach(fp => core.info(`🔎 🗒️ Found ${fp}`));
           const resultString = JSON.stringify(result);
           core.debug('result=' + resultString);
           core.setOutput('list', resultString);
@@ -105,7 +121,7 @@ runs:
         DIRECTORY: ${{ steps.resolve-directory.outputs.directory }}
       with:
         script: |
-          return core.group('Build file map', async () => {
+          return core.group('🏗️ 🗃️ Build reports map', async () => {
             const {basename: pathBasename, resolve: pathResolve} = require('path');
             const {GITHUB_WORKSPACE} = process.env;
             const {RESOLVED_FILES, DIRECTORY} = process.env;
@@ -118,10 +134,11 @@ runs:
             let counter = 0;
             const files = [...JSON.parse(RESOLVED_FILES).values()]; // .values() + spread to ensure array rather than object ....
             const result = files.map(filepath => {
-              core.info('Found ' + filepath);
               // Ensure report files uniqueness while keeping a bit of clarity regarding the mapping with original files !
               const filename = pathBasename(filepath) + '-report-' + (++counter);
-              return {source: filepath, filename: filename, dest: pathFromGHWorkspace(DIRECTORY, filename)};
+              const destination = pathFromGHWorkspace(DIRECTORY, filename);
+              core.info('🏗️ 🗒️ ' + filepath + ' => ' + destination);
+              return {source: filepath, filename: filename, dest: destination};
             });
             const resultString = JSON.stringify(result);
             core.debug('result=' + resultString);
@@ -136,7 +153,7 @@ runs:
         script: |
           const {REPORTS_MAP} = process.env;
           
-          return core.group('Build group metadata', () => {
+          return core.group('🏗️ 📝 Build group metadata', () => {
             const reportList = [...JSON.parse(REPORTS_MAP).values()]; // .values() + spread to ensure array rather than object ....
             const result = {
               name: core.getInput('name', {required: true}),
@@ -156,7 +173,7 @@ runs:
         script: |
           const {DIRECTORY} = process.env;
           
-          return core.group(`Create ${DIRECTORY} group directory`, () => {
+          return core.group(`✏️ 🗄️ Create ${DIRECTORY} group directory`, () => {
             io.mkdirP(DIRECTORY);
           });
 
@@ -167,10 +184,10 @@ runs:
         script: |
           const {REPORTS_MAP} = process.env;
           
-          return core.group('Copy reports', async () => {
+          return core.group('✏️ 🗃️ Copy reports', async () => {
             const list = [...JSON.parse(REPORTS_MAP).values()]; // .values() + spread to ensure array rather than object ....
             return list.map(async (item) => {
-              core.info(`${item.source} => ${item.dest}`);
+              core.info('✏️ 🗒️ ' + item.source + ' => ' + item.dest);
               return io.cp(item.source, item.dest);
             });
           });
@@ -185,7 +202,7 @@ runs:
           const {writeFileSync} = require('fs');
           const {DIRECTORY, CONTENT} = process.env;
           
-          return core.group('Create metadata file', () => {
+          return core.group('✏️ 📝 Create metadata file', () => {
             const filepath = pathJoin(DIRECTORY, '.reports-group-metadata.json');
             writeFileSync(filepath, CONTENT);
           });
@@ -201,7 +218,7 @@ runs:
           const {DIRECTORY, FILES, METADATA} = process.env
           const files = [...JSON.parse(FILES).values()]; // .values() + spread to ensure array rather than object ....
           
-          return core.group('Build outputs', () => {
+          return core.group('🏗️ 📤 Build outputs', () => {
             core.setOutput('path', DIRECTORY);
             core.setOutput('reports', JSON.parse(METADATA).reports.join('\n'));
             core.setOutput('files', files.join('\n'));

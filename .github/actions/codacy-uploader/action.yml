@@ -2,7 +2,7 @@ name: TODO
 description: TODO
 
 inputs:
-  from:
+  path:
     description: A group directory or a glob pattern in order to find group directories and merge their metadata
     required: true
   project-token:
@@ -10,7 +10,7 @@ inputs:
     required: true
   follow-symbolic-links:
     description: |
-      Indicates whether to follow symbolic links when resolving `from`
+      Indicates whether to follow symbolic links when resolving `path`
     default: 'true'
 
 outputs:
@@ -38,7 +38,7 @@ runs:
         script: |
           core.info('Validate inputs');
           
-          core.getInput('from', {required: true});
+          core.getInput('path', {required: true});
           core.getInput('project-token', {required: true});
 
     # @TODO move load-metadata action to a dedicated repo and remove the checkout
@@ -50,7 +50,7 @@ runs:
       id: load-metadata
       uses: ./custom-action-repo/.github/actions/load-metadata
       with:
-        from: ${{ inputs.from }}
+        path: ${{ inputs.path }}
         format: string # String in order to concatenate interesting values
         glue-string: ',' # Ensure glue string as it's the expected one by the uploader
         follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
@@ -66,7 +66,7 @@ runs:
           const {METADATA} = process.env;
           
           const metadata = JSON.parse(METADATA);
-          core.setOutput('coverage-reports', metadata['report-paths']);
+          core.setOutput('coverage-reports', metadata.reportPaths);
 
     - name: No report error
       if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports }}

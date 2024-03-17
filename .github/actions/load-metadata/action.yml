@@ -2,7 +2,7 @@ name: TODO
 description: TODO
 
 inputs:
-  from:
+  path:
     description: A group directory or a glob pattern in order to find group directories and merge their metadata
     required: true
   format:
@@ -13,7 +13,7 @@ inputs:
     default: ','
   follow-symbolic-links:
     description: |
-      Indicates whether to follow symbolic links when resolving `from`
+      Indicates whether to follow symbolic links when resolving `path`
     default: 'true'
 
 outputs:
@@ -40,28 +40,21 @@ runs:
             core.exportVariable(envName, value);
           });
 
-    - id: resolve-paths
-      uses: actions/github-script@v7
+    # @TODO move load-metadata action to a dedicated repo and remove the checkout
+    - uses: actions/checkout@v4
       with:
-        script: |
-          const {dirname: pathDirname, join: pathJoin} = require('path');
-          const fromList = core.getMultilineInput('from', {required: true});
-          const pattern = fromList.map(item => pathJoin(item, '**', '.reports-group-metadata.json')).join('\n');
-          const globber = await glob.create(pattern, {followSymbolicLinks: core.getBooleanInput('follow-symbolic-links', {required: true})});
-          
-          const pathList = (await globber.glob()).map((file) => {
-            const groupPath = pathDirname(file);
-            core.info(`Found group under '${groupPath}' directory`);
-            
-            return groupPath;
-          });
-          
-          core.setOutput('paths', JSON.stringify(pathList));
+        path: custom-action-repo
+
+    - id: resolve-paths
+      uses: ./custom-action-repo/.github/actions/find
+      with:
+        path: ${{ inputs.path }}
+        format: json
 
     - id: build-metadata
       uses: actions/github-script@v7
       env:
-        PATH_LIST: ${{ steps.resolve-paths.outputs.paths }}
+        PATH_LIST: ${{ steps.resolve-paths.outputs.list }}
       with:
         script: |
           const fs = require('fs');
@@ -72,7 +65,7 @@ runs:
           function loadGroupMetadata(groupPath) {
             const metadata = JSON.parse(fs.readFileSync(pathJoin(groupPath, '.reports-group-metadata.json')));
             
-            return {...metadata, path: groupPath, 'report-paths': metadata.reports.map(r => pathJoin(groupPath, r))};
+            return {...metadata, path: groupPath, reportPaths: metadata.reports.map(r => pathJoin(groupPath, r))};
           }
           
           const metadataList = pathList.map(p => loadGroupMetadata(p));
@@ -88,12 +81,10 @@ runs:
           const {METADATA_LIST} = process.env;
           
           const metadataList = [...JSON.parse(METADATA_LIST).values()]; // .values() + spread to ensure array rather than object ....
-          core.debug('debug: ' + (typeof METADATA_LIST));
-          core.debug('debug: ' + (typeof metadataList));
           
           if ('string' !== core.getInput('format')) {
             // Detect if provided `paths` was a group directory 
-            const isSingleMetadata = metadataList.length === 1 && pathResolve(metadataList[0].path) === pathResolve(core.getInput('from', {required: true}));
+            const isSingleMetadata = metadataList.length === 1 && pathResolve(metadataList[0].path) === pathResolve(core.getInput('path', {required: true}));
             const result = isSingleMetadata ? metadataList.shift() : metadataList;
             core.setOutput('metadata', JSON.stringify(result));
           } else {
@@ -106,7 +97,7 @@ runs:
               reports: formatList('reports'),
               flags: formatList('flags'),
               path: formatScalar('path'),
-              'report-paths': formatList('report-paths')
+              reportPaths: formatList('reportPaths')
             };
             core.setOutput('metadata', JSON.stringify(result));
           }
