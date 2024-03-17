@@ -9,22 +9,18 @@ on:
       PROJECT_TOKEN:
         required: true
     outputs:
-      files:
+      uploaded-reports:
         description: TODO
-        value: ${{ jobs.upload.outputs.files }}
-      result:
-        description: TODO
-        value: ${{ jobs.upload.outputs.result }}
+        value: ${{ jobs.upload.outputs.uploaded-reports }}
 
 jobs:
   upload:
     name: Upload all reports
     runs-on: ubuntu-latest
     outputs:
-      files: ${{ steps.upload.outputs.files }}
-      result: ${{ steps.upload.result }}
+      uploaded-reports: ${{ steps.upload.outputs.uploaded-reports }}
     steps:
-      # @TODO move codacy-multi-group-upload action to a dedicated repo and remove the checkout
+      # @TODO move codacy-uploader action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v3
         with:
           path: custom-action-repo
@@ -42,15 +38,14 @@ jobs:
 
       - name: Upload all reports
         id: upload
-        uses: ./custom-action-repo/.github/actions/codacy-multi-group-upload
+        uses: ./custom-action-repo/.github/actions/codacy-uploader
         with:
+          from: job-artifacts/**
           project-token: ${{ secrets.PROJECT_TOKEN }}
-          root: job-artifacts
 
       - name: DEBUG Upload all reports
         run: |
           echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
           echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"
           echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
-          echo 'files='"'"'${{ steps.upload.outputs.files }}'"'"
-          echo 'result='"'"'${{ steps.upload.outputs.result }}'"'"
+          echo 'uploaded-reports='"'"'${{ steps.upload.outputs.uploaded-reports }}'"'"

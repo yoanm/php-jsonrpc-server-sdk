@@ -1,60 +1,15 @@
-name: TODO
-description: TODO
-inputs:
-  root:
-    description: TODO
-    required: true
-outputs:
-  map:
-    description: TODO
-    value: ${{ steps.main.outputs.map }}
-  matrix:
-    description: TODO
-    value: ${{ steps.main.outputs.matrix }}
-  reports:
-    description: TODO
-    value: ${{ steps.main.outputs.reports }}
-
-# TODO Move entire code to TS
-
-runs:
-  using: "composite"
-  steps:
-    - id: validate
-      uses: actions/github-script@v7
-      env:
-        ROOT: ${{ inputs.root }}
-      with:
-        script: |
-          const { ROOT } = process.env;
-
-          await core.group('Validate inputs', async () => {
-            core.debug(`ROOT='${ROOT}'`);
-            if (0 === ROOT.trim().length) {
-              core.setFailed('You must provide a path directory !');
-            }
-
-            core.info('All good !!');
-          });
-
-    - id: main
-      uses: actions/github-script@v7
-      env:
-        ROOT: ${{ inputs.root }}
-      with:
-        script: |
           const {resolve: pathResolve, dirname: pathDirname} = require('path');
           const fs = require('fs');
 
           const { ROOT } = process.env;
 
           const absWorkspace = pathResolve(ROOT);
-          
+
           function enhanceMetadataMapWithGroup(original) {
             const counterByDirectory = {};
-            for (const groupPath of original) {
+            for (const data of original) {
               let directory = data.path;
-              while (directory.length > 0 && ROOT !== directory) {
+              while (directory.length > 0 && PATH !== directory) {
                 counterByDirectory[directory] = (counterByDirectory[directory] ?? 0) + 1;
                 directory = pathDirname(directory);
               }
@@ -75,10 +30,10 @@ runs:
                 // Remove directories shared by at least another one
                 return undefined === mostKnownDirectories.find(v2 => v !== v2 && v === v2.substring(0, v.length));
               });
-          
+
               core.debug(`groupDirectories='${JSON.stringify(groupDirectories)}'`);
             }
-          
+
             return original;
           }
 
@@ -96,33 +51,33 @@ runs:
           core.debug(`metadataFileList='${JSON.stringify(metadataFileList)}'`);
 
           const metadataMap = await core.group('Build metadata', async () => {
-            const res = {};
+            const res = [];
             for (const file of metadataFileList) {
               core.debug(`file='${file}'`);
 
-              const groupPath = pathDirname(file);
+              const fullPath = pathDirname(file);
 
-              core.info(`Process ${groupPath} directory`);
+              core.info(`Process ${fullPath} directory`);
 
-              const globber = await glob.create(`${groupPath}/*-report-[0-99]`);
+              const globber = await glob.create(`${fullPath}/*-report-[0-99]`);
               const metadataContent = fs.readFileSync(`${ROOT}/${file}`);
               const metadata = JSON.parse(metadataContent);
 
-              const item = {...metadata, path: groupPath};
+              const item = {...metadata, path: fullPath};
 
               core.debug(`item='${JSON.stringify(item)}'`);
 
-              res[groupPath] = item;
+              res.push(item);
             }
 
-            const map = res;
-            
-            const mapString = JSON.stringify(map);
-            core.debug(`map='${mapString}'`);
-            
-            core.setOutput("map", mapString)
-          
-            return map;
+            const metadataMap = enhanceMetadataMapWithGroup(res);
+
+            const metadataMapString = JSON.stringify(metadataMap);
+            core.debug(`metadataMap='${metadataMapString}'`);
+
+            core.setOutput("map", metadataMapString)
+
+            return metadataMap;
           });
 
           await core.group('Build matrix', async () => {
@@ -142,27 +97,26 @@ runs:
             }
 
             const matrix = {include: matrixInclude};
-  
+
             const matrixString = JSON.stringify(matrix);
             core.debug(`matrix='${matrixString}'`);
-  
+
             core.setOutput("matrix", matrixString);
           });
 
           await core.group('Build full report list', async () => {
             const reportList = [];
-            for (const groupPath of Object.keys(metadataMap)) {
-              metadataMap[groupPath]
-                .reports
-                .map(fp => `${groupPath}/${fp}`)
-                .forEach(fp => {
-                  core.info(`Add '${fp}'`);
-                  reportList.push(fp);
-                });
+            or (const groupPath of Object.keys(metadataMap)) {
+              const metadata = metadataMap[groupPath];
+              const item = metadata.reports.map(fp => `${groupPath}/${fp}`);
+
+              core.debug(`item='${JSON.stringify(item)}'`);
+
+              reportList.push(item);
             }
 
             const reportListString = JSON.stringify(reportList);
             core.debug(`reportList='${reportListString}'`);
-  
+
             core.setOutput("reports", reportListString);
           });

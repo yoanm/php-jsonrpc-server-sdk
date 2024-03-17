@@ -10,221 +10,199 @@ inputs:
     description: "`clover`, `cobertura`, `lcov`, etc"
     required: true
   files:
-    description: "List of report attached to the group, separated by `file-separator`"
+    description: Multiline list of reports attached to the group
     required: true
   flags:
-    description: "List of flag attached to the group, separated by `flag-separator`"
+    description: Multiline list of flags attached to the group
     required: false
-    default: ''
   path:
-    description: "Root directory for the group directory (default to `.`)"
+    description: Root directory for the group directory (default to current directory)
     required: false
-    default: '.'
-  file-separator:
-    description: "How to split provided files list (default to ` `)"
-    required: false
-    default: ' '
-  flag-separator:
-    description: "How to split provided flag list (default to ` `)"
-    required: false
-    default: ' '
+  follow-symbolic-links:
+    description: |
+      Indicates whether to follow symbolic links when resolving `files`
+    default: 'true'
 
 outputs:
-  metadata:
-    description: Group metadata
-    value: ${{ steps.create-metadata-file.outputs.metadata }}
-
-# TODO Move entire code to TS
+  path:
+    description: Path to the group directory
+    value: ${{ steps.build-outputs.outputs.path }}
+  reports:
+    description: Multiline List of created reports for the group
+    value: ${{ steps.build-outputs.outputs.reports }}
+  files:
+    description: Multiline list of reports attached to the group. 
+      Will be different than provided `files` if `glob-reports` is `true` !
+    value: ${{ steps.build-outputs.outputs.files }}
 
 runs:
   using: "composite"
   steps:
-    # Adding "required" on inputs doesn't actually enforce their requirements ....
-    - id: validate-inputs
+    - name: Make action inputs available for actions/github-script scripts
       uses: actions/github-script@v7
       env:
-        NAME: ${{ inputs.name }}
-        FORMAT: ${{ inputs.format }}
-        FILES: ${{ inputs.files }}
-        FILE_SEPARATOR: ${{ inputs.file-separator }}
-        FLAG_SEPARATOR: ${{ inputs.flag-separator }}
-        PATH: ${{ inputs.path }}
+        INPUT_MAP: ${{ toJson(inputs) }}
       with:
         script: |
-          core.startGroup('Validate required inputs');
-          const { NAME, FILES, FORMAT, FILE_SEPARATOR, FLAG_SEPARATOR, PATH } = process.env;
-
-          core.debug(`name='${NAME}'`);
-          core.debug(`files='${FILES}'`);
-          core.debug(`format='${FORMAT}'`);
-          core.debug(`file-separator='${FILE_SEPARATOR}'`);
-          core.debug(`flag-separator='${FLAG_SEPARATOR}'`);
-          core.debug(`path='${PATH}'`);
-
-          if (0 === NAME.trim().length) {
-            core.setFailed('You must provide a name !');
-          }
-          if (0 === FILES.trim().length) {
-            core.setFailed('You must provide a file list !');
-          }
-          if (0 === FORMAT.trim().length) {
-            core.setFailed('You must provide a format !');
-          }
-          if (0 === FILE_SEPARATOR.length) { // Separator may be a space !!
-            core.setFailed('File separator is invalid !');
-          }
-          if (0 === FLAG_SEPARATOR.length) { // Separator may be a space !!
-            core.setFailed('Flag separator is invalid !');
-          }
-          if (0 === PATH.trim().length) {
-            core.setFailed('You must provide a path !');
-          }
-
-          core.info('All good !!');
-
-          core.endGroup();
-
-    - id: build-flag-list
-      uses: actions/github-script@v7
-      env:
-        RAW_LIST: ${{ inputs.flags }}
-        SEPARATOR: ${{ inputs.flag-separator }}
-      with:
-        script: |
-          core.startGroup('Build flag list');
-
-          const { RAW_LIST, SEPARATOR } = process.env;
-
-          core.debug(`raw-list='${RAW_LIST}'`);
-          core.debug(`separator='${SEPARATOR}'`);
-
-          const res = RAW_LIST.split(SEPARATOR).map(v => v.trim()).filter(v => v.length > 0);
-          res.forEach(v => core.info(`Found '${v}' flag`));
-          
-          const resString = JSON.stringify(res);
-          core.debug(`res=${resString}`);
-          
-          core.setOutput('list', resString)
-
-          core.endGroup();
-
-    - id: build-file-map
-      uses: actions/github-script@v7
-      env:
-        RAW_LIST: ${{ inputs.files }}
-        SEPARATOR: ${{ inputs.file-separator }}
-      with:
-        script: |
-          const { basename: pathBasename, dirname: pathDirname } = require('path');
-          core.startGroup('Build file map');
-
-          const { RAW_LIST, SEPARATOR } = process.env;
-          
-          core.debug(`raw-list='${RAW_LIST}'`);
-          core.debug(`separator='${SEPARATOR}'`);
-
-          const res = []; 
-          const fileList = RAW_LIST.split(SEPARATOR).filter(v => (' ' === v || v.trim().length > 0));
-          let counter = 0;
-          for (const file of fileList) {
-            // Ensure report files uniquness !
-            const item = {source: file, report: `${pathBasename(pathDirname(file))}-report-${++counter}`};
-
-            core.debug(`item='${JSON.stringify(item)}'`);
-            core.info(`'Found ${item.source}' report. Will be duplicated as '${item.report}' group report file`);
-
-            res.push(item);
-          }
-          const resString = JSON.stringify(res);
-          core.debug(`res=${resString}`);
-          
-          core.setOutput('map', resString)
-
-          core.endGroup();
-
-    - id: build-report-list
-      uses: actions/github-script@v7
-      env:
-        JSON_FILE_MAP: ${{ steps.build-file-map.outputs.map }}
-      with:
-        script: |
-          core.startGroup('Build report list');
-
-          const { JSON_FILE_MAP } = process.env;
-          
-          const res = JSON.parse(JSON_FILE_MAP).map(v => {
-            core.info(`Add ${v.report} group report`);
-
-            return v.report;
+          Object.entries(JSON.parse(process.env.INPUT_MAP)).forEach(([key, value]) => {
+            const envName = 'INPUT_' + key.replace(/ /g, '_').toUpperCase();
+            core.debug(`Promote ${key} input as ${envName} env var. value='${value}'`);
+            core.exportVariable(envName, value);
           });
 
-          const resString = JSON.stringify(res);
-          core.debug(`res=${resString}`);
+    - uses: actions/github-script@v7
+      with:
+        script: |
+          core.info('Validate required inputs')
+          core.getInput('name', {required: true});
+          core.getInput('format', {required: true});
+          core.getInput('files', {required: true});
+
+          // Following are not really required, but are expected to have a default value at least, so a valid value is actually expected
+          core.getBooleanInput('follow-symbolic-links', {required: true});
+
+    - id: resolve-directory
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.info('Resolve path');
+          const {resolve: pathResolve} = require('path');
           
-          core.setOutput('list', resString)
+          const result = pathResolve(core.getInput('path'), core.getInput('name', {required: true}));
+          core.debug('result=' + result);
+          core.setOutput('directory', result);
 
-          core.endGroup();
-
-    - id: create-group-directory
+    - id: resolve-files
       uses: actions/github-script@v7
-      env:
-        ROOT: ${{ inputs.path }}
-        NAME: ${{ inputs.name }}
       with:
         script: |
-          core.startGroup('Create group directory');
+          core.info('Resolve files');
+          const {resolve: pathResolve} = require('path');
+          const {GITHUB_WORKSPACE} = process.env;
+          
+          function pathFromGHWorkspace(...segments) {
+            const p = pathResolve(...segments);
+            return p.startsWith(GITHUB_WORKSPACE) ? p.replace(GITHUB_WORKSPACE, '').substring(1) : p;
+          }
+          
+          const globber = await glob.create(
+            core.getInput('files', {required: true}),
+            {followSymbolicLinks: core.getBooleanInput('follow-symbolic-links', {required: true})}
+          );
+          const result = (await globber.glob()).map(fp => pathFromGHWorkspace(fp));
+          if (0 === result.length) {
+            core.setFailed('You must provide at least one report !');
+          }
+          result.forEach(fp => core.info(`Found ${fp}`));
+          const resultString = JSON.stringify(result);
+          core.debug('result=' + resultString);
+          core.setOutput('list', resultString);
 
-          const { ROOT, NAME } = process.env;
-
-          const directory = `${ROOT}/${NAME}`;
-
-          io.mkdirP(directory);
-
-          core.info(`'${directory}' directory created`);
-          core.setOutput('directory', directory);
-
-          core.endGroup();
-
-    - id: create-metadata-file
+    - id: build-reports-map
       uses: actions/github-script@v7
       env:
-        NAME: ${{ inputs.name }}
-        FORMAT: ${{ inputs.format }}
-        JSON_REPORTS: ${{ steps.build-report-list.outputs.list }}
-        JSON_FLAGS: ${{ steps.build-flag-list.outputs.list }}
-        DIRECTORY: ${{ steps.create-group-directory.outputs.directory }}
+        RESOLVED_FILES: ${{ steps.resolve-files.outputs.list }}
+        DIRECTORY: ${{ steps.resolve-directory.outputs.directory }}
       with:
         script: |
-          const fs = require('fs');
-          const { NAME, FORMAT, JSON_REPORTS, JSON_FLAGS, DIRECTORY } = process.env;
-
-          core.startGroup('Create metadata file');
-
-          const metadata = {name: NAME, format: FORMAT, reports: JSON.parse(JSON_REPORTS), flags: JSON.parse(JSON_FLAGS)};
-          const metadataString = JSON.stringify(metadata);
-          core.debug(`metadata='${metadataString}'`);
-
-          fs.writeFileSync(`${DIRECTORY}/.reports-group-metadata.json`, metadataString);
-
-          core.setOutput('metadata', metadataString)
-          core.info(`metadata generated with:\n name='${NAME}'\n format='${FORMAT}'\n reports='${JSON_REPORTS}'\n flags='${JSON_FLAGS}'`);
-
-          core.endGroup();
-
-    - id: copy-report-files
-      uses: actions/github-script@v7
-      env:
-        JSON_FILE_MAP: ${{ steps.build-file-map.outputs.map }}
-        DIRECTORY: ${{ steps.create-group-directory.outputs.directory }}
-      with:
-        script: |
-          const { JSON_FILE_MAP, DIRECTORY } = process.env;
-          core.startGroup('Copy group reports');
-
-          JSON.parse(JSON_FILE_MAP).forEach(async function (v) {
-            const dest = `${DIRECTORY}/${v.report}`
-            core.info(`${v.source} => ${dest}`);
-            await io.cp(v.source, dest);
+          return core.group('Build file map', async () => {
+            const {basename: pathBasename, resolve: pathResolve} = require('path');
+            const {GITHUB_WORKSPACE} = process.env;
+            const {RESOLVED_FILES, DIRECTORY} = process.env;
+            
+            function pathFromGHWorkspace(...segments) {
+              const p = pathResolve(...segments);
+              return p.startsWith(GITHUB_WORKSPACE) ? p.replace(GITHUB_WORKSPACE, '').substring(1) : p;
+            }
+            
+            let counter = 0;
+            const files = [...JSON.parse(RESOLVED_FILES).values()]; // .values() + spread to ensure array rather than object ....
+            const result = files.map(filepath => {
+              core.info('Found ' + filepath);
+              // Ensure report files uniqueness while keeping a bit of clarity regarding the mapping with original files !
+              const filename = pathBasename(filepath) + '-report-' + (++counter);
+              return {source: filepath, filename: filename, dest: pathFromGHWorkspace(DIRECTORY, filename)};
+            });
+            const resultString = JSON.stringify(result);
+            core.debug('result=' + resultString);
+            core.setOutput('map', resultString);
           });
 
-          core.endGroup();
+    - id: build-metadata
+      uses: actions/github-script@v7
+      env:
+        REPORTS_MAP: ${{ steps.build-reports-map.outputs.map }}
+      with:
+        script: |
+          const {REPORTS_MAP} = process.env;
+          
+          return core.group('Build group metadata', () => {
+            const reportList = [...JSON.parse(REPORTS_MAP).values()]; // .values() + spread to ensure array rather than object ....
+            const result = {
+              name: core.getInput('name', {required: true}),
+              format: core.getInput('format', {required: true}),
+              reports: reportList.map(v => v.filename),
+              flags: core.getMultilineInput('flags')
+            };
+            const resultString = JSON.stringify(result);
+            core.debug('result=' + resultString);
+            core.setOutput('metadata', resultString);
+          });
+
+    - uses: actions/github-script@v7
+      env:
+        DIRECTORY: ${{ steps.resolve-directory.outputs.directory }}
+      with:
+        script: |
+          const {DIRECTORY} = process.env;
+          
+          return core.group(`Create ${DIRECTORY} group directory`, () => {
+            io.mkdirP(DIRECTORY);
+          });
+
+    - uses: actions/github-script@v7
+      env:
+        REPORTS_MAP: ${{ steps.build-reports-map.outputs.map }}
+      with:
+        script: |
+          const {REPORTS_MAP} = process.env;
+          
+          return core.group('Copy reports', async () => {
+            const list = [...JSON.parse(REPORTS_MAP).values()]; // .values() + spread to ensure array rather than object ....
+            return list.map(async (item) => {
+              core.info(`${item.source} => ${item.dest}`);
+              return io.cp(item.source, item.dest);
+            });
+          });
+
+    - uses: actions/github-script@v7
+      env:
+        DIRECTORY: ${{ steps.resolve-directory.outputs.directory }}
+        CONTENT: ${{ steps.build-metadata.outputs.metadata }}
+      with:
+        script: |
+          const {join: pathJoin} = require('path');
+          const {writeFileSync} = require('fs');
+          const {DIRECTORY, CONTENT} = process.env;
+          
+          return core.group('Create metadata file', () => {
+            const filepath = pathJoin(DIRECTORY, '.reports-group-metadata.json');
+            writeFileSync(filepath, CONTENT);
+          });
+
+    - uses: actions/github-script@v7
+      id: build-outputs
+      env:
+        DIRECTORY: ${{ steps.resolve-directory.outputs.directory }}
+        FILES: ${{ steps.resolve-files.outputs.list }}
+        METADATA: ${{ steps.build-metadata.outputs.metadata }}
+      with:
+        script: |
+          const {DIRECTORY, FILES, METADATA} = process.env
+          const files = [...JSON.parse(FILES).values()]; // .values() + spread to ensure array rather than object ....
+          
+          return core.group('Build outputs', () => {
+            core.setOutput('path', DIRECTORY);
+            core.setOutput('reports', JSON.parse(METADATA).reports.join('\n'));
+            core.setOutput('files', files.join('\n'));
+          });

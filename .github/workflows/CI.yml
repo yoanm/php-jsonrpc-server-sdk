@@ -22,11 +22,6 @@ env:
   CODACY_BIN: ~/.cache/codacy/codacy.sh
 
 jobs:
-  plop:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ./.github/workflows/test.yml
-
 ## Untrusted >>>
   tests:
     name: UTs & FTs - PHP ${{ matrix.php-version }}
@@ -89,15 +84,13 @@ jobs:
           name: unit-tests-php${{ matrix.php-version }}
           format: clover
           files: build/coverage-phpunit/unit.clover
-          flags: unit-tests php-${{ matrix.php-version }}
+          flags: |
+            unit-tests
+            php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      - name: DEBUG Create "unit tests" reports directory
-        run: |
-          echo 'outcome='"'"'${{ steps.unit-tests-coverage-group.outcome }}'"'"
-          echo 'conclusion='"'"'${{ steps.unit-tests-coverage-group.conclusion }}'"'"
-          echo 'outputs='"'"'${{ toJson(steps.unit-tests-coverage-group.outputs) }}'"'"
-          echo 'metadata='"'"'${{ steps.unit-tests-coverage-group.outputs.metadata }}'"'"
+      - name: DEBUG
+        run: echo 'outputs='"'"'${{ toJson(steps.unit-tests-coverage-group.outputs) }}'"'"
 
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
@@ -106,16 +99,16 @@ jobs:
         with:
           name: functional-tests-php${{ matrix.php-version }}
           format: clover
-          files: build/coverage-phpunit/functional.clover build/coverage-behat/clover.xml
-          flags: functional-tests php-${{ matrix.php-version }}
+          files: |
+            build/coverage-phpunit/functional.clover
+            build/coverage-behat/clover.xml
+          flags: |
+            functional-tests
+            php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      - name: DEBUG Create "functional tests" coverage group
-        run: |
-          echo 'outcome='"'"'${{ steps.functional-tests-coverage-group.outcome }}'"'"
-          echo 'conclusion='"'"'${{ steps.functional-tests-coverage-group.conclusion }}'"'"
-          echo 'outputs='"'"'${{ toJson(steps.functional-tests-coverage-group.outputs) }}'"'"
-          echo 'metadata='"'"'${{ steps.functional-tests-coverage-group.outputs.metadata }}'"'"
+      - name: DEBUG
+        run: echo 'outputs='"'"'${{ toJson(steps.functional-tests-coverage-group.outputs) }}'"'"
 
       - name: Upload coverage reports
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}

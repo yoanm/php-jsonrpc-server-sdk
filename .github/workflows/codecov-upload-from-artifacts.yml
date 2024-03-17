@@ -9,20 +9,19 @@ on:
       TOKEN:
         required: true
     outputs:
-      metadata-map:
+      metadata-list:
         description: TODO
-        value: ${{ jobs.prepare.outputs.map }}
+        value: ${{ jobs.prepare.outputs.list-for-output }}
 
 jobs:
   prepare:
     name: Prepare uploads
     runs-on: ubuntu-latest
     outputs:
-      map: ${{ steps.load-groups-metadata.outputs.map }}
-      matrix: ${{ steps.load-groups-metadata.outputs.matrix }}
-      reports: ${{ steps.load-groups-metadata.outputs.reports }}
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+      list-for-output: ${{ steps.find-groups.outputs.list }}
     steps:
-      # @TODO move load-groups-metadata action to a dedicated repo and remove the checkout
+      # @TODO move load-metadata action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v3
         with:
           path: custom-action-repo
@@ -38,23 +37,45 @@ jobs:
           ls -ail job-artifacts/*
           ls -ail job-artifacts/*/*
 
-      - name: Load groups metadata
-        id: load-groups-metadata
-        uses: ./custom-action-repo/.github/actions/load-groups-metadata
+      - name: Find groups
+        id: find-groups
+        uses: ./custom-action-repo/.github/actions/find
         with:
-          root: job-artifacts
+          from: job-artifacts
+          format: json
 
-      - name: DEBUG Load groups metadata
-        run: |
-          echo 'outcome='"'"'${{ steps.load-groups-metadata.outcome }}'"'"
-          echo 'conclusion='"'"'${{ steps.load-groups-metadata.conclusion }}'"'"
-          echo 'outputs='"'"'${{ toJson(steps.load-groups-metadata.outputs) }}'"'"
-          echo 'map='"'"'${{ steps.load-groups-metadata.outputs.map }}'"'"
-          echo 'matrix='"'"'${{ steps.load-groups-metadata.outputs.matrix }}'"'"
-          echo 'reports='"'"'${{ steps.load-groups-metadata.outputs.reports }}'"'"
+      - name: DEBUG
+        run: echo '${{ steps.find-groups.outputs.list }}'
+
+      - name: Build matrix
+        id: build-matrix
+        uses: actions/github-script@v7
+        env:
+          PATH_LIST: ${{ steps.find-groups.outputs.list }}
+        with:
+          script: |
+            const {resolve: pathResolve, join: pathJoin, sep: pathSep} = require('path');
+            const {PATH_LIST} = process.env;
+            const pathList = [...JSON.parse(PATH_LIST).values()]; // .values() + spread to ensure array rather than object ....
+            const artifactDirectory = pathResolve('job-artifacts')
+            
+            const result = pathList.map(groupPath => {
+              const absGroupPath = pathResolve(groupPath);
+              if (!absGroupPath.startsWith(artifactDirectory)) {
+                core.setFailed('Something wrong there :|')
+              }
+              core.debug('absGroupPath=' + JSON.stringify(absGroupPath));
+              const segments = absGroupPath.replace(artifactDirectory, '').split(pathSep).filter(v => v.trim().length > 0);
+              core.debug('segments=' + JSON.stringify(segments));
+              
+              return {artifact: segments.shift(), path: pathJoin(...segments)};
+            });
+            core.debug('result=' + JSON.stringify(result));
+            
+            core.setOutput('matrix', JSON.stringify({include: result}));
 
   uploads:
-    name: "Upload '${{ matrix.name }}' group reports"
+    name: ${{ matrix.artifact}} - Upload group reports under ${{ matrix.path }}
     runs-on: ubuntu-latest
     needs: [ prepare ]
     strategy:
@@ -70,47 +91,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Guess artifact name
-        id: guess-artifact
-        uses: actions/github-script@v7
-        env:
-          PATH: ${{ matrix.path }}
-        with:
-          script: |
-            const { PATH } = process.env;
-            const pathComponents = PATH.split('/');
-            const artifactName = '/' === PATH[0] ? pathComponents[1] : pathComponents[0];
-            // Remove: leading slash (if it exists) + the artifact name (=directory name) + trealing slash
-            const groupPathFromArtifact = PATH.substr(('/' === PATH[0] ? 1 : 0) + artifactName.length + 1);
-
-            core.setOutput("name", artifactName);
-            core.setOutput("group-path-from-artifact", groupPathFromArtifact);
-
       - name: Download '${{ steps.guess-artifact.outputs.name }}' artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ steps.guess-artifact.outputs.name }}
-          path: job-artifacts
+          name: ${{ matrix.artifact }}
+          path: job-artifact
 
       - name: DEBUG artifacts
         run: |
-          ls -ail job-artifacts/*
-          ls -ail job-artifacts/*/*
+          ls -ail job-artifact/*
+          ls -ail job-artifact/*/*
 
-      # @TODO move codecov-group-upload action to a dedicated repo and remove the checkout
+      # @TODO move codecov-uploader action to a dedicated repo and remove the checkout
       - name: Upload group reports
         id: upload
-        uses: ./.github/actions/codecov-group-upload
+        uses: ./.github/actions/codecov-uploader
         with:
+          from: job-artifact/${{ matrix.path }}
           token: ${{ secrets.TOKEN }}
-          path: job-artifacts/${{ steps.guess-artifact.outputs.group-path-from-artifact }}
-
-      - name: DEBUG Upload group reports
-        run: |
-          echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
-          echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"
-          echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
-          echo 'name='"'"'${{ steps.upload.outputs.name }}'"'"
-          echo 'files='"'"'${{ steps.upload.outputs.files }}'"'"
-          echo 'flags='"'"'${{ steps.upload.outputs.flags }}'"'"
-          echo 'result='"'"'${{ steps.upload.outputs.result }}'"'"

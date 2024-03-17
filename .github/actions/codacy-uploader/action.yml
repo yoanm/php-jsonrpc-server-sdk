@@ -1,0 +1,83 @@
+name: TODO
+description: TODO
+
+inputs:
+  from:
+    description: A group directory or a glob pattern in order to find group directories and merge their metadata
+    required: true
+  project-token:
+    description: Codacy project token for the repository
+    required: true
+  follow-symbolic-links:
+    description: |
+      Indicates whether to follow symbolic links when resolving `from`
+    default: 'true'
+
+outputs:
+  uploaded-reports:
+    description: TODO
+    value: ${{ steps.build-uploader-options.outputs.coverage-reports }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Make action inputs available for actions/github-script scripts
+      uses: actions/github-script@v7
+      env:
+        INPUT_MAP: ${{ toJson(inputs) }}
+      with:
+        script: |
+          Object.entries(JSON.parse(process.env.INPUT_MAP)).forEach(([key, value]) => {
+            const envName = 'INPUT_' + key.replace(/ /g, '_').toUpperCase();
+            core.debug(`Promote ${key} input as ${envName} env var. value='${value}'`);
+            core.exportVariable(envName, value);
+          });
+
+    - uses: actions/github-script@v7
+      with:
+        script: |
+          core.info('Validate inputs');
+          
+          core.getInput('from', {required: true});
+          core.getInput('project-token', {required: true});
+
+    # @TODO move load-metadata action to a dedicated repo and remove the checkout
+    - uses: actions/checkout@v4
+      with:
+        path: custom-action-repo
+
+    - name: Load metadata
+      id: load-metadata
+      uses: ./custom-action-repo/.github/actions/load-metadata
+      with:
+        from: ${{ inputs.from }}
+        format: string # String in order to concatenate interesting values
+        glue-string: ',' # Ensure glue string as it's the expected one by the uploader
+        follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
+
+
+    - id: build-uploader-options
+      uses: actions/github-script@v7
+      env:
+        METADATA: ${{ steps.load-metadata.outputs.metadata }}
+      with:
+        script: |
+          core.info('Build uploader options');
+          const {METADATA} = process.env;
+          
+          const metadata = JSON.parse(METADATA);
+          core.setOutput('coverage-reports', metadata['report-paths']);
+
+    - name: No report error
+      if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
+
+    - name: Upload reports
+      id: upload
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        coverage-reports: ${{ steps.build-uploader-options.outputs.coverage-reports }}
+        project-token: ${{ inputs.project-token }}
