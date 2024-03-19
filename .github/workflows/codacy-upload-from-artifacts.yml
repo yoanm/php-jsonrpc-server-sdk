@@ -11,14 +11,14 @@ on:
     outputs:
       uploaded-reports:
         description: TODO
-        value: ${{ jobs.upload.outputs.uploaded-reports }}
+        value: ${{ jobs.upload.outputs.reports }}
 
 jobs:
   upload:
     name: Upload all reports
     runs-on: ubuntu-latest
     outputs:
-      uploaded-reports: ${{ steps.upload.outputs.uploaded-reports }}
+      uploaded-reports: ${{ steps.upload.outputs.reports }}
     steps:
       # @TODO move reports-group/codacy-uploader action to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4
@@ -43,4 +43,4 @@ jobs:
           echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
           echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"
           echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
-          echo 'uploaded-reports='"'"'${{ steps.upload.outputs.uploaded-reports }}'"'"
+          echo 'uploaded-reports='"'"'${{ steps.upload.outputs.reports }}'"'"

@@ -1,3 +1,6 @@
+.PHONY: all
+all: build
+
 .PHONY: install
 install:
 	yarn install
@@ -11,7 +14,7 @@ package:
 
 .PHONY: lint
 lint:
-	./node_modules/.bin/eslint  index.js
+	./node_modules/.bin/eslint index.js
 
 .PHONY: test
 test:

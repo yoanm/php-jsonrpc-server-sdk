@@ -7,11 +7,11 @@ build: install package
 
 .PHONY: package
 package:
-	./node_modules/.bin/ncc build --minify --source-map --license LICENSE index.js --out dist
+	@echo "Nothing to pack !"
 
 .PHONY: lint
 lint:
-	./node_modules/.bin/eslint  index.js
+	./node_modules/.bin/eslint .
 
 .PHONY: test
 test:
