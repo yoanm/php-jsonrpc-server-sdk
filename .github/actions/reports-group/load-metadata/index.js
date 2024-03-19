@@ -1,6 +1,7 @@
-import core from "@actions/core";
-import {find as findSDK, load as loadSDK} from "node-sdk";
-import * as path from "path";
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
+const path = require('path'); // @TODO move to 'imports from' when moved to TS !
+
+const {find: findSDK, load: loadSDK} = require('./node-sdk');
 
 async function run() {
     /** INPUTS **/
@@ -11,11 +12,31 @@ async function run() {
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
     /** build-metadata **/
-    const metadataPathList = findSDK.metadataPaths(PATH_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
-    if (0 === metadataPathList.length) {
-        core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
-    }
-    const metadataList = metadataPathList.map(p => loadSDK.metadataFile(p));
+    const metadataList = await core.group(
+        'Build metadata list',
+        async () => {
+            const metadataPathList = await findSDK.metadataPaths(PATH_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
+            if (0 === metadataPathList.length) {
+                core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
+            }
+
+            const res = Promise.all(
+                metadataPathList.map(async (fp) => {
+                    core.info('Load '+ fp);
+
+                    const res = await loadSDK.metadataFile(fp);
+                    core.info('DEBUG RES FOR ' + fp + ' => ' + JSON.stringify(res));
+
+                    return res;
+                })
+            );
+
+            core.info('DEBUG RES => ' + JSON.stringify(res));
+
+            return res;
+        }
+    );
+    core.info('DEBUG ' + JSON.stringify(metadataList));
 
     /** Build action output **/
     if ('json' === FORMAT_INPUT) {

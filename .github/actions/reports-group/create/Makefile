@@ -7,7 +7,7 @@ build: install package
 
 .PHONY: package
 package:
-	./node_modules/.bin/ncc build --minify --source-map --license LICENSE index.js --out dist
+	rm -Rf dist/* && ./node_modules/.bin/ncc build index.js --minify --source-map --license LICENSE --out dist
 
 .PHONY: lint
 lint:

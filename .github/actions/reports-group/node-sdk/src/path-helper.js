@@ -1,4 +1,4 @@
-import path from "path";
+const path = require('path'); // @TODO move to 'imports from' when moved to TS !
 const {GITHUB_WORKSPACE} = process.env;
 
 export function relativeTo(root, ...segments) {

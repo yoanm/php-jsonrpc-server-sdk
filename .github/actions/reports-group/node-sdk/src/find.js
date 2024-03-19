@@ -1,26 +1,28 @@
-import path from "path";
-import core from "@actions/core";
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
+const path = require('path'); // @TODO move to 'imports from' when moved to TS !
 
-import {METADATA_FILENAME} from "./constants";
-import * as globHelper from "./glob-helper";
-import * as pathHelper from "./path-helper";
+const {METADATA_FILENAME} = require('./constants');
+const globHelper = require('./glob-helper');
+const pathHelper = require('./path-helper');
 
-export async function groupPaths(pattern, options = undefined) {
+export async function groupPaths(globPattern, options = undefined) {
     const absWorkspace = path.resolve('.');
-
     const list = [];
-    for await (const fp of metadataPaths(pattern, options)) {
-        const cleanPath = pathHelper.relativeTo(absWorkspace, path.dirname(fp));
-        core.info('Found a reports group directory at ' + cleanPath);
-        list.push(cleanPath);
+    for (const fp of await metadataPaths(globPattern, options)) {
+        list.push(pathHelper.relativeTo(absWorkspace, path.dirname(fp)));
     }
 
     return list;
 }
 
-export async function metadataPaths(pattern, options = undefined) {
-    const finalPattern = pattern.split('\n').map(item => path.join(item.trim(), '**', METADATA_FILENAME)).join('\n');
-    core.debug('findGroupPaths glob: ' + pattern);
+export async function metadataPaths(globPattern, options = undefined) {
+    const finalPattern = globPattern.split('\n').map(item => path.join(item.trim(), '**', METADATA_FILENAME)).join('\n');
+    core.debug('findGroupPaths glob: ' + globPattern);
 
-    return globHelper.lookup(finalPattern, options);
+    const list = [];
+    for await (const fp of globHelper.lookup(finalPattern, options)) {
+        list.push(fp);
+    }
+
+    return list;
 }

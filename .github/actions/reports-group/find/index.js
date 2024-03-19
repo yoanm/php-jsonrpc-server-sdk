@@ -1,5 +1,5 @@
-const core = require("@actions/core");
-const {find: findSdk} = require("node-sdk");
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
+const {find: findSdk} = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
 
 async function run() {
     /** INPUTS **/
@@ -10,10 +10,11 @@ async function run() {
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
     /** Resolve paths **/
-    const groupDirPathList = findSdk.groupPaths(PATH_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
+    const groupDirPathList = await findSdk.groupPaths(PATH_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
     if (0 === groupDirPathList.length) {
         core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
     }
+    groupDirPathList.forEach(p => core.info('Found a reports group directory at ' + p));
 
     /** Build action output **/
     core.setOutput(

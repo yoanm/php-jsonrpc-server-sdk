@@ -7,7 +7,7 @@ build: install package
 
 .PHONY: package
 package:
-	@echo "Nothing to pack !"
+	@echo "Nothing to build"
 
 .PHONY: lint
 lint:

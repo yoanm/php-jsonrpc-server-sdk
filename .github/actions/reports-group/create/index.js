@@ -1,9 +1,9 @@
-import core from "@actions/core";
-import io from "@actions/io";
-import * as path from "path";
-import * as fs from "fs";
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
+const io = require('@actions/io'); // @TODO move to 'imports from' when moved to TS !
+const path = require('path'); // @TODO move to 'imports from' when moved to TS !
+const fs = require('fs'); // @TODO move to 'imports from' when moved to TS !
 
-import {path as pathSDK, glob as globSDK, CONSTANTS as SDK_CONSTANTS} from "node-sdk";
+const {path: pathSDK, glob: globSDK, CONSTANTS: SDK_CONSTANTS} = require('./node-sdk');
 
 async function run() {
     /** INPUTS **/
@@ -16,8 +16,15 @@ async function run() {
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
     /** resolve-directory **/
-    const groupDirectory = await core.group('Resolve group directory path', async () => path.resolve(PATH_INPUT, NAME_INPUT));
-    core.debug('group directory=' + groupDirectory);
+    const groupDirectory = await core.group(
+        'Resolve group directory path',
+        async () => {
+            const dir = path.resolve(PATH_INPUT, NAME_INPUT)
+            core.info('group directory=' + dir);
+
+            return dir;
+        }
+    );
 
     /** resolve-files **/
     const originalReportPaths = await core.group(
@@ -74,6 +81,7 @@ async function run() {
         'Create metadata file',
         async () => {
             const filepath = path.join(groupDirectory, SDK_CONSTANTS.METADATA_FILENAME);
+            core.debug('Create metadata file at ' + filepath + ' with: ' + JSON.stringify(metadata));
             fs.writeFileSync(filepath, JSON.stringify(metadata));
     });
 

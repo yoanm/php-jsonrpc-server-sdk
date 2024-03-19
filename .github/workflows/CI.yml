@@ -42,6 +42,17 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+#      - name: DEBUG - TO REMOVE
+#        uses: ./.github/actions/reports-group/create
+#        with:
+#          name: unit-tests-php${{ matrix.php-version }}
+#          format: clover
+#          files: build/coverage-phpunit/unit.clover
+#          flags: |
+#            unit-tests
+#            php-${{ matrix.php-version }}
+#          path: build/coverage-groups
+
       - name: Enable coverage
 #        if: ${{ matrix.php-version == '8.2' }} # DEBUG - Uncomment before merging !
         run: |
