@@ -79,7 +79,7 @@ jobs:
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
-        uses: ./.github/actions/create
+        uses: ./.github/actions/reports-group/create
         with:
           name: unit-tests-php${{ matrix.php-version }}
           format: clover
@@ -92,7 +92,7 @@ jobs:
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
-        uses: ./.github/actions/create
+        uses: ./.github/actions/reports-group/create
         with:
           name: functional-tests-php${{ matrix.php-version }}
           format: clover

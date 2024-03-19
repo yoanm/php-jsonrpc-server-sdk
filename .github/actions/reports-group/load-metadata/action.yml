@@ -28,6 +28,7 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # @TODO STOP doing this, it messes things up by overriding parent action inputs .... :|
     - name: Make action inputs available for actions/github-script scripts
       uses: actions/github-script@v7
       env:
@@ -46,7 +47,7 @@ runs:
         path: custom-action-repo
 
     - id: resolve-paths
-      uses: ./custom-action-repo/.github/actions/find
+      uses: ./custom-action-repo/.github/actions/reports-group/find
       with:
         path: ${{ inputs.path }}
         format: json

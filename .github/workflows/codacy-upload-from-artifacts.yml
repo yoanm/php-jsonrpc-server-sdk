@@ -33,7 +33,7 @@ jobs:
 
       - name: Upload all reports
         id: upload
-        uses: ./custom-action-repo/.github/actions/codacy-uploader
+        uses: ./custom-action-repo/.github/actions/reports-group/codacy-uploader
         with:
           path: job-artifacts
           project-token: ${{ secrets.PROJECT_TOKEN }}

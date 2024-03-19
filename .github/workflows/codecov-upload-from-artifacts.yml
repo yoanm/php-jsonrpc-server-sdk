@@ -39,7 +39,7 @@ jobs:
 
       - name: Find groups
         id: find-groups
-        uses: ./custom-action-repo/.github/actions/find
+        uses: ./custom-action-repo/.github/actions/reports-group/find
         with:
           path: job-artifacts
           format: json
@@ -94,7 +94,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download '${{ steps.guess-artifact.outputs.name }}' artifact
+      - name: Download '${{ matrix.artifact }}' artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact }}
@@ -108,7 +108,7 @@ jobs:
       # @TODO move reports-group/codecov-uploader action to a dedicated repo and remove the checkout
       - name: Upload reports
         id: upload
-        uses: ./.github/actions/codecov-uploader
+        uses: ./.github/actions/reports-group/codecov-uploader
         with:
           path: job-artifact/${{ matrix.path }}
           token: ${{ secrets.TOKEN }}

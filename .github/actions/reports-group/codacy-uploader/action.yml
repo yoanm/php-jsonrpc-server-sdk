@@ -47,7 +47,7 @@ runs:
         path: custom-action-repo
 
     - id: load-metadata
-      uses: ./custom-action-repo/.github/actions/load-metadata
+      uses: ./custom-action-repo/.github/actions/reports-group/load-metadata
       with:
         path: ${{ inputs.path }}
         format: string # String in order to concatenate interesting values
