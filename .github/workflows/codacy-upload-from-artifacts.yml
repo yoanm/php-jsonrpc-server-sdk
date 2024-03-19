@@ -43,4 +43,4 @@ jobs:
           echo 'outcome='"'"'${{ steps.upload.outcome }}'"'"
           echo 'conclusion='"'"'${{ steps.upload.conclusion }}'"'"
           echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
-          echo 'uploaded-reports='"'"'${{ steps.upload.outputs.reports }}'"'"
+          echo 'reports='"'"'${{ steps.upload.outputs.reports }}'"'"

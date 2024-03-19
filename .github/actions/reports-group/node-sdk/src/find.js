@@ -1,5 +1,6 @@
-const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 const path = require('path'); // @TODO move to 'imports from' when moved to TS !
+
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
 const {METADATA_FILENAME} = require('./constants');
 const globHelper = require('./glob-helper');
@@ -17,7 +18,7 @@ export async function groupPaths(globPattern, options = undefined) {
 
 export async function metadataPaths(globPattern, options = undefined) {
     const finalPattern = globPattern.split('\n').map(item => path.join(item.trim(), '**', METADATA_FILENAME)).join('\n');
-    core.debug('findGroupPaths glob: ' + globPattern);
+    core.debug('Find metadata paths with ' + globPattern);
 
     const list = [];
     for await (const fp of globHelper.lookup(finalPattern, options)) {

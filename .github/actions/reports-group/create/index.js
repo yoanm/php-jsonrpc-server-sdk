@@ -1,9 +1,10 @@
-const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
-const io = require('@actions/io'); // @TODO move to 'imports from' when moved to TS !
 const path = require('path'); // @TODO move to 'imports from' when moved to TS !
 const fs = require('fs'); // @TODO move to 'imports from' when moved to TS !
 
-const {path: pathSDK, glob: globSDK, CONSTANTS: SDK_CONSTANTS} = require('./node-sdk');
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
+const io = require('@actions/io'); // @TODO move to 'imports from' when moved to TS !
+
+const {path: pathSDK, glob: globSDK, outputs: outputsSDK, CONSTANTS: SDK_CONSTANTS} = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
 
 async function run() {
     /** INPUTS **/
@@ -15,18 +16,16 @@ async function run() {
     const FLAG_LIST_INPUT = core.getMultilineInput('flags', {required: true});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
-    /** resolve-directory **/
     const groupDirectory = await core.group(
         'Resolve group directory path',
         async () => {
-            const dir = path.resolve(PATH_INPUT, NAME_INPUT)
-            core.info('group directory=' + dir);
+            const res = path.resolve(PATH_INPUT, NAME_INPUT);
+            core.info('group directory=' + res);
 
-            return dir;
+            return res;
         }
     );
 
-    /** resolve-files **/
     const originalReportPaths = await core.group(
         'Resolve reports',
         async () => {
@@ -40,11 +39,11 @@ async function run() {
         }
     );
     core.debug('reports to copy=' + JSON.stringify(originalReportPaths));
+
     if (0 === originalReportPaths.length) {
         core.setFailed('You must provide at least one report !');
     }
 
-    /** build-reports-map */
     const reportsMap = await core.group(
         'Build reports map',
         async () => {
@@ -60,19 +59,33 @@ async function run() {
     );
     core.debug('reports map=' + JSON.stringify(reportsMap));
 
-    /** build-metadata */
     const metadata = await core.group(
         'Build group metadata',
-        async () => ({name: NAME_INPUT, format: FORMAT_INPUT, reports: reportsMap.map(v => v.filename), flags: FLAG_LIST_INPUT})
+        async () => {
+            const res = {
+                name: NAME_INPUT,
+                format: FORMAT_INPUT,
+                reports: reportsMap.map(v => v.filename),
+                flags: FLAG_LIST_INPUT
+            };
+            core.info('Created');
+
+            return res;
+        }
     );
     core.debug('metadata=' + JSON.stringify(metadata));
 
-    await core.group('Create group directory', () => io.mkdirP(groupDirectory));
+    await core.group('Create group directory', () => {
+        core.info('Create group directory at ' + groupDirectory);
+
+        return io.mkdirP(groupDirectory)
+    });
 
     await core.group(
         'Copy reports',
         async () => reportsMap.map(async ({source, dest}) => {
             core.info(source + ' => ' + dest);
+
             return io.cp(source, dest);
         })
     );
@@ -81,16 +94,27 @@ async function run() {
         'Create metadata file',
         async () => {
             const filepath = path.join(groupDirectory, SDK_CONSTANTS.METADATA_FILENAME);
-            core.debug('Create metadata file at ' + filepath + ' with: ' + JSON.stringify(metadata));
+            core.info('Create metadata file at ' + filepath + ' with: ' + JSON.stringify(metadata));
             fs.writeFileSync(filepath, JSON.stringify(metadata));
     });
 
-    /** build-outputs */
-    await core.group('Build outputs', () => {
-        core.setOutput('path', groupDirectory);
-        core.setOutput('reports', metadata.reports.join('\n'));
-        core.setOutput('files', originalReportPaths.join('\n'));
-    })
+    const outputs = await core.group(
+        'Build action outputs',
+        async () => {
+            const res = {};
+
+            core.info("Build 'path' output");
+            res.path = groupDirectory;
+            core.info("Build 'reports' output");
+            res.reports = metadata.reports.join('\n');
+            core.info("Build 'files' output");
+            res.files = originalReportPaths.join('\n');
+
+            return res;
+        }
+    );
+    core.debug('outputs=' + JSON.stringify(outputs));
+    outputsSDK.bindActionOutputs(outputs);
 }
 
 run();
