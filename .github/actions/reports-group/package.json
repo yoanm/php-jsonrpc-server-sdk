@@ -1,0 +1,23 @@
+{
+  "name": "reports-group",
+  "private": true,
+  "description": "Reports group GHAction yarn workspace",
+  "workspaces": [
+    "find",
+    "load-metadata",
+    "create",
+    "codecov-uploader",
+    "codacy-uploader"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@vercel/ncc": "^0.38.1"
+  }
+}
