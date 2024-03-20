@@ -70,12 +70,11 @@ async function run() {
                 reports: trustedReportsMap.map(v => v.filename),
                 flags: FLAG_LIST_INPUT
             };
-            core.info('Created');
+            core.info('metadata=' + JSON.stringify(res));
 
             return res;
         }
     );
-    core.debug('metadata=' + JSON.stringify(trustedMetadata));
 
     await core.group('Create group directory', () => {
         core.info('Create group directory at ' + trustedGroupDirectory);
@@ -96,7 +95,7 @@ async function run() {
         'Create metadata file',
         async () => {
             const trustedFp = trustedPathHelper.trust(path.resolve(trustedGroupDirectory, SDK.METADATA_FILENAME));
-            core.info('Create metadata file at ' + trustedFp + ' with: ' + JSON.stringify(trustedMetadata));
+            core.info('Create metadata file at ' + trustedFp);
 
             fs.writeFileSync(trustedFp, JSON.stringify(trustedMetadata));
     });

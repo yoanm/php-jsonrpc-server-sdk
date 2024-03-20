@@ -16,7 +16,7 @@ function avoidPoisonNullBytesAttack(untrustedPath) {
     }
 }
 function avoidRelativePathAttack(trustedRootPath, untrustedPath) {
-    const normalizedPath = path.normalize(path.resolve(untrustedPath));
+    const normalizedPath = path.resolve(untrustedPath);
     if (normalizedPath.indexOf(trustedRootPath) !== 0) {
         throw new Error(
             'Potential "Relative Path" attack detected !\n'
@@ -63,8 +63,10 @@ function trustFrom(workspacePath) {
             const trustedReportPaths = untrustedMetadata.reports.map(r => helpers.trust(r));
 
             return {
-                ...untrustedMetadata,
+                name: untrustedMetadata.name,
+                format: untrustedMetadata.format,
                 reports: trustedReportPaths,
+                flags: untrustedMetadata.flags,
                 path: trustedGroupPath,
                 reportPaths: trustedReportPaths.map(trustedFp => helpers.trust(path.join(trustedGroupPath, trustedFp))),
             };
