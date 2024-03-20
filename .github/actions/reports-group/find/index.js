@@ -1,8 +1,9 @@
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
-const {find: findSdk, outputs: outputsSDK} = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
+const SDK = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
 
 async function run() {
+    const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/
     const PATH_INPUT = core.getInput('path', {required: true});
     // Following inputs are not marked as required by the action but a default value must be there, so using `required` works
@@ -10,18 +11,18 @@ async function run() {
     const GLUE_STRING_INPUT = core.getInput('glue-string', {required: true, trimWhitespace: false});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
-    const groupDirPathList = await core.group(
+    const trustedGroupPaths = await core.group(
         'Find groups',
         async () => {
-            const groupDirPathList = await findSdk.groupPaths(PATH_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
+            const res = (await SDK.find.trustedGroupPaths(PATH_INPUT, trustedPathConverter.toWorkspaceRelative, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT}));
 
-            groupDirPathList.forEach(p => core.info('Found a reports group directory at ' + p));
+            res.forEach(p => core.info('Found a reports group directory at ' + p));
 
-            return groupDirPathList;
+            return res;
         }
     );
-    core.debug('groupDirPathList=' + JSON.stringify(groupDirPathList));
-    if (0 === groupDirPathList.length) {
+    core.debug('Group paths=' + JSON.stringify(trustedGroupPaths));
+    if (0 === trustedGroupPaths.length) {
         core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
     }
 
@@ -31,13 +32,13 @@ async function run() {
             const res = {};
 
             core.info("Build 'list' output");
-            res.list = 'json' === FORMAT_INPUT ? JSON.stringify(groupDirPathList)  : groupDirPathList.join(GLUE_STRING_INPUT)
+            res.list = 'json' === FORMAT_INPUT ? JSON.stringify(trustedGroupPaths)  : trustedGroupPaths.join(GLUE_STRING_INPUT)
 
             return res;
         }
     );
     core.debug('outputs=' + JSON.stringify(outputs));
-    outputsSDK.bindActionOutputs(outputs);
+    SDK.outputs.bindFrom(outputs);
 }
 
 run();

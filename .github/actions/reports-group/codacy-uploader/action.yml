@@ -81,11 +81,10 @@ runs:
       id: build-outputs
       uses: actions/github-script@v7
       env:
-        METADATA: ${{ steps.load-metadata.outputs.metadata }}
+        REPORTS: ${{ steps.build-uploader-options.outputs.coverage-reports }}
       with:
         script: |
           core.info('Build output');
-          const {METADATA} = process.env;
-          
-          const metadata = JSON.parse(METADATA);
-          core.setOutput('reports', metadata.reportPaths.split(',').join('\n'));     
+          const {REPORTS} = process.env;
+
+          core.setOutput('reports', REPORTS.split(',').join('\n'));

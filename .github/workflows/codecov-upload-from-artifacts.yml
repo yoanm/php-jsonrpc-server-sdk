@@ -61,10 +61,10 @@ jobs:
             
             const result = pathList.map(groupPath => {
               const absGroupPath = pathResolve(groupPath);
+              core.debug('absGroupPath=' + JSON.stringify(absGroupPath));
               if (!absGroupPath.startsWith(artifactDirectory)) {
                 core.setFailed('Something wrong there :|')
               }
-              core.debug('absGroupPath=' + JSON.stringify(absGroupPath));
               const segments = absGroupPath.replace(artifactDirectory, '').split(pathSep).filter(v => v.trim().length > 0);
               core.debug('segments=' + JSON.stringify(segments));
               

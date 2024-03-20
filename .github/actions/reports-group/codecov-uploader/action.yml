@@ -98,15 +98,15 @@ runs:
       id: build-outputs
       uses: actions/github-script@v7
       env:
-        METADATA: ${{ steps.load-metadata.outputs.metadata }}
+        REPORT_NAME: ${{ steps.build-uploader-options.outputs.name }}
+        REPORT_FILES: ${{ steps.build-uploader-options.outputs.files }}
+        REPORT_FLAGS: ${{ steps.build-uploader-options.outputs.flags }}
       with:
         script: |
           core.info('Build output');
-          const {METADATA} = process.env;
+          const {REPORT_NAME, REPORT_FILES, REPORT_FLAGS} = process.env;
           
           const metadata = JSON.parse(METADATA);
-          core.setOutput('name', metadata.name);
-          core.setOutput('reports', metadata.reportPaths.split(',').join('\n'));
-          if (metadata.flags.length > 0) {
-            core.setOutput('flags', metadata.flags.split(',').join('\n'));
-          }    
+          core.setOutput('name', REPORT_NAME);
+          core.setOutput('reports', REPORT_FILES.split(',').join('\n'));
+          core.setOutput('flags', undefined !== REPORT_FLAGS ? REPORT_FLAGS.split(',').join('\n') : '');

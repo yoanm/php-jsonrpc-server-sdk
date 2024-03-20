@@ -3,25 +3,37 @@ const path = require('path'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
 const {METADATA_FILENAME} = require('./constants');
-const globHelper = require('./glob-helper');
-const pathHelper = require('./path-helper');
+const glob = require('./glob');
 
-export async function groupPaths(globPattern, options = undefined) {
-    const absWorkspace = path.resolve('.');
+/**
+ @param {string} globPattern
+ @param {function(untrusted: string): string} toTrustedPath A function ensuring path is valid before returning it
+ @param {import('@actions/glob').GlobOptions|undefined} globOptions
+
+ @returns {Promise<string[]>} Trusted groups directory path list
+ */
+export async function trustedGroupPaths(globPattern, toTrustedPath, globOptions = undefined) {
     const list = [];
-    for (const fp of await metadataPaths(globPattern, options)) {
-        list.push(pathHelper.relativeTo(absWorkspace, path.dirname(fp)));
+    for (const fp of await trustedMetadataPaths(globPattern, toTrustedPath, globOptions)) {
+        list.push(path.dirname(fp));
     }
 
     return list;
 }
 
-export async function metadataPaths(globPattern, options = undefined) {
-    const finalPattern = globPattern.split('\n').map(item => path.join(item.trim(), '**', METADATA_FILENAME)).join('\n');
+/**
+ * @param {string} globPattern
+ * @param {function(untrusted: string): string} toTrustedPath A function ensuring path is valid before returning it
+ * @param {import('@actions/glob').GlobOptions|undefined} globOptions
+ *
+ * @returns {Promise<string[]>} Trusted metadata path list
+ */
+export async function trustedMetadataPaths(globPattern, toTrustedPath, globOptions = undefined) {
+    const finalPattern = globPattern.split('\n').map(item => toTrustedPath(path.join(item.trim(), '**', METADATA_FILENAME))).join('\n');
     core.debug('Find metadata paths with ' + globPattern);
 
     const list = [];
-    for await (const fp of globHelper.lookup(finalPattern, options)) {
+    for await (const fp of glob.lookup(finalPattern, globOptions)) {
         list.push(fp);
     }
 

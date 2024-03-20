@@ -4,11 +4,12 @@ const fs = require('fs'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 const io = require('@actions/io'); // @TODO move to 'imports from' when moved to TS !
 
-const {path: pathSDK, glob: globSDK, outputs: outputsSDK, CONSTANTS: SDK_CONSTANTS} = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
+const SDK = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
 
 async function run() {
+    const trustedPathHelper = SDK.path.trustedPathHelpers();
     /** INPUTS **/
-    const NAME_INPUT = core.getInput('NAME', {required: true});
+    const NAME_INPUT = core.getInput('name', {required: true});
     const FORMAT_INPUT = core.getInput('format', {required: true});
     const REPORTS_INPUT = core.getInput('files', {required: true});
     // Following inputs are not marked as required by the action but a default value must be there, so using `required` works
@@ -16,56 +17,57 @@ async function run() {
     const FLAG_LIST_INPUT = core.getMultilineInput('flags', {required: true});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
-    const groupDirectory = await core.group(
+    const trustedGroupDirectory = await core.group(
         'Resolve group directory path',
         async () => {
-            const res = path.resolve(PATH_INPUT, NAME_INPUT);
+            const res = trustedPathHelper.trust(path.join(PATH_INPUT, NAME_INPUT));
             core.info('group directory=' + res);
 
             return res;
         }
     );
 
-    const originalReportPaths = await core.group(
+    const trustedOriginalReportPaths = await core.group(
         'Resolve reports',
         async () => {
             const result = [];
-            for await (const fp of globSDK.lookup(REPORTS_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT})) {
-                const normalizedFp = pathSDK.relativeToGHWorkspace(fp);
+            for await (const fp of SDK.glob.lookup(REPORTS_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT})) {
+                const normalizedFp = trustedPathHelper.toWorkspaceRelative(fp);
                 core.info('Found ' + normalizedFp);
                 result.push(normalizedFp);
             }
             return result;
         }
     );
-    core.debug('reports to copy=' + JSON.stringify(originalReportPaths));
+    core.debug('reports to copy=' + JSON.stringify(trustedOriginalReportPaths));
 
-    if (0 === originalReportPaths.length) {
+    if (0 === trustedOriginalReportPaths.length) {
         core.setFailed('You must provide at least one report !');
     }
 
-    const reportsMap = await core.group(
+    const trustedReportsMap = await core.group(
         'Build reports map',
         async () => {
             let counter = 0;
-            return originalReportPaths.map(filepath => {
+            return trustedOriginalReportPaths.map(trustedSource => {
                 // Ensure report files uniqueness while keeping a bit of clarity regarding the mapping with original files !
-                const filename = path.basename(filepath) + '-report-' + (++counter);
-                const destination = pathSDK.relativeToGHWorkspace(groupDirectory, filename);
-                core.info(filepath + ' => ' + destination);
-                return {source: filepath, filename: filename, dest: destination};
+                const trustedFilename = path.basename(trustedSource) + '-report-' + (++counter); // Only trusted content !
+                const trustedDestination = path.join(trustedGroupDirectory, trustedFilename); // Only trusted content !
+                core.info(trustedSource + ' => ' + trustedDestination);
+
+                return {source: trustedSource, filename: trustedFilename, dest: trustedDestination};
             });
         }
     );
-    core.debug('reports map=' + JSON.stringify(reportsMap));
+    core.debug('reports map=' + JSON.stringify(trustedReportsMap));
 
-    const metadata = await core.group(
+    const trustedMetadata = await core.group(
         'Build group metadata',
         async () => {
             const res = {
                 name: NAME_INPUT,
                 format: FORMAT_INPUT,
-                reports: reportsMap.map(v => v.filename),
+                reports: trustedReportsMap.map(v => v.filename),
                 flags: FLAG_LIST_INPUT
             };
             core.info('Created');
@@ -73,48 +75,50 @@ async function run() {
             return res;
         }
     );
-    core.debug('metadata=' + JSON.stringify(metadata));
+    core.debug('metadata=' + JSON.stringify(trustedMetadata));
 
     await core.group('Create group directory', () => {
-        core.info('Create group directory at ' + groupDirectory);
+        core.info('Create group directory at ' + trustedGroupDirectory);
 
-        return io.mkdirP(groupDirectory)
+        return io.mkdirP(trustedGroupDirectory)
     });
 
     await core.group(
         'Copy reports',
-        async () => reportsMap.map(async ({source, dest}) => {
-            core.info(source + ' => ' + dest);
+        async () => trustedReportsMap.map(async (trustedMap) => {
+            core.info(trustedMap.source + ' => ' + trustedMap.dest);
 
-            return io.cp(source, dest);
+            return io.cp(trustedMap.source, trustedMap.dest);
         })
     );
 
     await core.group(
         'Create metadata file',
         async () => {
-            const filepath = path.join(groupDirectory, SDK_CONSTANTS.METADATA_FILENAME);
-            core.info('Create metadata file at ' + filepath + ' with: ' + JSON.stringify(metadata));
-            fs.writeFileSync(filepath, JSON.stringify(metadata));
+            const trustedFp = trustedPathHelper.trust(path.resolve(trustedGroupDirectory, SDK.METADATA_FILENAME));
+            core.info('Create metadata file at ' + trustedFp + ' with: ' + JSON.stringify(trustedMetadata));
+
+            fs.writeFileSync(trustedFp, JSON.stringify(trustedMetadata));
     });
 
     const outputs = await core.group(
         'Build action outputs',
         async () => {
+            // Be sure to validate any path returned to the end-user !
             const res = {};
 
             core.info("Build 'path' output");
-            res.path = groupDirectory;
+            res.path = trustedPathHelper.trust(trustedGroupDirectory);
             core.info("Build 'reports' output");
-            res.reports = metadata.reports.join('\n');
+            res.reports = trustedMetadata.reports.join('\n');
             core.info("Build 'files' output");
-            res.files = originalReportPaths.join('\n');
+            res.files = trustedReportsMap.map(v => v.source).join('\n');
 
             return res;
         }
     );
     core.debug('outputs=' + JSON.stringify(outputs));
-    outputsSDK.bindActionOutputs(outputs);
+    SDK.outputs.bindFrom(outputs);
 }
 
 run();

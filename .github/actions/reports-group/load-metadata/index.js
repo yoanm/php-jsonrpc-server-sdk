@@ -2,9 +2,10 @@ const path = require('path'); // @TODO move to 'imports from' when moved to TS !
 
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
-const {find: findSDK, load: loadSDK, outputs: outputsSDK} = require('./node-sdk');
+const SDK = require('./node-sdk');  // @TODO move to 'imports from' when moved to TS !
 
 async function run() {
+    const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/
     const PATH_INPUT = core.getInput('path', {required: true});
     // Following inputs are not marked as required by the action but a default value must be there, so using `required` works
@@ -12,38 +13,37 @@ async function run() {
     const GLUE_STRING_INPUT = core.getInput('glue-string', {required: true, trimWhitespace: false});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
-    const metadataList = await core.group(
+    const trustedMetadataList = await core.group(
         'Build metadata list',
         async () => {
-            const metadataPathList = await findSDK.metadataPaths(PATH_INPUT, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
-            if (0 === metadataPathList.length) {
+            const trustedMetadataPathList = await SDK.find.trustedGroupPaths(PATH_INPUT, trustedPathConverter.toWorkspaceRelative, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
+            if (0 === trustedMetadataPathList.length) {
                 core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
             }
 
-            return Promise.all(
-                metadataPathList.map(async (fp) => {
-                    core.info('Load '+ fp);
+            return trustedMetadataPathList.map(async (trustedGroupPath) => {
+                core.info('Load '+ trustedGroupPath);
 
-                    return loadSDK.metadataFile(fp);
-                })
-            );
+                return trustedPathConverter.trustedMetadataUnder(trustedGroupPath);
+            });
         }
     );
-    core.debug('metadataList=' + JSON.stringify(metadataList));
+    core.debug('Group paths=' + JSON.stringify(trustedMetadataList));
 
     const outputs = await core.group(
         'Build action outputs',
         async () => {
             const res = {};
 
+            // @TODO move back to dedicated properties (merge array/object properties one by one in case of multi result with json output)
             core.info("Build 'metadata' output");
             if ('json' === FORMAT_INPUT) {
-                // Detect if provided `paths` was a group directory
-                const isSingleMetadata = metadataList.length === 1 && path.resolve(metadataList[0].path) === path.resolve(PATH_INPUT);
-                res.metadata = isSingleMetadata ? metadataList.shift() : metadataList;
+                // Detect if provided `paths` was an actual group directory
+                const isSingleMetadata = trustedMetadataList.length === 1 && path.resolve(trustedMetadataList[0].path) === path.resolve(PATH_INPUT);
+                res.metadata = isSingleMetadata ? trustedMetadataList.shift() : trustedMetadataList;
             } else {
-                const formatScalar = (key) => [...(new Set(metadataList.map(m => m[key]))).values()].join(GLUE_STRING_INPUT);
-                const formatList = (key) => [...(new Set(metadataList.map(m => m[key]).flat())).values()].join(GLUE_STRING_INPUT);
+                const formatScalar = (key) => [...(new Set(trustedMetadataList.map(m => m[key]))).values()].join(GLUE_STRING_INPUT);
+                const formatList = (key) => [...(new Set(trustedMetadataList.map(m => m[key]).flat())).values()].join(GLUE_STRING_INPUT);
 
                 res.metadata = {
                     name: formatScalar('name'),
@@ -59,7 +59,7 @@ async function run() {
         }
     );
     core.debug('outputs=' + JSON.stringify(outputs));
-    outputsSDK.bindActionOutputs(outputs);
+    SDK.outputs.bindFrom(outputs);
 }
 
 run();
