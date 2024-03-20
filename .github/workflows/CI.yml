@@ -83,7 +83,7 @@ jobs:
         id: unit-tests-coverage-group
         uses: ./.github/actions/reports-group/create
         with:
-          name: unit-tests-php${{ matrix.php-version }}
+          name: unit-tests
           format: clover
           files: build/coverage-phpunit/unit.clover
           flags: |
@@ -97,7 +97,7 @@ jobs:
         id: functional-tests-coverage-group
         uses: ./.github/actions/reports-group/create
         with:
-          name: functional-tests-php${{ matrix.php-version }}
+          name: functional-tests
           format: clover
           files: |
             build/coverage-phpunit/functional.clover

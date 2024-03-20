@@ -92,5 +92,5 @@ runs:
           const {REPORTS, METADATA} = process.env;
 
           const metadata = JSON.parse(METADATA);
-          core.setOutput('group', metadata.path.split(',').join('\n')); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          core.setOutput('groups', metadata.path.split(',').join('\n')); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
           core.setOutput('reports', REPORTS.split(',').join('\n')); // Trusted path, see `build-uploader-options` step
