@@ -6,6 +6,9 @@ on:
         required: true
         type: string
       run-id:
+        description: |
+          The id of the workflow run where the artifacts were uploaded from (default to current run).
+          In case artefacts have been uploadded from another run, original workflow run has to be provided as well as `ARTEFACT_DOWNLOAD_TOKEN` secret !
         required: false
         default: "${{ github.run_id }}"
         type: string
@@ -35,7 +38,8 @@ jobs:
         with:
           pattern: ${{ inputs.artifacts-pattern }}
           path: job-artifacts
-          run-id: ${{ inputs.run-id }}
+          github-token: ${{ github.token }} # Required in order to use `run-id` parameter !
+          run-id: ${{ inputs.run-id }} # Required in case workflow is executed from another run (e.g. `workflow_run`)
 
       - name: DEBUG artifacts
         run: |
@@ -104,6 +108,8 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: job-artifact
+          github-token: ${{ github.token }} # Required in order to use `run-id` parameter !
+          run-id: ${{ inputs.run-id }} # Required in case workflow is executed from another run (e.g. `workflow_run`)
 
       - name: DEBUG artifacts
         run: |

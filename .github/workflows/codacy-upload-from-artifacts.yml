@@ -6,6 +6,9 @@ on:
         required: true
         type: string
       run-id:
+        description: |
+          The id of the workflow run where the artifacts were uploaded from (default to current run).
+          In case artefacts have been uploadded from another run, this input must be filled with original workflow !
         required: false
         default: "${{ github.run_id }}"
         type: string
@@ -38,7 +41,8 @@ jobs:
         with:
           pattern: ${{ inputs.artifacts-pattern }}
           path: job-artifacts
-          run-id: ${{ inputs.run-id }}
+          github-token: ${{ github.token }} # Required in order to use `run-id` parameter !
+          run-id: ${{ inputs.run-id }} # Required in case workflow is executed from another run (e.g. `workflow_run`)
 
       - name: Upload all reports
         id: upload

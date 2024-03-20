@@ -25,6 +25,12 @@ jobs:
     secrets:
       TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  debug-context:
+    name: DEBUG - context
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'github event='"'"'${{ toJson(github.event) }}'"'"
+
   debug-uploads:
     name: DEBUG - Uploaders
     runs-on: ubuntu-latest
