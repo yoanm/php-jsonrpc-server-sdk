@@ -1,0 +1,18 @@
+{
+  "name": "node-sdk",
+  "private": true,
+  "version": "0.1.0",
+  "author": "yoanm",
+  "main": "index.js",
+  "scripts": {
+    "build": "make build"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@actions/glob": "^0.4.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.57.0"
+  }
+}

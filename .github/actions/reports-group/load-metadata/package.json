@@ -1,0 +1,18 @@
+{
+  "name": "load-metadata",
+  "private": true,
+  "version": "0.0.0",
+  "author": "yoanm",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "make build"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.57.0"
+  }
+}

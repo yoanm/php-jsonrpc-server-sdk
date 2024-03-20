@@ -1,0 +1,114 @@
+name: 'Codecov report groups upload'
+on:
+  workflow_call:
+    inputs:
+      artifacts-pattern:
+        required: true
+        type: string
+    secrets:
+      TOKEN:
+        required: true
+    outputs:
+      groups:
+        description: TODO
+        value: ${{ jobs.prepare.outputs.list-for-output }}
+
+jobs:
+  prepare:
+    name: 📮 🗃️ Prepare uploads
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+      list-for-output: ${{ steps.find-groups.outputs.list }}
+    steps:
+      # @TODO move reports-group/load-metadata action to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v4
+        with:
+          path: custom-action-repo
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.artifacts-pattern }}
+          path: job-artifacts
+
+      - name: DEBUG artifacts
+        run: |
+          ls -ail job-artifacts/*
+          ls -ail job-artifacts/*/*
+
+      - name: Find groups
+        id: find-groups
+        uses: ./custom-action-repo/.github/actions/reports-group/find
+        with:
+          path: job-artifacts
+          format: json
+
+      - name: DEBUG
+        run: echo '${{ toJson(steps.find-groups.outputs) }}'
+
+      - name: Build matrix
+        id: build-matrix
+        uses: actions/github-script@v7
+        env:
+          PATH_LIST: ${{ steps.find-groups.outputs.list }}
+        with:
+          script: |
+            const {resolve: pathResolve, join: pathJoin, sep: pathSep} = require('path');
+            const {PATH_LIST} = process.env;
+            const pathList = JSON.parse(PATH_LIST);
+            const artifactDirectory = pathResolve('job-artifacts')
+            
+            const result = pathList.map(groupPath => {
+              const absGroupPath = pathResolve(groupPath);
+              core.debug('absGroupPath=' + JSON.stringify(absGroupPath));
+              if (!absGroupPath.startsWith(artifactDirectory)) {
+                core.setFailed('Something wrong there :|')
+              }
+              const segments = absGroupPath.replace(artifactDirectory, '').split(pathSep).filter(v => v.trim().length > 0);
+              core.debug('segments=' + JSON.stringify(segments));
+              
+              return {artifact: segments.shift(), path: pathJoin(...segments)};
+            });
+            core.debug('result=' + JSON.stringify(result));
+            
+            core.setOutput('matrix', JSON.stringify({include: result}));
+
+      - name: DEBUG
+        run: echo '${{ toJson(steps.build-matrix.outputs) }}'
+
+  uploads:
+    name: ${{ matrix.artifact}} - ${{ matrix.path }}
+    runs-on: ubuntu-latest
+    needs: [ prepare ]
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: DEBUG matrix
+        run: echo 'matrix='"'"'${{ toJson(matrix) }}'"'"
+
+      # Codecov uploader requires the repository to be there !
+      # @TODO see if by manually filling sha/branch/pr etc, it's still required !
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download '${{ matrix.artifact }}' artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: job-artifact
+
+      - name: DEBUG artifacts
+        run: |
+          ls -ail job-artifact/*
+          ls -ail job-artifact/*/*
+
+      # @TODO move reports-group/codecov-uploader action to a dedicated repo and remove the checkout
+      - name: Upload reports
+        id: upload
+        uses: ./.github/actions/reports-group/codecov-uploader
+        with:
+          path: job-artifact/${{ matrix.path }}
+          token: ${{ secrets.TOKEN }}

@@ -1,0 +1,47 @@
+name: 'Codacy report groups upload'
+on:
+  workflow_call:
+    inputs:
+      artifacts-pattern:
+        required: true
+        type: string
+    secrets:
+      PROJECT_TOKEN:
+        required: true
+    outputs:
+      groups:
+        description: TODO
+        value: ${{ jobs.upload.outputs.groups }}
+      reports:
+        description: TODO
+        value: ${{ jobs.upload.outputs.reports }}
+
+jobs:
+  upload:
+    name: Upload all reports
+    runs-on: ubuntu-latest
+    outputs:
+      groups: ${{ steps.upload.outputs.groups }}
+      reports: ${{ steps.upload.outputs.reports }}
+    steps:
+      # @TODO move reports-group/codacy-uploader action to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v4
+        with:
+          path: custom-action-repo
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.artifacts-pattern }}
+          path: job-artifacts
+
+      - name: Upload all reports
+        id: upload
+        uses: ./custom-action-repo/.github/actions/reports-group/codacy-uploader
+        with:
+          path: job-artifacts
+          project-token: ${{ secrets.PROJECT_TOKEN }}
+
+      - name: DEBUG
+        run: |
+          echo 'outputs='"'"'${{ toJson(steps.upload.outputs) }}'"'"
