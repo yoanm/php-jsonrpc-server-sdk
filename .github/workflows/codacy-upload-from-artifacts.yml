@@ -5,6 +5,10 @@ on:
       artifacts-pattern:
         required: true
         type: string
+      run-id:
+        required: false
+        default: "${{ github.run_id }}"
+        type: string
     secrets:
       PROJECT_TOKEN:
         required: true
@@ -34,6 +38,7 @@ jobs:
         with:
           pattern: ${{ inputs.artifacts-pattern }}
           path: job-artifacts
+          run-id: ${{ inputs.run-id }}
 
       - name: Upload all reports
         id: upload
