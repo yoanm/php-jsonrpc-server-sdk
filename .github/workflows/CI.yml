@@ -27,7 +27,8 @@ jobs:
     name: UTs & FTs - PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
     env:
-      COVERAGE_TYPE: none
+      COVERAGE_TYPE: xdebug
+      COVERAGE_OUTPUT_STYLE: clover
     strategy:
       fail-fast: true
       max-parallel: 4
@@ -42,22 +43,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-#      - name: DEBUG - TO REMOVE
-#        uses: ./.github/actions/reports-group/create
-#        with:
-#          name: unit-tests-php${{ matrix.php-version }}
-#          format: clover
-#          files: build/coverage-phpunit/unit.clover
-#          flags: |
-#            unit-tests
-#            php-${{ matrix.php-version }}
-#          path: build/coverage-groups
-
-      - name: Enable coverage
-#        if: ${{ matrix.php-version == '8.2' }} # DEBUG - Uncomment before merging !
-        run: |
-          echo "COVERAGE_OUTPUT_STYLE=clover" >> $GITHUB_ENV
-          echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
+# @TODO Figure out if coverage for every version is actually useful or not
+#      - name: Enable coverage
+#        if: ${{ matrix.php-version == '8.2' }}
+#        run: |
+#          echo "COVERAGE_OUTPUT_STYLE=clover" >> $GITHUB_ENV
+#          echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
@@ -86,7 +77,7 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      # @TODO move reports-group/create action to a dedicated repo and remove the checkout
+      # @TODO move reports-group/create action to a dedicated repo
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
@@ -100,6 +91,7 @@ jobs:
             php-${{ matrix.php-version }}
           path: build/coverage-groups
 
+      # @TODO move reports-group/create action to a dedicated repo
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
