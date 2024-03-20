@@ -6,6 +6,19 @@ const path = require('path'); // @TODO move to 'imports from' when moved to TS !
 const {GITHUB_WORKSPACE} = process.env;
 const {METADATA_FILENAME} = require('./constants');
 
+/**
+ * Ensure a trailing separator exists. Easier to re-use for end-user
+ *
+ * @param {string} untrustedPath
+ *
+ * @returns {string} same *untrusted* path with a trailing separator
+ */
+export function withTrailingSeparator(untrustedPath) {
+    //  by adding an additional trailing separator
+    // which will be removed by `path.normalize()` in case it is useless
+    return path.normalize(untrustedPath + path.sep);
+}
+
 export function trustedPathHelpers() {
     return trustFrom(GITHUB_WORKSPACE);
 }
@@ -67,7 +80,7 @@ function trustFrom(workspacePath) {
                 format: untrustedMetadata.format,
                 reports: trustedReportPaths,
                 flags: untrustedMetadata.flags,
-                path: trustedGroupPath,
+                path: withTrailingSeparator(trustedGroupPath),
                 reportPaths: trustedReportPaths.map(trustedFp => helpers.trust(path.join(trustedGroupPath, trustedFp))),
             };
         }

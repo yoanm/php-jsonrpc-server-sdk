@@ -14,6 +14,9 @@ inputs:
     default: 'true'
 
 outputs:
+  groups:
+    description: TODO
+    value: ${{ steps.build-outputs.outputs.groups }}
   reports:
     description: TODO
     value: ${{ steps.build-outputs.outputs.reports }}
@@ -61,7 +64,7 @@ runs:
           const {METADATA} = process.env;
           
           const metadata = JSON.parse(METADATA);
-          core.setOutput('coverage-reports', metadata.reportPaths);
+          core.setOutput('coverage-reports', metadata.reportPaths); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
 
     - name: Ensure at least one report to upload
       if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports }}
@@ -81,10 +84,13 @@ runs:
       id: build-outputs
       uses: actions/github-script@v7
       env:
+        METADATA: ${{ steps.load-metadata.outputs.metadata }}
         REPORTS: ${{ steps.build-uploader-options.outputs.coverage-reports }}
       with:
         script: |
           core.info('Build output');
-          const {REPORTS} = process.env;
+          const {REPORTS, METADATA} = process.env;
 
-          core.setOutput('reports', REPORTS.split(',').join('\n'));
+          const metadata = JSON.parse(METADATA);
+          core.setOutput('group', metadata.path.split(',').join('\n')); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          core.setOutput('reports', REPORTS.split(',').join('\n')); // Trusted path, see `build-uploader-options` step

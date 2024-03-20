@@ -56,7 +56,7 @@ jobs:
           script: |
             const {resolve: pathResolve, join: pathJoin, sep: pathSep} = require('path');
             const {PATH_LIST} = process.env;
-            const pathList = [...JSON.parse(PATH_LIST).values()]; // .values() + spread to ensure array rather than object ....
+            const pathList = JSON.parse(PATH_LIST);
             const artifactDirectory = pathResolve('job-artifacts')
             
             const result = pathList.map(groupPath => {

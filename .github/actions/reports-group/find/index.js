@@ -1,8 +1,10 @@
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
 const SDK = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
+const path = require("path"); // @TODO move to 'imports from' when moved to TS !
 
-// @TODO replace json by glob as output ?? (easier to manage for inner code, while end-user is still able to fallback on string format with a simple split)
+// @TODO replace json by glob-string as output ?? Same as string format but with glob compatible path list
+// (easier to manage for inner code, while end-user is still able to fallback on string format with a simple split)
 async function run() {
     const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/
@@ -33,7 +35,8 @@ async function run() {
             const res = {};
 
             core.info("Build 'list' output");
-            res.list = 'json' === FORMAT_INPUT ? JSON.stringify(trustedGroupPaths)  : trustedGroupPaths.join(GLUE_STRING_INPUT)
+            const list = trustedGroupPaths.map(v => SDK.path.withTrailingSeparator(v));
+            res.list = 'json' === FORMAT_INPUT ? JSON.stringify(list)  : list.join(GLUE_STRING_INPUT)
 
             return res;
         }
