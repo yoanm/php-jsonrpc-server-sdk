@@ -7,7 +7,6 @@ on:
 jobs:
   codacy-uploader:
     name: Codacy
-    needs: [ tests ]
     uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
@@ -16,7 +15,6 @@ jobs:
 
   codecov-uploader:
     name: Codecov
-    needs: [ tests ]
     uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
