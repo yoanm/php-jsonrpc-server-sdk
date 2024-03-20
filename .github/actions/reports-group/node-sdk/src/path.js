@@ -68,7 +68,7 @@ function trustFrom(workspacePath) {
          */
         trustedMetadataUnder: (untrustedGroupPath) => {
             const trustedPath = helpers.trust(path.join(untrustedGroupPath, METADATA_FILENAME));
-            const content = fs.readFileSync(helpers.trust(trustedPath)).toString();
+            const content = fs.readFileSync(trustedPath).toString();
             core.debug(untrustedGroupPath + ' content=' + content);
 
             const untrustedMetadata = JSON.parse(content);
@@ -81,7 +81,7 @@ function trustFrom(workspacePath) {
                 reports: trustedReportPaths,
                 flags: untrustedMetadata.flags,
                 path: withTrailingSeparator(trustedGroupPath),
-                reportPaths: trustedReportPaths.map(trustedFp => helpers.trust(path.join(trustedGroupPath, trustedFp))),
+                reportPaths: trustedReportPaths.map(trustedFp => path.join(trustedGroupPath, trustedFp)),
             };
         }
     };
