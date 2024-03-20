@@ -2,6 +2,7 @@ const core = require('@actions/core'); // @TODO move to 'imports from' when move
 
 const SDK = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
 
+// @TODO replace json by glob as output ?? (easier to manage for inner code, while end-user is still able to fallback on string format with a simple split)
 async function run() {
     const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/

@@ -21,17 +21,11 @@ async function run() {
                 core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
             }
 
-            const res = trustedMetadataPathList.map((trustedGroupPath) => {
+            return trustedMetadataPathList.map((trustedGroupPath) => {
                 core.info('Load '+ trustedGroupPath);
 
-                const innerRes = trustedPathConverter.trustedMetadataUnder(trustedGroupPath);
-                core.info('DEBUG innerRes='+JSON.stringify(innerRes));
-
-                return innerRes;
+                return trustedPathConverter.trustedMetadataUnder(trustedGroupPath);
             });
-            core.info('DEBUG res='+JSON.stringify(res));
-
-            return res;
         }
     );
     core.debug('Group paths=' + JSON.stringify(trustedMetadataList));

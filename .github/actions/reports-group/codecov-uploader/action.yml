@@ -106,7 +106,6 @@ runs:
           core.info('Build output');
           const {REPORT_NAME, REPORT_FILES, REPORT_FLAGS} = process.env;
           
-          const metadata = JSON.parse(METADATA);
           core.setOutput('name', REPORT_NAME);
           core.setOutput('reports', REPORT_FILES.split(',').join('\n'));
           core.setOutput('flags', undefined !== REPORT_FLAGS ? REPORT_FLAGS.split(',').join('\n') : '');
