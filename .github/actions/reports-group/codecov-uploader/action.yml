@@ -84,7 +84,9 @@ runs:
             'Validate inputs', 
             async () => Object.entries(JSON.parse(process.env.INPUT_MAP))
               .forEach(([key, val]) => {
-                if (!val.trim()) { throw new Error(`Input required and not supplied: ${name}`); }
+                if (!key.startsWith('override-') && !val.trim()) {
+                    throw new Error(`Input required and not supplied: ${key}`);
+                }
               })
           );
 
