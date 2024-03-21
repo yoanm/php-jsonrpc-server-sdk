@@ -12,6 +12,13 @@ inputs:
     description: |
       Indicates whether to follow symbolic links when resolving `path`
     default: 'true'
+  override-commit:
+    description: |
+      Commit to link to the uploaded reports.
+      Default value:
+      - `push` and `pull_request` workflow: `github.event.after`
+      - `workflow_run` workflow triggered by a `pull_request` or `push` workflow: `github.event.workflow_run.head_sha`
+    default: "${{ ('workflow_run' == github.event_name && ('pull_request' == github.event.workflow_run.event || 'push' == github.event.workflow_run.event) && github.event.workflow_run.head_sha) || (('pull_request' == github.event_name || 'push' == github.event_name) && github.event.after) || null }}"
 
 outputs:
   groups:
@@ -78,6 +85,9 @@ runs:
     - name: Upload to codacy
       id: upload
       uses: codacy/codacy-coverage-reporter-action@v1
+      env:
+        GITHUB_SHA: ${{ inputs.override-commit }} # Lonely way to override the commit without having to deal with CLI uploader directly :/
+        GITHUB_EVENT_NAME: push # Force the event to "push" to be sure uploader will leverage GITHUB_SHA and not something else (mostly in case event is `pull_request`)
       with:
         coverage-reports: ${{ steps.build-uploader-options.outputs.coverage-reports }}
         project-token: ${{ inputs.project-token }}
