@@ -83,6 +83,10 @@ runs:
         script: |
           core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
 
+    - name: TMP - remove repository used for custom action # Might interfere with Codacy, so to check
+      shell: bash
+      run: rm -Rf custom-action-repo
+
     - name: Upload to codacy
       id: upload
       uses: codacy/codacy-coverage-reporter-action@v1
