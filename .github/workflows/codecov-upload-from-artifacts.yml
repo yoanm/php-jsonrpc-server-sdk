@@ -1,3 +1,4 @@
+# To store on same repo as reports-group/codecov-uploader action if doable
 name: 'Codecov report groups upload'
 on:
   workflow_call:
@@ -8,7 +9,7 @@ on:
       run-id:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
-          In case artefacts have been uploadded from another run, original workflow run has to be provided as well as `ARTEFACT_DOWNLOAD_TOKEN` secret !
+          In case artefacts have been uploadded from another run, this input must be filled with original workflow !
         required: false
         default: "${{ github.run_id }}"
         type: string
@@ -56,6 +57,8 @@ jobs:
       - name: DEBUG
         run: echo '${{ toJson(steps.find-groups.outputs) }}'
 
+      # @TODO create a reports-group/find-from-artifacts action returning a map of group name to the related artefacts
+      # (alternatively, update reports-group/find to manage it, like with a `from-artifacts` ??)
       - name: Build matrix
         id: build-matrix
         uses: actions/github-script@v7
