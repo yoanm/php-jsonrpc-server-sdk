@@ -75,24 +75,17 @@ runs:
           const {METADATA, COMMIT} = process.env;
           
           const metadata = JSON.parse(METADATA);
-          //core.setOutput('coverage-reports', metadata.reportPaths); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
-          // TMP to test
-          core.setOutput('coverage-reports-param', metadata.reportPaths.split(',').map(v => "-r '" + v + "'").join(' ')); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          core.setOutput('coverage-reports-param', metadata.reportPaths.split(',').map(v => "-r '" + v + "'").join(' ')); // Trusted paths as they come from trusted metadata (=from `reports-group/load-metadata`)
           if (COMMIT.trim().length > 0) {
             core.setOutput('commit-param', "--commit-uuid '" + COMMIT + "'");
           }
 
     - name: Ensure at least one report to upload
-      #if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports }}
       if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports-param }}
       uses: actions/github-script@v7
       with:
         script: |
           core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
-
-    - name: TMP - create an empty workspace  # Repository used for custom action might interfere with Codacy, so to check
-      shell: bash
-      run: mkdir empty-codacy-workspace
 
     - name: Upload to codacy
       shell: bash
@@ -106,23 +99,11 @@ runs:
         && chmod +x ~/.cache/codacy/codacy.sh \
         && ~/.cache/codacy/codacy.sh report --project-token $TOKEN $COMMIT_PARAM $REPORTS_PARAM
 
-#    - name: Upload to codacy
-#      id: upload
-#      uses: codacy/codacy-coverage-reporter-action@v1
-#      env:
-#        GITHUB_WORKSPACE: ./empty-codacy-workspace # TMP
-#        GITHUB_SHA: ${{ inputs.override-commit }} # Lonely way to override the commit without having to deal with CLI uploader directly :/
-#        GITHUB_EVENT_NAME: push # Force the event to "push" to be sure uploader will leverage GITHUB_SHA and not something else (mostly in case event is `pull_request`)
-#      with:
-#        coverage-reports: ${{ steps.build-uploader-options.outputs.coverage-reports }}
-#        project-token: ${{ inputs.project-token }}
-
     - name: Build action outputs
       id: build-outputs
       uses: actions/github-script@v7
       env:
         METADATA: ${{ steps.load-metadata.outputs.metadata }}
-        REPORTS: ${{ steps.build-uploader-options.outputs.coverage-reports }}
       with:
         script: |
           core.info('Build output');
@@ -130,4 +111,4 @@ runs:
 
           const metadata = JSON.parse(METADATA);
           core.setOutput('groups', metadata.path.split(',').join('\n')); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
-          core.setOutput('reports', REPORTS.split(',').join('\n')); // Trusted path, see `build-uploader-options` step
+          core.setOutput('reports', metadata.reportPaths.split(',').join('\n')); // Trusted path, see `build-uploader-options` step
