@@ -7,19 +7,29 @@ on:
 jobs:
   codacy-uploader:
     name: Codacy
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
+      run-id: ${{ github.event.workflow_run.id }}
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   codecov-uploader:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Codecov
     uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
+      run-id: ${{ github.event.workflow_run.id }}
     secrets:
       TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  debug-context:
+    name: DEBUG - context
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'github event='"'"'${{ toJson(github.event) }}'"'"
 
   debug-uploads:
     name: DEBUG - Uploaders

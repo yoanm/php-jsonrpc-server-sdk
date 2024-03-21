@@ -1,9 +1,17 @@
+# To store on same repo as reports-group/codacy-uploader action if doable !
 name: 'Codacy report groups upload'
 on:
   workflow_call:
     inputs:
       artifacts-pattern:
         required: true
+        type: string
+      run-id:
+        description: |
+          The id of the workflow run where the artifacts were uploaded from (default to current run).
+          In case artefacts have been uploadded from another run, this input must be filled with original workflow !
+        required: false
+        default: "${{ github.run_id }}"
         type: string
     secrets:
       PROJECT_TOKEN:
@@ -16,6 +24,11 @@ on:
         description: TODO
         value: ${{ jobs.upload.outputs.reports }}
 
+# @TODO Investigate: `workflow_run` don't create a status check on the related PR !
+# Would it be handy/secure/not to complex to create a reports-group/check-run-from-workflow-run which:
+# - Would need to be added as first workflow wtep in order to create a `in-progress` check-run with all info fetched from the triggering workflow
+#   - Add a `fail-if-caller-failed` option which would create `failed` check-run and exit with an error ?
+# - Would update the check-run during post-process with the current status of the triggered workflow
 jobs:
   upload:
     name: Upload all reports
@@ -34,6 +47,8 @@ jobs:
         with:
           pattern: ${{ inputs.artifacts-pattern }}
           path: job-artifacts
+          github-token: ${{ github.token }} # Required in order to use `run-id` parameter !
+          run-id: ${{ inputs.run-id }} # Required in case workflow is executed from another run (e.g. `workflow_run`)
 
       - name: Upload all reports
         id: upload
