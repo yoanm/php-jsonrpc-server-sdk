@@ -37,17 +37,18 @@ async function run() {
             if (!isEmpty(outputTitle) || !isEmpty(outputSummary)) {
                 res.output = {title: undefinedIfEmpty(outputTitle), summary: undefinedIfEmpty(outputSummary)};
             }
-            core.debug('API params=' + JSON.stringify(res));
         }
     );
+    core.debug('API params=' + JSON.stringify(requestParams));
 
-    const { data: checkRun } = await core.group('Call API', async () => {
+    const apiResponse = await core.group('Call API', async () => {
         const octokit = github.getOctokit(githubToken);
 
-        return octokit.rest.checks.create(requestParams);
+        return octokit.request('POST /repos/{owner}/{repo}/check-runs', requestParams);
     });
+    core.info('TMP DEBUG' + JSON.stringify(apiResponse));
 
-    core.setOutput('check-run-id', checkRun.id);
+    core.setOutput('check-run-id', apiResponse.data.id);
 }
 
 /**
