@@ -6,7 +6,7 @@ const {GITHUB_REPOSITORY} = process.env;
 /**
  * @returns {number|undefined}
  */
-function guessPrNumber() {
+function guessTriggeringPrNumber() {
     if ('pull_request' === github.context.eventName) {
         return github.context.payload.number;
     } else if ('workflow_run' === github.context.eventName  && 'pull_request' === github.context.payload.workflow_run.event) {
@@ -19,7 +19,7 @@ function guessPrNumber() {
 /**
  * @returns {string|undefined}
  */
-function guessCommitSha() {
+function guessTriggeringCommitSha() {
     if ('pull_request' === github.context.eventName) {
         return github.context.payload.pull_request.head.sha;
     }
@@ -47,7 +47,7 @@ function guessTriggeringWorkflowName() {
 /**
  * @returns {string}
  */
-function guessRunId() {
+function guessTriggeringRunId() {
     if ('workflow_run' === github.context.eventName) {
         return github.context.payload.workflow.id.toString();
     }
@@ -81,20 +81,20 @@ async function run() {
         'Build API params',
         async () => {
             const repoInfo = github.context.repo;
-            const triggeringWorkflowRunId = guessRunId();
+            const triggeringWorkflowRunId = guessTriggeringRunId();
             //core.info('TMP DEBUG context=' + JSON.stringify(github.context));
             //const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
             //core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow.map(v => {v.steps = '-_-'; return v;})));
             //const jobsForTriggeringWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, triggeringWorkflowRunId);
             //core.info('TMP DEBUG jobsForTriggeringWorkflow=' + JSON.stringify(jobsForTriggeringWorkflow.map(v => {v.steps = '-_-'; return v;})));
             //core.info('TMP DEBUG job name=' + process.env.GITHUB_JOB);
-            const commitSha = guessCommitSha();
+            const commitSha = guessTriggeringCommitSha();
             const startedAt = (new Date()).toISOString();
-            const prNumber = guessPrNumber();
-            const originalWorkflowName = guessTriggeringWorkflowName();
+            const prNumber = guessTriggeringPrNumber();
+            //const originalWorkflowName = guessTriggeringWorkflowName();
             const outputTitle = '🔔 ' + github.context.workflow; // Current workflow name !
-            const originalWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + triggeringWorkflowRunId + (undefined !== prNumber ? '?pr=' + prNumber : '');
-            const outputSummary = '🪢 Triggered by <a href="' + originalWorkflowUrl + '" target="blank">**' + originalWorkflowName + '** workflow</a>';
+            const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + (undefined !== prNumber ? '?pr=' + prNumber : '');
+            const outputSummary = '🪢 Triggered by <a href="' + currentWorkflowUrl + '" target="blank">**' + github.context.workflow + '** workflow</a>';
 
             return {
                 name: checkName,
