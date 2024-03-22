@@ -40,6 +40,5 @@ outputs:
 
 runs:
   using: 'node20'
-  pre: 'test-pre.js'
   main: 'dist/index.js'
   post: 'dist/index.js'

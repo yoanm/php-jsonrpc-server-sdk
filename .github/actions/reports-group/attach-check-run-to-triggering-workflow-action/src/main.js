@@ -23,12 +23,12 @@ async function run() {
                 ? github.context.payload.pull_requests[0]?.number
                 : undefined
             ;
-            const detailsUrl = GITHUB_SERVER_URL + '/' + GITHUB_REPOSITORY + '/actions/runs/' + GITHUB_JOB + '/job/' + GITHUB_JOB + (undefined !== prNumber ? '?pr=' + prNumber : '');
+            const detailsUrl = GITHUB_SERVER_URL + '/' + GITHUB_REPOSITORY + '/actions/runs/' + GITHUB_RUN_ID + '/job/' + GITHUB_JOB + (undefined !== prNumber ? '?pr=' + prNumber : '');
             const outputTitle = 'My title';
             const outputSummary = 'My summary';
             const outputText = 'My text';
 
-            const res = {
+            return {
                 name: checkName,
                 head_sha: commitSha,
                 details_url: detailsUrl,
@@ -47,8 +47,6 @@ async function run() {
                 owner: repoOwner,
                 repo: repoName
             };
-
-            return res;
         }
     );
     core.debug('API params=' + JSON.stringify(requestParams));
