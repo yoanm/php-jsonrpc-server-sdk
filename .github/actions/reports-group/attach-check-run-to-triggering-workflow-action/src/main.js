@@ -1,7 +1,7 @@
 const github = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core');
 
-const {GITHUB_REPOSITORY} = process.env;
+const {GITHUB_REPOSITORY, RUNNER_NAME} = process.env;
 
 /**
  * @returns {number|undefined}
@@ -10,7 +10,7 @@ function guessTriggeringPrNumber() {
     if ('pull_request' === github.context.eventName) {
         return github.context.payload.number;
     } else if ('workflow_run' === github.context.eventName  && 'pull_request' === github.context.payload.workflow_run.event) {
-        return github.context.payload.pull_requests[0]?.number;
+        return github.context.payload.workflow_run.pull_requests[0]?.number;
     }
 
     return undefined;
@@ -55,6 +55,22 @@ function guessTriggeringRunId() {
     return github.context.runId.toString();
 }
 
+async function guessCurrentJob(octokit, owner, repo, runId) {
+    const jobList = await getWorkflowJobsForRunId(octokit, owner, repo, runId);
+    core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobList));
+    const candidateList = [];
+    for (const job of jobList) {
+        if (RUNNER_NAME === job.runner_name) {
+            candidateList.push(job);
+        }
+    }
+    if (candidateList.length > 1) {
+        core.warning('Multiple jobs rely on runners with the same name, first job one will be used !');
+    }
+
+    return candidateList.shift();
+}
+
 async function getWorkflowJobsForRunId(octokit, owner, repo, runId) {
     return octokit.paginate(
         'GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs',
@@ -83,8 +99,8 @@ async function run() {
             const repoInfo = github.context.repo;
             const triggeringWorkflowRunId = guessTriggeringRunId();
             core.info('TMP DEBUG context=' + JSON.stringify(github.context));
-            const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
-            core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow));
+            //const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
+            //core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow));
             //const jobsForTriggeringWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, triggeringWorkflowRunId);
             //core.info('TMP DEBUG jobsForTriggeringWorkflow=' + JSON.stringify(jobsForTriggeringWorkflow));
             core.info('TMP DEBUG GITHUB_ACTION=' + process.env.GITHUB_ACTION);
@@ -97,6 +113,8 @@ async function run() {
             core.info('TMP DEBUG RUNNER_ARCH=' + process.env.RUNNER_ARCH);
             core.info('TMP DEBUG RUNNER_NAME=' + process.env.RUNNER_NAME);
             core.info('TMP DEBUG RUNNER_OS=' + process.env.RUNNER_OS);
+            const currentJob = await guessCurrentJob(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
+            core.info('TMP DEBUG CURRENT JOB=' + JSON.stringify(currentJob));
             const commitSha = guessTriggeringCommitSha();
             const startedAt = (new Date()).toISOString();
             const prNumber = guessTriggeringPrNumber();
