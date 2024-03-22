@@ -82,12 +82,21 @@ async function run() {
         async () => {
             const repoInfo = github.context.repo;
             const triggeringWorkflowRunId = guessTriggeringRunId();
-            //core.info('TMP DEBUG context=' + JSON.stringify(github.context));
-            //const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
-            //core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow.map(v => {v.steps = '-_-'; return v;})));
+            core.info('TMP DEBUG context=' + JSON.stringify(github.context));
+            const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
+            core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow));
             //const jobsForTriggeringWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, triggeringWorkflowRunId);
-            //core.info('TMP DEBUG jobsForTriggeringWorkflow=' + JSON.stringify(jobsForTriggeringWorkflow.map(v => {v.steps = '-_-'; return v;})));
-            //core.info('TMP DEBUG job name=' + process.env.GITHUB_JOB);
+            //core.info('TMP DEBUG jobsForTriggeringWorkflow=' + JSON.stringify(jobsForTriggeringWorkflow));
+            core.info('TMP DEBUG GITHUB_ACTION=' + process.env.GITHUB_ACTION);
+            core.info('TMP DEBUG GITHUB_ACTION_PATH=' + process.env.GITHUB_ACTION_PATH);
+            core.info('TMP DEBUG GITHUB_ACTION_REPOSITORY=' + process.env.GITHUB_ACTION_REPOSITORY);
+            core.info('TMP DEBUG GITHUB_JOB=' + process.env.GITHUB_JOB);
+            core.info('TMP DEBUG GITHUB_RUN_ATTEMPT=' + process.env.GITHUB_RUN_ATTEMPT);
+            core.info('TMP DEBUG GITHUB_WORKFLOW=' + process.env.GITHUB_WORKFLOW);
+            core.info('TMP DEBUG GITHUB_WORKFLOW_REF=' + process.env.GITHUB_WORKFLOW_REF);
+            core.info('TMP DEBUG RUNNER_ARCH=' + process.env.RUNNER_ARCH);
+            core.info('TMP DEBUG RUNNER_NAME=' + process.env.RUNNER_NAME);
+            core.info('TMP DEBUG RUNNER_OS=' + process.env.RUNNER_OS);
             const commitSha = guessTriggeringCommitSha();
             const startedAt = (new Date()).toISOString();
             const prNumber = guessTriggeringPrNumber();
