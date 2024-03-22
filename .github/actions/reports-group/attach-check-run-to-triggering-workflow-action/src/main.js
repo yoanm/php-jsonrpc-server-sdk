@@ -56,23 +56,27 @@ function guessTriggeringRunId() {
 }
 
 /**
- * @param octokit
- * @param owner
- * @param repo
- * @param runId
  * @returns {Promise<Record<string, any>|undefined>}
  */
-async function guessCurrentJob(octokit, owner, repo, runId) {
+async function retrieveCurrentJob(octokit, owner, repo, runId) {
     const jobList = await getWorkflowJobsForRunId(octokit, owner, repo, runId);
     core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobList));
     const candidateList = [];
     for (const job of jobList) {
-        if (RUNNER_NAME === job.runner_name) {
+        if (RUNNER_NAME === job.runner_name && 'in_progress' === job.status) {
             candidateList.push(job);
         }
     }
+    if (candidateList.length === 0) {
+        core.info('Unable to retrieve the current job !');
+        return undefined;
+    }
     if (candidateList.length > 1) {
-        core.warning('Multiple jobs rely on runners with the same name, first job one will be used !');
+        core.warning(
+            'Multiple running jobs rely on runners with the same name, unable to retrieve the current job !'
+            + '\nCandidates: ' + Object.entries(candidateList).map(([k, v]) => v.name + '(' + k + ')').join(', ')
+        );
+        return undefined;
     }
 
     return candidateList.shift();
@@ -120,7 +124,7 @@ async function run() {
             core.info('TMP DEBUG RUNNER_ARCH=' + process.env.RUNNER_ARCH);
             core.info('TMP DEBUG RUNNER_NAME=' + process.env.RUNNER_NAME);
             core.info('TMP DEBUG RUNNER_OS=' + process.env.RUNNER_OS);
-            const currentJob = await guessCurrentJob(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
+            const currentJob = await retrieveCurrentJob(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
             core.info('TMP DEBUG CURRENT JOB=' + JSON.stringify(currentJob));
             const commitSha = guessTriggeringCommitSha();
             const startedAt = (new Date()).toISOString();
@@ -129,15 +133,13 @@ async function run() {
             const currentWorkflowName = github.context.workflow;
             const outputTitle = '🔔 ' + currentWorkflowName;
             const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + (undefined !== prNumber ? '?pr=' + prNumber : '');
-            const outputSummary = '🪢 Check added by <a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>'
-                + (currentJob ? ' (<a href="' + currentJob.html_url + '" target="blank">**' + currentJob.name + '**</a>)' : '')
+            const outputSummary = '🪢 Check added by '
+                + (currentJob ? '<a href="' + currentJob.html_url + '" target="blank">**' + currentJob.name + '**</a>' : '')
+                + (currentJob ? ' (' : '') + '<a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>' + (currentJob ? ')' : '')
             ;
-            if (!checkName && !currentJob) {
-                core.setFailed('Unable to guess the current job name, you must specify the check name !');
-            }
 
             return {
-                name: !checkName ? currentJob.name : checkName,
+                name: checkName ? checkName : (currentJob?.name ?? currentWorkflowName + ' Check run'),
                 head_sha: commitSha,
                 //details_url: detailsUrl,
                 external_id: triggeringWorkflowRunId?.toString(),

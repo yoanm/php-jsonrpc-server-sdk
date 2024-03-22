@@ -39,6 +39,7 @@ jobs:
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
+          name: "My custom check"
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
 
@@ -124,7 +125,6 @@ jobs:
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
-          name: "Codecov / ${{ matrix.artifact }} - ${{ matrix.path }}"
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
 
