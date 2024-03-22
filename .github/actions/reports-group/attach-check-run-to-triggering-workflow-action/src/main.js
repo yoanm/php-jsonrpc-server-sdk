@@ -1,16 +1,16 @@
 const github = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core');
 
-const {GITHUB_REPOSITORY} = process.env;
+const {GITHUB_REPOSITORY, RUNNER_NAME} = process.env;
 
 /**
  * @returns {number|undefined}
  */
-function guessPrNumber() {
+function guessTriggeringPrNumber() {
     if ('pull_request' === github.context.eventName) {
         return github.context.payload.number;
     } else if ('workflow_run' === github.context.eventName  && 'pull_request' === github.context.payload.workflow_run.event) {
-        return github.context.payload.pull_requests[0]?.number;
+        return github.context.payload.workflow_run.pull_requests[0]?.number;
     }
 
     return undefined;
@@ -19,7 +19,7 @@ function guessPrNumber() {
 /**
  * @returns {string|undefined}
  */
-function guessCommitSha() {
+function guessTriggeringCommitSha() {
     if ('pull_request' === github.context.eventName) {
         return github.context.payload.pull_request.head.sha;
     }
@@ -47,12 +47,39 @@ function guessTriggeringWorkflowName() {
 /**
  * @returns {string}
  */
-function guessRunId() {
+function guessTriggeringRunId() {
     if ('workflow_run' === github.context.eventName) {
         return github.context.payload.workflow.id.toString();
     }
 
     return github.context.runId.toString();
+}
+
+/**
+ * @returns {Promise<Record<string, any>|undefined>}
+ */
+async function retrieveCurrentJob(octokit, owner, repo, runId) {
+    const jobList = await getWorkflowJobsForRunId(octokit, owner, repo, runId);
+    core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobList));
+    const candidateList = [];
+    for (const job of jobList) {
+        if (RUNNER_NAME === job.runner_name && 'in_progress' === job.status) {
+            candidateList.push(job);
+        }
+    }
+    if (candidateList.length === 0) {
+        core.info('Unable to retrieve the current job !');
+        return undefined;
+    }
+    if (candidateList.length > 1) {
+        core.warning(
+            'Multiple running jobs rely on runners with the same name, unable to retrieve the current job !'
+            + '\nCandidates: ' + Object.entries(candidateList).map(([k, v]) => v.name + '(' + k + ')').join(', ')
+        );
+        return undefined;
+    }
+
+    return candidateList.shift();
 }
 
 async function getWorkflowJobsForRunId(octokit, owner, repo, runId) {
@@ -70,9 +97,9 @@ async function getWorkflowJobsForRunId(octokit, owner, repo, runId) {
 
 async function run() {
     /** INPUTS **/
-    const checkName = core.getInput('name', {required: true});
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
+    const checkName = core.getInput('name');
 
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
     const octokit = github.getOctokit(githubToken);
@@ -81,10 +108,10 @@ async function run() {
         'Build API params',
         async () => {
             const repoInfo = github.context.repo;
-            const triggeringWorkflowRunId = guessRunId();
+            const triggeringWorkflowRunId = guessTriggeringRunId();
             core.info('TMP DEBUG context=' + JSON.stringify(github.context));
-            const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
-            core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow));
+            //const jobsForCurrentWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
+            //core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobsForCurrentWorkflow));
             //const jobsForTriggeringWorkflow = await getWorkflowJobsForRunId(octokit, repoInfo.owner, repoInfo.repo, triggeringWorkflowRunId);
             //core.info('TMP DEBUG jobsForTriggeringWorkflow=' + JSON.stringify(jobsForTriggeringWorkflow));
             core.info('TMP DEBUG GITHUB_ACTION=' + process.env.GITHUB_ACTION);
@@ -97,16 +124,22 @@ async function run() {
             core.info('TMP DEBUG RUNNER_ARCH=' + process.env.RUNNER_ARCH);
             core.info('TMP DEBUG RUNNER_NAME=' + process.env.RUNNER_NAME);
             core.info('TMP DEBUG RUNNER_OS=' + process.env.RUNNER_OS);
-            const commitSha = guessCommitSha();
+            const currentJob = await retrieveCurrentJob(octokit, repoInfo.owner, repoInfo.repo, github.context.runId);
+            core.info('TMP DEBUG CURRENT JOB=' + JSON.stringify(currentJob));
+            const commitSha = guessTriggeringCommitSha();
             const startedAt = (new Date()).toISOString();
-            const prNumber = guessPrNumber();
-            const originalWorkflowName = guessTriggeringWorkflowName();
-            const outputTitle = '🔔 ' + github.context.workflow; // Current workflow name !
-            const originalWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + triggeringWorkflowRunId + (undefined !== prNumber ? '?pr=' + prNumber : '');
-            const outputSummary = '🪢 Triggered by <a href="' + originalWorkflowUrl + '" target="blank">**' + originalWorkflowName + '** workflow</a>';
+            const prNumber = guessTriggeringPrNumber();
+            //const originalWorkflowName = guessTriggeringWorkflowName();
+            const currentWorkflowName = github.context.workflow;
+            const outputTitle = '🔔 ' + currentWorkflowName;
+            const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + (undefined !== prNumber ? '?pr=' + prNumber : '');
+            const outputSummary = '🪢 Check added by '
+                + (currentJob ? '<a href="' + currentJob.html_url + '" target="blank">**' + currentJob.name + '**</a>' : '')
+                + (currentJob ? ' (' : '') + '<a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>' + (currentJob ? ')' : '')
+            ;
 
             return {
-                name: checkName,
+                name: checkName ? checkName : (currentJob?.name ?? currentWorkflowName + ' Check run'),
                 head_sha: commitSha,
                 //details_url: detailsUrl,
                 external_id: triggeringWorkflowRunId?.toString(),
