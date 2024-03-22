@@ -92,9 +92,10 @@ async function run() {
             const startedAt = (new Date()).toISOString();
             const prNumber = guessTriggeringPrNumber();
             //const originalWorkflowName = guessTriggeringWorkflowName();
-            const outputTitle = '🔔 ' + github.context.workflow; // Current workflow name !
+            const currentWorkflowName = github.context.workflow;
+            const outputTitle = '🔔 ' + currentWorkflowName;
             const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + (undefined !== prNumber ? '?pr=' + prNumber : '');
-            const outputSummary = '🪢 Triggered by <a href="' + currentWorkflowUrl + '" target="blank">**' + github.context.workflow + '** workflow</a>';
+            const outputSummary = '🪢 Check added by <a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>';
 
             return {
                 name: checkName,
