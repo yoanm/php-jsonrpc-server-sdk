@@ -83,20 +83,14 @@ runs:
         script: |
           core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
 
-    - name: TMP - create an empty workspace  # Repository used for custom action might interfere with Codacy, so to check
-      shell: bash
-      run: mkdir empty-codacy-workspace
-
     - name: Upload to codacy
       id: upload
-      uses: codacy/codacy-coverage-reporter-action@v1
-      env:
-        GITHUB_WORKSPACE: ./empty-codacy-workspace # TMP
-        GITHUB_SHA: ${{ inputs.override-commit }} # Lonely way to override the commit without having to deal with CLI uploader directly :/
-        GITHUB_EVENT_NAME: push # Force the event to "push" to be sure uploader will leverage GITHUB_SHA and not something else (mostly in case event is `pull_request`)
+      # Temporarily rely on internal fork, waiting for updates to be merges on original action
+      uses: yoanm/codacy-coverage-reporter-action@43084e173e324c195f9d6cecf5e57621f7e1cfca
       with:
         coverage-reports: ${{ steps.build-uploader-options.outputs.coverage-reports }}
         project-token: ${{ inputs.project-token }}
+        force-commit-sha: ${{ inputs.override-commit }}
 
     - name: Build action outputs
       id: build-outputs
