@@ -3,9 +3,32 @@ const core = require('@actions/core');
 
 const {GITHUB_REPOSITORY, GITHUB_SERVER_URL, GITHUB_RUN_ID, GITHUB_JOB} = process.env;
 
+function guessPrNumber() {
+    if ('workflow_run' === github.context.eventName) {
+        return 'pull_request' === github.context.payload.event && github.context.payload.pull_requests[0]?.number
+            ? github.context.payload.pull_requests[0]?.number
+            : undefined
+        ;
+    }
+
+    return  'pull_request' === github.context.eventName ? github.context.payload.number : undefined;
+}
+
+function guessCommitSha() {
+    // "${{ ('workflow_run' == github.event_name && ('pull_request' == github.event.workflow_run.event || 'push' == github.event.workflow_run.event) && github.event.workflow_run.head_sha) || ('pull_request' == github.event_name && github.event.pull_request.head.sha) || ('push' == github.event_name && github.sha) || null }}"
+    if ('workflow_run' === github.context.eventName) {
+        return 'pull_request' === github.context.payload.event || 'push' === github.context.payload.event
+            ? github.context.payload.head_sha
+            : undefined
+        ;
+    }
+
+    return  'pull_request' === github.context.eventName ? github.context.payload.number : undefined;
+}
+
 async function run() {
+    core.info('TMP DEBUG ' + JSON.stringify(github.context));throw 'plop';
     /** INPUTS **/
-    const commitSha = core.getInput('commit-sha', {required: true});
     const checkName = core.getInput('name', {required: true});
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
@@ -16,13 +39,10 @@ async function run() {
         'Build API params',
         async () => {
             const [repoOwner, repoName] = GITHUB_REPOSITORY.split('/');
-            const externalId = GITHUB_RUN_ID;
+            const externalId = 'workflow_run' === github.context.eventName ? github.context.payload.id : GITHUB_RUN_ID;
+            const commitSha = guessCommitSha();
             const startedAt = (new Date()).toISOString();
-            //${{ ( 'workflow_run' == github.event_name && 'pull_request' == github.event.workflow_run.event && github.event.workflow_run.pull_requests[0] && github.event.workflow_run.pull_requests[0].number) || ('pull_request' == github.event_name && github.event.number) || null }}
-            const prNumber = 'workflow_run' === github.context.eventName && 'pull_request' === github.context.payload.event && github.context.payload.pull_requests[0]?.number
-                ? github.context.payload.pull_requests[0]?.number
-                : undefined
-            ;
+            const prNumber = guessPrNumber();
             const detailsUrl = GITHUB_SERVER_URL + '/' + GITHUB_REPOSITORY + '/actions/runs/' + GITHUB_RUN_ID + '/job/' + GITHUB_JOB + (undefined !== prNumber ? '?pr=' + prNumber : '');
             const outputTitle = 'My title';
             const outputSummary = 'My summary';

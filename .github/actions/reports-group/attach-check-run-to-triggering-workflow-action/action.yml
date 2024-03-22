@@ -6,9 +6,9 @@ inputs:
   name:
     description: Status check name
     required: true
-  commit-sha:
-    description: Commit SHA to attach to the check
-    required: true
+#  commit-sha:
+#    description: Commit SHA to attach to the check
+#    required: true
   github-token:
     description: Github Authentication token used to create the check through GitHub API
     required: true
