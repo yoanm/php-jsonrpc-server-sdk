@@ -36,6 +36,9 @@ jobs:
     outputs:
       groups: ${{ steps.upload.outputs.groups }}
       reports: ${{ steps.upload.outputs.reports }}
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
     steps:
       # @TODO move actions to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4

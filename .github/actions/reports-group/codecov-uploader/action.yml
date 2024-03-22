@@ -91,7 +91,7 @@ runs:
               })
           );
 
-    # @TODO move reports-group/load-metadata action to a dedicated repo and remove the checkout
+    # @TODO move actions to a dedicated repo and remove the checkout
     - uses: actions/checkout@v4
       with:
         path: custom-action-repo

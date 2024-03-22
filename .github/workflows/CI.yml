@@ -242,6 +242,9 @@ jobs:
     uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
@@ -251,6 +254,9 @@ jobs:
     uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
     secrets:
       TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

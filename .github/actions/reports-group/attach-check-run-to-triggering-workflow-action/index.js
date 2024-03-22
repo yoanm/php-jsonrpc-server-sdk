@@ -31,12 +31,12 @@ async function run() {
                 conclusion: undefinedIfEmpty(checkConclusion),
                 started_at: undefinedIfEmpty(startedAt),
                 completed_at: undefinedIfEmpty(completedAt),
-                owner: repoOwner,
-                repo: repoName
             };
             if (!isEmpty(outputTitle) || !isEmpty(outputSummary)) {
                 res.output = {title: undefinedIfEmpty(outputTitle), summary: undefinedIfEmpty(outputSummary)};
             }
+
+            return res;
         }
     );
     core.debug('API params=' + JSON.stringify(requestParams));
@@ -44,7 +44,12 @@ async function run() {
     const apiResponse = await core.group('Call API', async () => {
         const octokit = github.getOctokit(githubToken);
 
-        return octokit.request('POST /repos/{owner}/{repo}/check-runs', requestParams);
+        // @TODO Move back to `octokit.rest.checks.create()`
+        const res = await octokit.request('POST /repos/' + repoOwner+ '/' + repoName + '/check-runs', requestParams);
+
+        core.info('TMP DEBUG0 ' + JSON.stringify(res));
+
+        return res;
     });
     core.info('TMP DEBUG' + JSON.stringify(apiResponse));
 
