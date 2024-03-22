@@ -27,7 +27,7 @@ on:
 # @TODO Investigate: `workflow_run` don't create a status check on the related PR !
 # Would it be handy/secure/not to complex to create a reports-group/check-run-from-workflow-run which:
 # - Would need to be added as first workflow wtep in order to create a `in-progress` check-run with all info fetched from the triggering workflow
-#   - Add a `fail-if-caller-failed` option which would create `failed` check-run and exit with an error ?
+#   - Add a `fails-on-caller-failure` option which would create `failed` check-run and exit with an error ? (a bit more handy than end-user having to check it)
 # - Would update the check-run during post-process with the current status of the triggered workflow
 jobs:
   upload:
@@ -37,10 +37,17 @@ jobs:
       groups: ${{ steps.upload.outputs.groups }}
       reports: ${{ steps.upload.outputs.reports }}
     steps:
-      # @TODO move reports-group/codacy-uploader action to a dedicated repo and remove the checkout
+      # @TODO move actions to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4
         with:
           path: custom-action-repo
+
+      - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+        with:
+          name: "${{ github.workflow }} (${{ github.event.workflow.name}}) / Codacy / Upload all reports"
+          commit-sha: "${{ ('workflow_run' == github.event_name && ('pull_request' == github.event.workflow_run.event || 'push' == github.event.workflow_run.event) && github.event.workflow_run.head_sha) || ('pull_request' == github.event_name && github.event.pull_request.head.sha) || ('push' == github.event_name && github.sha) || null }}"
+          github-token: ${{ github.token }}
+          status: queued
 
       - name: Download artifacts
         uses: actions/download-artifact@v4

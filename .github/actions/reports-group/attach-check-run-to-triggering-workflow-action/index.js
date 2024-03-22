@@ -5,8 +5,9 @@ async function run() {
     const {GITHUB_REPOSITORY: repository} = process.env;
     const [repoOwner, repoName] = repository.split('/');
     /** INPUTS **/
+    const commitSha = core.getInput('commit-sha', {required: true});
     const checkName = core.getInput('name', {required: true});
-    const headSha = core.getInput('head-sha', {required: true});
+    const githubToken = core.getInput('github-token', {required: true});
 
     // Following inputs are not required and may not have any value attached !
     const checkStatus = core.getInput('status');
@@ -23,7 +24,7 @@ async function run() {
         async () => {
             const res = {
                 name: checkName,
-                head_sha: headSha,
+                head_sha: commitSha,
                 details_url: undefinedIfEmpty(detailsUrl),
                 external_id: undefinedIfEmpty(externalId),
                 status: undefinedIfEmpty(checkStatus),
@@ -41,7 +42,7 @@ async function run() {
     );
 
     const { data: checkRun } = await core.group('Call API', async () => {
-        const octokit = github.getOctokit(core.getInput('github-token', {required: true}));
+        const octokit = github.getOctokit(githubToken);
 
         return octokit.rest.checks.create(requestParams);
     });
