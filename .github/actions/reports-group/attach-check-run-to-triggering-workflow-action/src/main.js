@@ -55,6 +55,13 @@ function guessTriggeringRunId() {
     return github.context.runId.toString();
 }
 
+/**
+ * @param octokit
+ * @param owner
+ * @param repo
+ * @param runId
+ * @returns {Promise<Record<string, any>|undefined>}
+ */
 async function guessCurrentJob(octokit, owner, repo, runId) {
     const jobList = await getWorkflowJobsForRunId(octokit, owner, repo, runId);
     core.info('TMP DEBUG jobsForCurrentWorkflow=' + JSON.stringify(jobList));
@@ -86,9 +93,9 @@ async function getWorkflowJobsForRunId(octokit, owner, repo, runId) {
 
 async function run() {
     /** INPUTS **/
-    const checkName = core.getInput('name', {required: true});
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
+    const checkName = core.getInput('name');
 
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
     const octokit = github.getOctokit(githubToken);
@@ -122,10 +129,15 @@ async function run() {
             const currentWorkflowName = github.context.workflow;
             const outputTitle = '🔔 ' + currentWorkflowName;
             const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + (undefined !== prNumber ? '?pr=' + prNumber : '');
-            const outputSummary = '🪢 Check added by <a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>';
+            const outputSummary = '🪢 Check added by <a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>'
+                + (currentJob ? ' (<a href="' + currentJob.html_url + '" target="blank">**' + currentJob.name + '**</a>)' : '')
+            ;
+            if (!checkName && !currentJob) {
+                core.setFailed('Unable to guess the current job name, you must specify the check name !');
+            }
 
             return {
-                name: checkName,
+                name: !checkName ? currentJob.name : checkName,
                 head_sha: commitSha,
                 //details_url: detailsUrl,
                 external_id: triggeringWorkflowRunId?.toString(),

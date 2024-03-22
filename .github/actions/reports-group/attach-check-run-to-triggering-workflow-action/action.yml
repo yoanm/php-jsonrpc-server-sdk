@@ -1,15 +1,15 @@
 name: TODO
 description: TODO
 inputs:
-  name:
-    description: Status check name
-    required: true
   github-token:
     description: Github Authentication token used to create the check through GitHub API
     required: true
   job-status:
     description: Job check status
     required: true
+  name:
+    description: Status check name. Default to current job name
+    required: false
 
 outputs:
   check-run-id:

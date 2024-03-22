@@ -39,7 +39,6 @@ jobs:
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
-          name: "Codecov / 📮 🗃️ Prepare uploads"
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
 

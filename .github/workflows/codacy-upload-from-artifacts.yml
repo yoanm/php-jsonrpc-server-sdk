@@ -47,7 +47,6 @@ jobs:
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
-          name: "Codacy / Upload all reports"
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
 
