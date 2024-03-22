@@ -1,0 +1,21 @@
+name: TODO
+description: TODO
+inputs:
+  name:
+    description: Status check name
+    required: true
+  github-token:
+    description: Github Authentication token used to create the check through GitHub API
+    required: true
+  job-status:
+    description: Job check status
+    required: true
+
+outputs:
+  check-run-id:
+    description: Related check run id
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+  post: 'dist/index.js'
