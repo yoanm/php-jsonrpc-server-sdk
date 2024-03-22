@@ -1,0 +1,46 @@
+name: create
+description: |
+  Create a reports group directory under provided `path`, with a metada file and a copy of all `files`
+  Reports are expected to share the same format !
+inputs:
+  head-sha:
+    description: TODO
+    required: true
+  github-token:
+    description: TODO
+    required: true
+  name:
+    description: Status check name
+    required: false
+  status:
+    description: Status check status
+    required: false
+  conclusion:
+    description: Status check conclusion
+    required: false
+  external-id:
+    description: Status check external ID
+    required: false
+  started-at:
+    description: Status check "started at"
+    required: false
+  completed-at:
+    description: Status check "completed at"
+    required: false
+  details-url:
+    description: Status check details url
+    required: false
+  output:
+    description: Status check output
+    required: false
+  output-summary:
+    description: Status check output summary
+    required: false
+
+outputs:
+  check-run-id:
+    description: Related check run id
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

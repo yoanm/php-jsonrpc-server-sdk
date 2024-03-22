@@ -1,0 +1,69 @@
+const github = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
+const core = require('@actions/core');
+
+async function run() {
+    const {GITHUB_REPOSITORY: repository} = process.env;
+    const [repoOwner, repoName] = repository.split('/');
+    /** INPUTS **/
+    const checkName = core.getInput('name', {required: true});
+    const headSha = core.getInput('head-sha', {required: true});
+
+    // Following inputs are not required and may not have any value attached !
+    const checkStatus = core.getInput('status');
+    const checkConclusion = core.getInput('conclusion');
+    const externalId = core.getInput('external-id');
+    const startedAt = core.getInput('started-at');
+    const completedAt = core.getInput('completed-at');
+    const detailsUrl = core.getInput('details-url');
+    const outputTitle = core.getInput('output');
+    const outputSummary = core.getInput('output-summary');
+
+    const requestParams = await core.group(
+        'Build API params',
+        async () => {
+            const res = {
+                name: checkName,
+                head_sha: headSha,
+                details_url: undefinedIfEmpty(detailsUrl),
+                external_id: undefinedIfEmpty(externalId),
+                status: undefinedIfEmpty(checkStatus),
+                conclusion: undefinedIfEmpty(checkConclusion),
+                started_at: undefinedIfEmpty(startedAt),
+                completed_at: undefinedIfEmpty(completedAt),
+                owner: repoOwner,
+                repo: repoName
+            };
+            if (!isEmpty(outputTitle) || !isEmpty(outputSummary)) {
+                res.output = {title: undefinedIfEmpty(outputTitle), summary: undefinedIfEmpty(outputSummary)};
+            }
+            core.debug('API params=' + JSON.stringify(res));
+        }
+    );
+
+    const { data: checkRun } = await core.group('Call API', async () => {
+        const octokit = github.getOctokit(core.getInput('github-token', {required: true}));
+
+        return octokit.rest.checks.create(requestParams);
+    });
+
+    core.setOutput('check-run-id', checkRun.id);
+}
+
+/**
+ * @param {string} val
+ *
+ * @returns {string|undefined}
+ */
+function undefinedIfEmpty(val) {
+    return !isEmpty(val) ? val : undefined
+}
+/**
+ * @param {string} val
+ *
+ * @returns {boolean}
+ */
+function isEmpty(val) {
+    return val.trim().length === 0;
+}
+
+run();
