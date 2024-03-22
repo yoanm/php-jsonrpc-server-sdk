@@ -50,7 +50,7 @@ jobs:
           name: "${{ github.workflow }} (${{ github.event.workflow.name}}) / Codacy / Upload all reports"
           commit-sha: "${{ ('workflow_run' == github.event_name && ('pull_request' == github.event.workflow_run.event || 'push' == github.event.workflow_run.event) && github.event.workflow_run.head_sha) || ('pull_request' == github.event_name && github.event.pull_request.head.sha) || ('push' == github.event_name && github.sha) || null }}"
           github-token: ${{ github.token }}
-          status: queued
+          job-status: ${{ job.status }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4

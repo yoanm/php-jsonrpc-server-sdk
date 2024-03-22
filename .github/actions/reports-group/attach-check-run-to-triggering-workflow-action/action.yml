@@ -12,12 +12,9 @@ inputs:
   github-token:
     description: Github Authentication token used to create the check through GitHub API
     required: true
-  status:
-    description: Status check status
-    required: false
-  conclusion:
-    description: Status check conclusion
-    required: false
+  job-status:
+    description: Job check status
+    required: true
   external-id:
     description: Status check external ID
     required: false
