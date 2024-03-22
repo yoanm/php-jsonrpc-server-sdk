@@ -8,13 +8,9 @@ const {GITHUB_REPOSITORY} = process.env;
  */
 function guessPrNumber() {
     if ('pull_request' === github.context.eventName) {
-        return github.context.payload.number
-    }
-    if ('workflow_run' === github.context.eventName) {
-        return 'pull_request' === github.context.payload.workflow_run.event
-            ? github.context.payload.pull_requests[0]?.number
-            : undefined
-        ;
+        return github.context.payload.number;
+    } else if ('workflow_run' === github.context.eventName  && 'pull_request' === github.context.payload.workflow_run.event) {
+        return github.context.payload.pull_requests[0]?.number;
     }
 
     return undefined;
@@ -53,7 +49,7 @@ function guessTriggeringWorkflowName() {
  */
 function guessRunId() {
     if ('workflow_run' === github.context.eventName) {
-        return github.context.payload.id.toString();
+        return github.context.payload.workflow.id.toString();
     }
 
     return github.context.runId.toString();
