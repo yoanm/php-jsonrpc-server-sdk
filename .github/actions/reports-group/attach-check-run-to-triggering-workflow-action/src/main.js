@@ -1,44 +1,52 @@
 const github = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core');
 
-const {GITHUB_REPOSITORY} = process.env;
+const {GITHUB_REPOSITORY, GITHUB_SERVER_URL, GITHUB_RUN_ID, GITHUB_JOB} = process.env;
 
 async function run() {
-    const [repoOwner, repoName] = GITHUB_REPOSITORY.split('/');
     /** INPUTS **/
     const commitSha = core.getInput('commit-sha', {required: true});
     const checkName = core.getInput('name', {required: true});
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
 
-    // Following inputs are not required and may not have any value attached !
-    const externalId = core.getInput('external-id');
-    const startedAt = core.getInput('started-at');
-    const completedAt = core.getInput('completed-at');
-    const detailsUrl = core.getInput('details-url');
-    const outputTitle = core.getInput('output');
-    const outputSummary = core.getInput('output-summary');
-
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
 
     const requestParams = await core.group(
         'Build API params',
         async () => {
+            const [repoOwner, repoName] = GITHUB_REPOSITORY.split('/');
+            const externalId = GITHUB_RUN_ID;
+            const startedAt = (new Date()).toISOString();
+            //${{ ( 'workflow_run' == github.event_name && 'pull_request' == github.event.workflow_run.event && github.event.workflow_run.pull_requests[0] && github.event.workflow_run.pull_requests[0].number) || ('pull_request' == github.event_name && github.event.number) || null }}
+            const prNumber = 'workflow_run' === github.context.eventName && 'pull_request' === github.context.payload.event && github.context.payload.pull_requests[0]?.number
+                ? github.context.payload.pull_requests[0]?.number
+                : undefined
+            ;
+            const detailsUrl = GITHUB_SERVER_URL + '/' + GITHUB_REPOSITORY + '/actions/runs/' + GITHUB_JOB + '/job/' + GITHUB_JOB + (undefined !== prNumber ? '?pr=' + prNumber : '');
+            const outputTitle = 'My title';
+            const outputSummary = 'My summary';
+            const outputText = 'My text';
+
             const res = {
                 name: checkName,
                 head_sha: commitSha,
-                details_url: undefinedIfEmpty(detailsUrl),
-                external_id: undefinedIfEmpty(externalId),
+                details_url: detailsUrl,
+                external_id: externalId,
                 status: isSuccessfulJobAsOfNow ? 'in_progress' : 'completed',
+                output: {
+                    title: outputTitle,
+                    summary: outputSummary,
+                    text: outputText,
+                },
+                // Conclusion
                 conclusion: isSuccessfulJobAsOfNow ? undefined : jobStatus,
-                started_at: undefinedIfEmpty(startedAt),
-                completed_at: undefinedIfEmpty(completedAt),
+                started_at: startedAt,
+                completed_at: isSuccessfulJobAsOfNow ? undefined : startedAt,
+                // Url path parameters
                 owner: repoOwner,
                 repo: repoName
             };
-            if (!isEmpty(outputTitle) || !isEmpty(outputSummary)) {
-                res.output = {title: undefinedIfEmpty(outputTitle), summary: undefinedIfEmpty(outputSummary)};
-            }
 
             return res;
         }

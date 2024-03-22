@@ -15,24 +15,24 @@ inputs:
   job-status:
     description: Job check status
     required: true
-  external-id:
-    description: Status check external ID
-    required: false
-  started-at:
-    description: Status check "started at"
-    required: false
-  completed-at:
-    description: Status check "completed at"
-    required: false
-  details-url:
-    description: Status check details url
-    required: false
-  output:
-    description: Status check output
-    required: false
-  output-summary:
-    description: Status check output summary
-    required: false
+#  external-id:
+#    description: Status check external ID
+#    required: false
+#  started-at:
+#    description: Status check "started at"
+#    required: false
+#  completed-at:
+#    description: Status check "completed at"
+#    required: false
+#  details-url:
+#    description: Status check details url
+#    required: false
+#  output:
+#    description: Status check output
+#    required: false
+#  output-summary:
+#    description: Status check output summary
+#    required: false
 
 outputs:
   check-run-id:
@@ -40,5 +40,6 @@ outputs:
 
 runs:
   using: 'node20'
+  pre: 'test-pre.js'
   main: 'dist/index.js'
   post: 'dist/index.js'
