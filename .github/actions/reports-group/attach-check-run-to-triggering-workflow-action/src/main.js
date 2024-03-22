@@ -132,9 +132,10 @@ async function run() {
             //const originalWorkflowName = guessTriggeringWorkflowName();
             const currentWorkflowName = github.context.workflow;
             const outputTitle = '🔔 ' + currentWorkflowName;
-            const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + (undefined !== prNumber ? '?pr=' + prNumber : '');
+            const prLink = (undefined !== prNumber ? '?pr=' + prNumber : '');
+            const currentWorkflowUrl = github.context.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + github.context.runId.toString() + prLink;
             const outputSummary = '🪢 Check added by '
-                + (currentJob ? '<a href="' + currentJob.html_url + '" target="blank">**' + currentJob.name + '**</a>' : '')
+                + (currentJob ? '<a href="' + currentJob.html_url + prLink + '" target="blank">**' + currentJob.name + '**</a>' : '')
                 + (currentJob ? ' (' : '') + '<a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowName + '** workflow</a>' + (currentJob ? ')' : '')
             ;
 
