@@ -10,6 +10,7 @@ async function run() {
     core.setOutput('workflow-name', context.workflowName);
     core.setOutput('run-id', context.runId);
     core.setOutput('server-url', context.serverUrl);
+    core.setOutput('workflow-run-url', context.workflowRunUrl);
 }
 
 run();

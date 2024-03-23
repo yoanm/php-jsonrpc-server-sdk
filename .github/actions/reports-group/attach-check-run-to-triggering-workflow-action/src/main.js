@@ -1,9 +1,9 @@
 const {getOctokit} = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core');
 
-const {GITHUB_REPOSITORY} = process.env;
-
 const ghaHelpers = require('../node-gha-helpers');
+
+const formatMarkdownUrl = (title, link) => '<a href="' + link + '" target="blank">' + title + '</a>';
 
 async function run() {
     /** INPUTS **/
@@ -24,29 +24,28 @@ async function run() {
                 throw new Error('Unable to guess the commit SHA !');
             }
             const currentJob = await ghaHelpers.fetchCurrentJob(octokit);
-
             const startedAt = (new Date()).toISOString();
-            const prLink = (undefined !== triggeringWorkflowContext.prNumber ? '?pr=' + triggeringWorkflowContext.prNumber : '');
-            const currentWorkflowUrl = currentWorkflowContext.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + currentWorkflowContext.runId + prLink;
-            const outputSummary = '🪢 Check added by '
-                + (currentJob ? '<a href="' + currentJob.html_url + prLink + '" target="blank">**' + currentJob.name + '**</a>' : '')
-                + (currentJob ? ' (' : '') + '<a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowContext.workflowName + '** workflow</a>' + (currentJob ? ')' : '')
-            ;
+            const summaryRedirectMrkLink = formatMarkdownUrl(
+                '**' + currentWorkflowContext.workflowName + (!currentJob ? ' workflow' : ' → ' + currentJob.name + ' job' )+ '**',
+                !currentJob ? currentWorkflowContext.workflowRunUrl : ghaHelpers.buildWorkflowJobRunUrl(currentJob, triggeringWorkflowContext.prNumber)
+            );
 
             return {
                 name: !!checkName ? checkName : (currentJob?.name ?? currentWorkflowContext.workflowName + ' Check run'),
                 head_sha: triggeringWorkflowContext.commitSha,
-                //details_url: detailsUrl,
-                external_id: triggeringWorkflowContext.runId,
+                started_at: startedAt,
+                conclusion: isSuccessfulJobAsOfNow ? undefined : jobStatus,
+                completed_at: isSuccessfulJobAsOfNow ? undefined : startedAt,
                 status: isSuccessfulJobAsOfNow ? 'in_progress' : 'completed',
                 output: {
                     title: '🔔 ' + currentWorkflowContext.workflowName,
-                    summary: outputSummary,
+                    summary: '🪢 Check added by ' + summaryRedirectMrkLink,
                 },
-                // Conclusion
-                conclusion: isSuccessfulJobAsOfNow ? undefined : jobStatus,
-                started_at: startedAt,
-                completed_at: isSuccessfulJobAsOfNow ? undefined : startedAt,
+                external_id: triggeringWorkflowContext.runId,
+                details_url: (!currentJob
+                    ? currentWorkflowContext.workflowRunUrl
+                    : ghaHelpers.buildWorkflowJobRunUrl(currentJob, triggeringWorkflowContext.prNumber)
+                ),
                 // Url path parameters
                 owner: currentWorkflowContext.repositoryOwner,
                 repo: currentWorkflowContext.repositoryName

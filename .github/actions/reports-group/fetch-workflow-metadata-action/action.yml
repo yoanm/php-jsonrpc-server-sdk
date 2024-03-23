@@ -24,11 +24,13 @@ outputs:
     description: Pull request number. Available only in case of `pull_request` event !
   workflow-name:
     description: Name of the workflow, either current one or the triggering one (based on `from-triggering-workflow` value).
-  server-url:
-    description: Server url. Usually
   run-id:
     description: Workflow run ID, either current one or the triggering one (based on `from-triggering-workflow` value).
-      
+  server-url:
+    description: Server url. Usually `https://github.com` but may be different in case of self-hosted GitHub server!
+  workflow-run-url:
+    description: Url to the workflow execution page
+
 
 runs:
   using: 'node20'

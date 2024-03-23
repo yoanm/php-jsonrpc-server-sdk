@@ -35,3 +35,4 @@ export const triggeringWorkflow = {
 }
 
 export * from './src/fetch-current-job';
+export * from './src/common';

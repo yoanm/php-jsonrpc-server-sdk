@@ -1,5 +1,5 @@
 /**
- * @typedef {{repositoryOwner: string, repositoryName: string, commitSha: string, prNumber: number|undefined, workflowName: string, serverUrl: string, runId: string}} GHAContext
+ * @typedef {{repositoryOwner: string, repositoryName: string, commitSha: string, prNumber: number|undefined, workflowName: string, runId: string, workflowRunUrl: string}} GHAContext
  */
 /**
  * @typedef {() => GHAContext} GHAContextGetter
