@@ -53,7 +53,6 @@ async function run() {
                     reports: formatList('reports'),
                     flags: formatList('flags'),
                     path: formatScalar('path'),
-                    reportPaths: formatList('reportPaths')
                 };
             }
 
