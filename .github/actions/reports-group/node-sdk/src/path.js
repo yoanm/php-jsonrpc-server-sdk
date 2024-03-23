@@ -63,7 +63,7 @@ function trustFrom(workspacePath) {
         },
         /**
          * @param {string} untrustedGroupPath
-         * @returns {{name: string, format: string, reports: string[], flags: string[], path: string, reportPaths: string[]}}
+         * @returns {{name: string, format: string, reports: string[], flags: string[], path: string}}
          */
         trustedMetadataUnder: (untrustedGroupPath) => {
             const trustedPath = helpers.trust(path.join(untrustedGroupPath, METADATA_FILENAME));
@@ -72,15 +72,13 @@ function trustFrom(workspacePath) {
 
             const untrustedMetadata = JSON.parse(content);
             const trustedGroupPath = path.dirname(trustedPath);
-            const trustedReportPaths = untrustedMetadata.reports.map(r => helpers.trust(r));
 
             return {
                 name: untrustedMetadata.name,
                 format: untrustedMetadata.format,
-                reports: trustedReportPaths,
+                reports: untrustedMetadata.reports.map(r => helpers.trust(path.join(trustedGroupPath, r))),
                 flags: untrustedMetadata.flags,
                 path: withTrailingSeparator(trustedGroupPath),
-                reportPaths: trustedReportPaths.map(trustedFp => path.join(trustedGroupPath, trustedFp)),
             };
         }
     };

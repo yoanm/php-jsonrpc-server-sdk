@@ -67,7 +67,7 @@ runs:
           const {METADATA} = process.env;
           
           const metadata = JSON.parse(METADATA);
-          core.setOutput('coverage-reports', metadata.reportPaths); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          core.setOutput('coverage-reports', metadata.reports); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
 
     - name: Ensure at least one report to upload
       if: ${{ '' == steps.build-uploader-options.outputs.coverage-reports }}

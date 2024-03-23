@@ -106,7 +106,7 @@ runs:
           
           const metadata = JSON.parse(METADATA);
           core.setOutput('name', metadata.name);
-          core.setOutput('files', metadata.reportPaths); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          core.setOutput('files', metadata.reports); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
           if (metadata.flags.length > 0) {
             core.setOutput('flags', metadata.flags);
           }
