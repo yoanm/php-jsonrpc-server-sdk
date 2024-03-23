@@ -35,7 +35,7 @@ jobs:
     uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.id }}
+      run-id: ${{ needs.fetch-info.outputs.run-id }}
       override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
     permissions:
       contents: read
@@ -49,7 +49,7 @@ jobs:
     uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.id }}
+      run-id: ${{ needs.fetch-info.outputs.run-id }}
       override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
     permissions:
       contents: read

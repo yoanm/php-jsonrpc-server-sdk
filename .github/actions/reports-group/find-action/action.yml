@@ -4,15 +4,19 @@ description: |
 inputs:
   path:
     description: A group directory or a glob pattern in order to find group directories and merge their metadata
-    required: false
+    required: true
   format:
-    description: string, json
+    description: |
+      `string` (default) or `json`
+    required: false
     default: 'string'
   glue-string:
     description: String used to concatenate values when 'string' format is used
+    required: false
     default: ','
   follow-symbolic-links:
     description: Indicates whether to follow symbolic links when resolving `path`
+    required: false
     default: 'false'
 outputs:
   list:

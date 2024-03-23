@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       artifacts-pattern:
+        description: TODO
         required: true
         type: string
       run-id:
@@ -11,16 +12,17 @@ on:
           The id of the workflow run where the artifacts were uploaded from (default to current run).
           In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
         required: false
-        default: "${{ github.run_id }}"
         type: string
+        default: "${{ github.run_id }}"
       override-commit:
         description: |
           Force the commit SHA linked to the uploaded reports.
           Mostly useful for specific cases (e.g. `workflow_run` workflow).
-        type: string
         required: false
+        type: string
       follow-symbolic-links:
         description: Indicates whether to follow symbolic links when resolving groups path
+        required: false
         type: boolean
         default: false
 
