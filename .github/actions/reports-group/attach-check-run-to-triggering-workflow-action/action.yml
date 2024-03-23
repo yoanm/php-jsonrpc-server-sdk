@@ -12,7 +12,7 @@ inputs:
     required: false
   fails-on-triggering-workflow-failure:
     description: If `true` and triggering workflow is not sucessfull (error, cancellation, etc), add the check and throw an error in order to stop ongoing job
-    required: true
+    required: false
     default: 'false'
 
 outputs:

@@ -11,7 +11,7 @@ on:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
           In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
-        required: true
+        required: false
         type: string
         default: "${{ github.run_id }}"
       override-commit:
@@ -22,7 +22,7 @@ on:
         type: string
       follow-symbolic-links:
         description: Indicates whether to follow symbolic links when resolving groups path
-        required: true
+        required: false
         type: boolean
         default: false
 

@@ -8,15 +8,15 @@ inputs:
   format:
     description: |
       `string` (default) or `json`
-    required: true
+    required: false
     default: 'string'
   glue-string:
     description: String used to concatenate values when 'string' format is used
-    required: true
+    required: false
     default: ','
   follow-symbolic-links:
     description: Indicates whether to follow symbolic links when resolving `path`
-    required: true
+    required: false
     default: 'false'
 outputs:
   list:
