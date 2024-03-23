@@ -4,12 +4,16 @@ description: TODO
 inputs:
   from-triggering-workflow:
     description: |
-      Weither to look for triggering workflow context or just current workflow context (default `true`).
-       - True: In case current workflow event is `workflow_run`, the context of the workflow which **triggered** the current one will be returned.
+      Weither to look for triggering workflow context or just current workflow context (default `true` !).
+       - True: In case current workflow event is `workflow_run`, the context of the workflow which **triggered** the current one will be returned. Else returns the current workflow context
        - False: Return the context for the current workflow.
     default: 'true'
 
 outputs:
+  repository-owner:
+    description: Owner of the repository
+  repository-name:
+    description: Name of the repository
   commit-sha:
     description: |
       Full commit SHA.
@@ -20,6 +24,8 @@ outputs:
     description: Pull request number. Available only in case of `pull_request` event !
   workflow-name:
     description: Name of the workflow, either current one or the triggering one (based on `from-triggering-workflow` value).
+  server-url:
+    description: Server url. Usually
   run-id:
     description: Workflow run ID, either current one or the triggering one (based on `from-triggering-workflow` value).
       

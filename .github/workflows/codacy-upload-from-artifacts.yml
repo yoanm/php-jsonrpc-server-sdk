@@ -13,6 +13,13 @@ on:
         required: false
         default: "${{ github.run_id }}"
         type: string
+      override-commit:
+        description: Force the commit linked to the uploaded reports
+        required: false
+      follow-symbolic-links:
+        description: Indicates whether to follow symbolic links when resolving `path`
+        default: 'false'
+
     secrets:
       PROJECT_TOKEN:
         required: true
@@ -64,6 +71,8 @@ jobs:
         with:
           path: job-artifacts
           project-token: ${{ secrets.PROJECT_TOKEN }}
+          override-commit: ${{ inputs.override-commit }}
+          follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
 
       - name: DEBUG
         run: |

@@ -10,6 +10,7 @@ async function run() {
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
     const checkName = core.getInput('name');
+    const failsOnTriggeringWorkflowFailure = core.getBooleanInput('fails-on-triggering-workflow-failure', {required: true});
 
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
     const octokit = getOctokit(githubToken);
@@ -62,8 +63,11 @@ async function run() {
 
     core.setOutput('check-run-id', apiResponse.data.id);
     core.saveState('check-run-id', apiResponse.data.id); // In order to use it during POST hook
-    if (true === isSuccessfulJobAsOfNow) {
+    if (isSuccessfulJobAsOfNow) {
         core.saveState('check-run-already-concluded', 'yes'); // In order to use it during POST hook
+    }
+    if (failsOnTriggeringWorkflowFailure && !isSuccessfulJobAsOfNow) {
+        core.setFailed('Triggering workflow status is "' + jobStatus + '" !');
     }
 }
 

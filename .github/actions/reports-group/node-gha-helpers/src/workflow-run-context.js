@@ -1,7 +1,7 @@
 const {context: ghaContext} = require('@actions/github');
 const {payload: ghaEvent} = ghaContext;
 
-const {isPullRequestEvent, isPushEvent} = require('./workflow-run-event');
+const {isPullRequestEvent} = require('./workflow-run-event');
 
 /**
  * @returns {GHAContext}
@@ -22,9 +22,9 @@ export const getContext = () => ({
 export const getPrNumber = () => isPullRequestEvent() ? ghaEvent.workflow_run.pull_requests[0]?.number : undefined;
 
 /**
- * @returns {string|undefined}
+ * @returns {string}
  */
-export const getCommitSha = () => isPullRequestEvent() || isPushEvent()  ? ghaEvent.workflow_run.head_sha : undefined;
+export const getCommitSha = () => ghaEvent.workflow_run.head_sha;
 
 /**
  * @returns {string}

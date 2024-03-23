@@ -13,6 +13,29 @@ on:
         required: false
         default: "${{ github.run_id }}"
         type: string
+      override-commit:
+        description: Commit to link to the uploaded reports
+        type: string
+        required: false
+      override-branch:
+        description: Branch to link to the uploaded reports
+        type: string
+        required: false
+      override-pr:
+        description: PR to link to the uploaded reports
+        type: string
+        required: false
+      override-build:
+        description: Workflow run to link to the uploaded reports
+        type: string
+        required: false
+      override-build-url:
+        description: Workflow run url to link to the uploaded reports
+        type: string
+        required: false
+      follow-symbolic-links:
+        description: Indicates whether to follow symbolic links when resolving `path`
+        default: 'false'
     secrets:
       TOKEN:
         required: true
@@ -147,3 +170,9 @@ jobs:
         with:
           path: job-artifact/${{ matrix.path }}
           token: ${{ secrets.TOKEN }}
+          override-commit: ${{ inputs.override-commit }}
+          override-branch: ${{ inputs.override-branch }}
+          override-pr: ${{ inputs.override-pr }}
+          override-build: ${{ inputs.override-build }}
+          override-build-url: ${{ inputs.override-build-url }}
+          follow-symbolic-links: ${{ inputs.follow-symbolic-links }}

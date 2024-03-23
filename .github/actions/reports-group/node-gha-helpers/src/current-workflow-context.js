@@ -4,7 +4,7 @@ const {payload: ghaEvent} = ghaContext;
 const {isPullRequestEvent, isPushEvent} = require('./current-workflow-event');
 
 /**
- * @returns {GHAContext}
+ * @type {GHAContextGetter}
  */
 export const getContext = () => ({
     repositoryOwner: ghaContext.repo.owner,
@@ -17,7 +17,7 @@ export const getContext = () => ({
 });
 
 /**
- * @returns {string|undefined}
+ * @returns {string}
  */
 export function getCommitSha() {
     if (isPullRequestEvent()) {
@@ -27,7 +27,7 @@ export function getCommitSha() {
         return ghaEvent.after;
     }
 
-    return undefined;
+    return ghaContext.sha;
 }
 
 /**

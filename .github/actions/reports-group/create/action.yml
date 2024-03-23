@@ -19,9 +19,8 @@ inputs:
     description: Root directory for the group directory (default to current directory)
     default: '.'
   follow-symbolic-links:
-    description: |
-      Indicates whether to follow symbolic links when resolving `files`
-    default: 'true'
+    description: Indicates whether to follow symbolic links when resolving `files`
+    default: 'false'
 
 outputs:
   path:

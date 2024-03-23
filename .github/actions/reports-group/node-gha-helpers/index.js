@@ -10,8 +10,7 @@ import * as workflowRunContextHelpers from './src/workflow-run-context';
 const isWorkflowRunEvent = currentWorkflowEventHelpers.isWorkflowRunEvent();
 
 /**
- * @function
- * @return {GHAContextGetter}
+ * @type {GHAContextGetter}
  */
 export const getContext = currentWorkflowContextHelpers.getContext;
 /**
@@ -27,8 +26,11 @@ export const contextHelpers = currentWorkflowContextHelpers;
  * @type {{getContext: GHAContextGetter, eventHelpers: GHAEventHelpers, contextHelpers: GHAContextHelpers}}
  */
 export const triggeringWorkflow = {
+    /** @type {GHAContextGetter} */
     getContext: isWorkflowRunEvent ? workflowRunContextHelpers.getContext : currentWorkflowContextHelpers.getContext,
+    /** @type {GHAEventHelpers} */
     eventHelpers: isWorkflowRunEvent ? workflowRunEventHelpers : currentWorkflowEventHelpers,
+    /** @type {GHAContextHelpers} */
     contextHelpers: isWorkflowRunEvent ? workflowRunContextHelpers : currentWorkflowContextHelpers,
 }
 
