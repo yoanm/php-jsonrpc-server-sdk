@@ -3,7 +3,7 @@ description: |
   Find reports group directory under the provided `path`
 inputs:
   path:
-    description: A group directory or a glob pattern in order to find group directories and merge their metadata
+    description: A group directory, or a glob pattern in order to find underlying group directories
     required: true
   follow-symbolic-links:
     description: Indicates whether to follow symbolic links when resolving `path`
@@ -11,8 +11,7 @@ inputs:
     default: 'false'
 outputs:
   list:
-    description: |
-      List of group paths separated by `glue-string` with `string` format. Or a JSON encoded list with `json` format
+    description: Glob compatible list of reports group directory path (=multiline list of paths)
 
 runs:
   using: 'node20'
