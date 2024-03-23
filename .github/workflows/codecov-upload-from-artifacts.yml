@@ -4,15 +4,16 @@ on:
   workflow_call:
     inputs:
       artifacts-pattern:
+        description: TODO
         required: true
         type: string
       run-id:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
           In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
-        required: false
-        default: "${{ github.run_id }}"
+        required: true
         type: string
+        default: "${{ github.run_id }}"
       override-commit:
         description: |
           Force the commit SHA linked to the uploaded reports.
@@ -20,8 +21,8 @@ on:
           
           In case input is filled, `override-branch` input (as well as `override-pr` in case of `pull_request` event)
           should be filled too in order to keep consitency between values !
-        type: string
         required: false
+        type: string
       override-branch:
         description: |
           Force the branch linked to the uploaded reports.
@@ -29,8 +30,8 @@ on:
           
           In case input is filled, `override-commit` input (as well as `override-pr` in case of `pull_request` event)
           should be filled too in order to keep consitency between values !
-        type: string
         required: false
+        type: string
       override-pr:
         description: |
           Force the PR linked to the uploaded reports.
@@ -38,16 +39,16 @@ on:
           
           In case input is filled, `override-commit` and `override-branch` inputs should be filled too in order
           to keep consitency between values !
-        type: string
         required: false
+        type: string
       override-build:
         description: |
           Workflow run ID to link to the uploaded reports.
           Mostly useful for specific cases (e.g. `workflow_run` workflow).
           
           When `run-id` input is provided, this input should most likely have the same value.
-        type: string
         required: false
+        type: string
       override-build-url:
         description: |
           Workflow run url to link to the uploaded reports.
@@ -55,12 +56,13 @@ on:
           Mostly useful for specific cases (e.g. `workflow_run` workflow).
           
           In case input is filled, `override-build` input most likely need to be filled too in order to keep consitency between values !
-        type: string
         required: false
+        type: string
       follow-symbolic-links:
         description: |
           Indicates whether to follow symbolic links when resolving glob path.
           When looking for group directory for instance.
+        required: true
         type: boolean
         default: false
     secrets:

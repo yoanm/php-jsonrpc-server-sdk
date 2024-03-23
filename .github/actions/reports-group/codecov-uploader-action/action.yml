@@ -47,6 +47,7 @@ inputs:
     required: false
   follow-symbolic-links:
     description: Indicates whether to follow symbolic links when resolving `path`
+    required: true
     default: 'false'
 
 outputs:
