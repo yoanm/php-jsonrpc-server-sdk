@@ -1,0 +1,29 @@
+name: TODO
+description: TODO
+
+inputs:
+  from-triggering-workflow:
+    description: |
+      Weither to look for triggering workflow context or just current workflow context (default `true`).
+       - True: In case current workflow event is `workflow_run`, the context of the workflow which **triggered** the current one will be returned.
+       - False: Return the context for the current workflow.
+    default: 'true'
+
+outputs:
+  commit-sha:
+    description: |
+      Full commit SHA.
+      - `push` event => latest commit pushed
+      - `pull_request` event => latest commit pushed on the pull request
+      - Other events => null
+  pull-request:
+    description: Pull request number. Available only in case of `pull_request` event !
+  workflow-name:
+    description: Name of the workflow, either current one or the triggering one (based on `from-triggering-workflow` value).
+  run-id:
+    description: Workflow run ID, either current one or the triggering one (based on `from-triggering-workflow` value).
+      
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
