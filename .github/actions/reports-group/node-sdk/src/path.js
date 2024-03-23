@@ -72,11 +72,13 @@ function trustFrom(workspacePath) {
 
             const untrustedMetadata = JSON.parse(content);
             const trustedGroupPath = path.dirname(trustedPath);
+            // Ensure `reports` hasn't been tampered with ! (may lead to files outside the directory)
+            const trustedReportPathsConverter = trustFrom(trustedGroupPath);
 
             return {
                 name: untrustedMetadata.name,
                 format: untrustedMetadata.format,
-                reports: untrustedMetadata.reports.map(r => helpers.trust(path.join(trustedGroupPath, r))),
+                reports: untrustedMetadata.reports.map(r => trustedReportPathsConverter.trust(path.join(trustedGroupPath, r))),
                 flags: untrustedMetadata.flags,
                 path: withTrailingSeparator(trustedGroupPath),
             };
