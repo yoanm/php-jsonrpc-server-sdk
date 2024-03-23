@@ -1,4 +1,4 @@
-PKG_LIST := node-sdk find load-metadata create codecov-uploader codacy-uploader attach-check-run-to-triggering-workflow-action
+PKG_LIST := node-gha-helpers node-sdk find-action load-metadata-action create-action codecov-uploader-action codacy-uploader-action attach-check-run-to-triggering-workflow-action fetch-workflow-metadata-action
 TARGETS := configure install build package lint test
 
 define FOR_EACH_PKG

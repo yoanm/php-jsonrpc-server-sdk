@@ -1,7 +1,6 @@
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
 const SDK = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
-const path = require("path"); // @TODO move to 'imports from' when moved to TS !
 
 // @TODO replace json by glob-string as output ?? Same as string format but with glob compatible path list
 // (easier to manage for inner code, while end-user is still able to fallback on string format with a simple split)

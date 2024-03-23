@@ -1,15 +1,16 @@
 const {getOctokit} = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core');
 
-const {GITHUB_REPOSITORY} = process.env;
-
 const ghaHelpers = require('../node-gha-helpers');
+
+const formatMarkdownUrl = (title, link) => '<a href="' + link + '" target="blank">' + title + '</a>';
 
 async function run() {
     /** INPUTS **/
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
     const checkName = core.getInput('name');
+    const failsOnTriggeringWorkflowFailure = core.getBooleanInput('fails-on-triggering-workflow-failure', {required: true});
 
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
     const octokit = getOctokit(githubToken);
@@ -23,29 +24,28 @@ async function run() {
                 throw new Error('Unable to guess the commit SHA !');
             }
             const currentJob = await ghaHelpers.fetchCurrentJob(octokit);
-
             const startedAt = (new Date()).toISOString();
-            const prLink = (undefined !== triggeringWorkflowContext.prNumber ? '?pr=' + triggeringWorkflowContext.prNumber : '');
-            const currentWorkflowUrl = currentWorkflowContext.serverUrl + '/' + GITHUB_REPOSITORY + '/actions/runs/' + currentWorkflowContext.runId + prLink;
-            const outputSummary = '🪢 Check added by '
-                + (currentJob ? '<a href="' + currentJob.html_url + prLink + '" target="blank">**' + currentJob.name + '**</a>' : '')
-                + (currentJob ? ' (' : '') + '<a href="' + currentWorkflowUrl + '" target="blank">**' + currentWorkflowContext.workflowName + '** workflow</a>' + (currentJob ? ')' : '')
-            ;
+            const summaryRedirectMrkLink = formatMarkdownUrl(
+                '**' + currentWorkflowContext.workflowName + (!currentJob ? '' : '** → **' + currentJob.name )+ '** ' + (!currentJob ? 'workflow' : 'job' ),
+                !currentJob ? currentWorkflowContext.workflowRunUrl : ghaHelpers.buildWorkflowJobRunUrl(currentJob, triggeringWorkflowContext.prNumber)
+            );
 
             return {
                 name: !!checkName ? checkName : (currentJob?.name ?? currentWorkflowContext.workflowName + ' Check run'),
                 head_sha: triggeringWorkflowContext.commitSha,
-                //details_url: detailsUrl,
-                external_id: triggeringWorkflowContext.runId,
+                started_at: startedAt,
+                conclusion: isSuccessfulJobAsOfNow ? undefined : jobStatus,
+                completed_at: isSuccessfulJobAsOfNow ? undefined : startedAt,
                 status: isSuccessfulJobAsOfNow ? 'in_progress' : 'completed',
                 output: {
                     title: '🔔 ' + currentWorkflowContext.workflowName,
-                    summary: outputSummary,
+                    summary: '🪢 Check added by ' + summaryRedirectMrkLink,
                 },
-                // Conclusion
-                conclusion: isSuccessfulJobAsOfNow ? undefined : jobStatus,
-                started_at: startedAt,
-                completed_at: isSuccessfulJobAsOfNow ? undefined : startedAt,
+                external_id: triggeringWorkflowContext.runId,
+                details_url: (!currentJob
+                    ? currentWorkflowContext.workflowRunUrl
+                    : ghaHelpers.buildWorkflowJobRunUrl(currentJob, triggeringWorkflowContext.prNumber)
+                ),
                 // Url path parameters
                 owner: currentWorkflowContext.repositoryOwner,
                 repo: currentWorkflowContext.repositoryName
@@ -62,8 +62,11 @@ async function run() {
 
     core.setOutput('check-run-id', apiResponse.data.id);
     core.saveState('check-run-id', apiResponse.data.id); // In order to use it during POST hook
-    if (true === isSuccessfulJobAsOfNow) {
+    if (isSuccessfulJobAsOfNow) {
         core.saveState('check-run-already-concluded', 'yes'); // In order to use it during POST hook
+    }
+    if (failsOnTriggeringWorkflowFailure && !isSuccessfulJobAsOfNow) {
+        core.setFailed('Triggering workflow status is "' + jobStatus + '" !');
     }
 }
 

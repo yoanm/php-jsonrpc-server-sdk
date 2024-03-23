@@ -10,6 +10,9 @@ inputs:
   name:
     description: Status check name. Default to current job name
     required: false
+  fails-on-triggering-workflow-failure:
+    description: If `true` and triggering workflow is not sucessfull (error, cancellation, etc), add the check and throw an error in order to stop ongoing job
+    default: 'false'
 
 outputs:
   check-run-id:

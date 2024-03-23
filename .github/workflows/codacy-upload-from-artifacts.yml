@@ -1,4 +1,4 @@
-# To store on same repo as reports-group/codacy-uploader action if doable !
+# To store on same repo as reports-group/codacy-uploader-action action if doable !
 name: 'Codacy report groups upload'
 on:
   workflow_call:
@@ -9,10 +9,21 @@ on:
       run-id:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
-          In case artefacts have been uploadded from another run, this input must be filled with original workflow !
+          In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
         required: false
         default: "${{ github.run_id }}"
         type: string
+      override-commit:
+        description: |
+          Force the commit SHA linked to the uploaded reports.
+          Mostly useful for specific cases (e.g. `workflow_run` workflow).
+        type: string
+        required: false
+      follow-symbolic-links:
+        description: Indicates whether to follow symbolic links when resolving groups path
+        type: boolean
+        default: false
+
     secrets:
       PROJECT_TOKEN:
         required: true
@@ -24,11 +35,6 @@ on:
         description: TODO
         value: ${{ jobs.upload.outputs.reports }}
 
-# @TODO Investigate: `workflow_run` don't create a status check on the related PR !
-# Would it be handy/secure/not to complex to create a reports-group/check-run-from-workflow-run which:
-# - Would need to be added as first workflow wtep in order to create a `in-progress` check-run with all info fetched from the triggering workflow
-#   - Add a `fails-on-caller-failure` option which would create `failed` check-run and exit with an error ? (a bit more handy than end-user having to check it)
-# - Would update the check-run during post-process with the current status of the triggered workflow
 jobs:
   upload:
     name: Upload all reports
@@ -38,7 +44,7 @@ jobs:
       reports: ${{ steps.upload.outputs.reports }}
     permissions:
       contents: read
-      checks: write # For the check run creation !
+      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
     steps:
       # @TODO move actions to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4
@@ -46,6 +52,7 @@ jobs:
           path: custom-action-repo
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+        if: ${{ 'workflow_run' == github.event_name }}
         with:
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
@@ -60,10 +67,12 @@ jobs:
 
       - name: Upload all reports
         id: upload
-        uses: ./custom-action-repo/.github/actions/reports-group/codacy-uploader
+        uses: ./custom-action-repo/.github/actions/reports-group/codacy-uploader-action
         with:
           path: job-artifacts
           project-token: ${{ secrets.PROJECT_TOKEN }}
+          override-commit: ${{ inputs.override-commit }}
+          follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
 
       - name: DEBUG
         run: |

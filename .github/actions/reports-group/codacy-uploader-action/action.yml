@@ -8,18 +8,14 @@ inputs:
   project-token:
     description: Codacy project token for the repository
     required: true
-  follow-symbolic-links:
-    description: |
-      Indicates whether to follow symbolic links when resolving `path`
-    default: 'true'
   override-commit:
     description: |
-      Commit to link to the uploaded reports.
-      Default value:
-      - `push` workflow: `github.sha`
-      - `pull_request` workflow: `github.event.pull_request.head.sha`
-      - `workflow_run` workflow triggered by a `pull_request` or `push` workflow: `github.event.workflow_run.head_sha`
-    default: "${{ ('workflow_run' == github.event_name && ('pull_request' == github.event.workflow_run.event || 'push' == github.event.workflow_run.event) && github.event.workflow_run.head_sha) || ('pull_request' == github.event_name && github.event.pull_request.head.sha) || ('push' == github.event_name && github.sha) || null }}"
+      Force the commit SHA linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+    required: false
+  follow-symbolic-links:
+    description: Indicates whether to follow symbolic links when resolving `path`
+    default: 'false'
 
 outputs:
   groups:
@@ -36,16 +32,14 @@ runs:
     - name: Validate inputs
       uses: actions/github-script@v7
       env:
-        INPUT_MAP: ${{ toJson(inputs) }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_PROJECT-TOKEN: ${{ inputs.project-token }}
       with:
         script: |
-          return core.group(
-            'Validate inputs',
-            async () => Object.entries(JSON.parse(process.env.INPUT_MAP))
-              .forEach(([key, val]) => {
-                if (!val.trim()) { throw new Error(`Input required and not supplied: ${key}`); }
-              })
-          );
+          core.info('Validate inputs');
+          
+          core.getInput('path', {required: true});
+          core.getInput('project-token', {required: true});
 
     # @TODO move actions to a dedicated repo and remove the checkout
     - uses: actions/checkout@v4
@@ -54,15 +48,13 @@ runs:
 
     - name: Load groups metadata
       id: load-metadata
-      uses: ./custom-action-repo/.github/actions/reports-group/load-metadata
+      uses: ./custom-action-repo/.github/actions/reports-group/load-metadata-action
       with:
         path: ${{ inputs.path }}
         format: string # String in order to concatenate interesting values
         glue-string: ',' # Ensure glue string as it's the expected one by the uploader
         follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
 
-    # @TODO Use bash instead and rely on JQ ?
-    # Or create an *internal* action (not published on marketplace and stored inside this action repo) taking metadata JSON as input and returning each property the uploader has ?
     - name: Build uploader option
       id: build-uploader-options
       uses: actions/github-script@v7

@@ -1,0 +1,157 @@
+name: TODO
+description: TODO
+
+inputs:
+  path:
+    description: A group directory or a glob pattern in order to find group directories and merge their metadata
+    required: true
+  token:
+    description: Codecov upload token
+    required: true
+  override-commit:
+    description: |
+      Force the commit SHA linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+      
+      In case input is filled, `override-branch` input (as well as `override-pr` in case of `pull_request` event)
+      should be filled too in order to keep consitency between values !
+    required: false
+  override-branch:
+    description: |
+      Force the branch linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+      
+      In case input is filled, `override-commit` input (as well as `override-pr` in case of `pull_request` event)
+      should be filled too in order to keep consitency between values !
+    required: false
+  override-pr:
+    description: |
+      Force the PR linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow triggered by a `pull_request` workflow).
+      
+      In case input is filled, `override-commit` and `override-branch` inputs should be filled too in order
+      to keep consitency between values !
+    required: false
+  override-build:
+    description: |
+      Workflow run ID to link to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+    required: false
+  override-build-url:
+    description: |
+      Workflow run url to link to the uploaded reports.
+      Usually something like `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}` (based on GHA environment variables).
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+      
+      In case input is filled, `override-build` input most likely need to be filled too in order to keep consitency between values !
+    required: false
+  follow-symbolic-links:
+    description: Indicates whether to follow symbolic links when resolving `path`
+    default: 'false'
+
+outputs:
+  groups:
+    description: TODO
+    value: ${{ steps.build-outputs.outputs.groups }}
+  name:
+    description: TODO
+    value: ${{ steps.build-outputs.outputs.name }}
+  reports:
+    description: TODO
+    value: ${{ steps.build-outputs.outputs.reports }}
+  flags:
+    description: TODO
+    value: ${{ steps.build-outputs.outputs.flags }}
+
+runs:
+  using: "composite"
+  steps:
+    # Even if an input is marked as "required", an empty value (or no value) may be passed !
+    - name: Validate inputs
+      uses: actions/github-script@v7
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      with:
+        script: |
+          core.info('Validate inputs');
+          
+          core.getInput('path', {required: true});
+          core.getInput('token', {required: true});
+
+    # @TODO move actions to a dedicated repo and remove the checkout
+    - uses: actions/checkout@v4
+      with:
+        path: custom-action-repo
+
+    - name: Load groups metadata
+      id: load-metadata
+      uses: ./custom-action-repo/.github/actions/reports-group/load-metadata-action
+      with:
+        path: ${{ inputs.path }}
+        format: string # String in order to concatenate interesting values
+        glue-string: ',' # Ensure glue string as it's the expected one by the uploader
+        follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
+
+    - name: Build uploader option
+      id: build-uploader-options
+      uses: actions/github-script@v7
+      env:
+        METADATA: ${{ steps.load-metadata.outputs.metadata }}
+      with:
+        script: |
+          core.info('Build uploader options');
+          const {METADATA} = process.env;
+          
+          const metadata = JSON.parse(METADATA);
+          core.setOutput('name', metadata.name);
+          core.setOutput('files', metadata.reportPaths); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          if (metadata.flags.length > 0) {
+            core.setOutput('flags', metadata.flags);
+          }
+
+    - name: Ensure at least one report to upload
+      if: ${{ '' == steps.build-uploader-options.outputs.files }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.setFailed('Unable to retrieve any report to upload. Something wrong most likely happened !');
+
+    - name: Upload to codacy
+      id: upload
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ inputs.token }}
+        name: ${{ steps.build-uploader-options.outputs.name }}
+        files: ${{ steps.build-uploader-options.outputs.files }}
+        flags: ${{ steps.build-uploader-options.outputs.flags }}
+        commit_parent: ${{ inputs.commit-parent }}
+        override_branch: ${{ inputs.override-branch }}
+        override_commit: ${{ inputs.override-commit }}
+        override_pr: ${{ inputs.override-pr }}
+        override_build: ${{ inputs.override-build }}
+        override_build_url: ${{ inputs.override-build-url }}
+        # underlying CLI behavior
+        disable_search: true
+        # GHAction behavior
+        fail_ci_if_error: true
+        verbose: ${{ runner.debug == '1' }}
+
+    - name: Build action outputs
+      id: build-outputs
+      uses: actions/github-script@v7
+      env:
+        METADATA: ${{ steps.load-metadata.outputs.metadata }}
+        REPORT_NAME: ${{ steps.build-uploader-options.outputs.name }}
+        REPORT_FILES: ${{ steps.build-uploader-options.outputs.files }}
+        REPORT_FLAGS: ${{ steps.build-uploader-options.outputs.flags }}
+      with:
+        script: |
+          core.info('Build output');
+          const {REPORT_NAME, REPORT_FILES, REPORT_FLAGS, METADATA} = process.env;
+          
+          const metadata = JSON.parse(METADATA);
+          core.setOutput('groups', metadata.path.split(',').join('\n')); // Trusted path as it comes from trusted metadata (=from `reports-group/load-metadata`)
+          core.setOutput('name', REPORT_NAME);
+          core.setOutput('reports', REPORT_FILES.split(',').join('\n')); // Trusted path, see `build-uploader-options` step
+          core.setOutput('flags', undefined !== REPORT_FLAGS ? REPORT_FLAGS.split(',').join('\n') : '');

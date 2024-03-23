@@ -5,13 +5,38 @@ on:
     types: [completed]
 
 jobs:
+  fetch-info:
+    name: Fetch triggering workflow metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
+    outputs:
+      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
+      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
+    steps:
+      # @TODO move actions to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v4
+        with:
+          path: custom-action-repo
+
+      - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+        with:
+          github-token: ${{ github.token }}
+          job-status: ${{ job.status }}
+          fails-on-triggering-workflow-failure: true
+
+      - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata-action
+        id: fetch-workflow-metadata
+
   codacy-uploader:
     name: Codacy
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: [fetch-info]
     uses: ./.github/workflows/codacy-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
-      run-id: ${{ github.event.workflow_run.id }}
+      run-id: ${{ needs.fetch-info.outputs.id }}
+      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
     permissions:
       contents: read
       checks: write # For the check run creation !
@@ -19,12 +44,13 @@ jobs:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   codecov-uploader:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Codecov
+    needs: [fetch-info]
     uses: ./.github/workflows/codecov-upload-from-artifacts.yml
     with:
       artifacts-pattern: coverage-groups-*
-      run-id: ${{ github.event.workflow_run.id }}
+      run-id: ${{ needs.fetch-info.outputs.id }}
+      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
     permissions:
       contents: read
       checks: write # For the check run creation !

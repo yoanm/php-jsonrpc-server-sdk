@@ -1,4 +1,4 @@
-# To store on same repo as reports-group/codecov-uploader action if doable
+# To store on same repo as reports-group/codecov-uploader-action action if doable
 name: 'Codecov report groups upload'
 on:
   workflow_call:
@@ -9,10 +9,60 @@ on:
       run-id:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
-          In case artefacts have been uploadded from another run, this input must be filled with original workflow !
+          In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
         required: false
         default: "${{ github.run_id }}"
         type: string
+      override-commit:
+        description: |
+          Force the commit SHA linked to the uploaded reports.
+          Mostly useful for specific cases (e.g. `workflow_run` workflow).
+          
+          In case input is filled, `override-branch` input (as well as `override-pr` in case of `pull_request` event)
+          should be filled too in order to keep consitency between values !
+        type: string
+        required: false
+      override-branch:
+        description: |
+          Force the branch linked to the uploaded reports.
+          Mostly useful for specific cases (e.g. `workflow_run` workflow).
+          
+          In case input is filled, `override-commit` input (as well as `override-pr` in case of `pull_request` event)
+          should be filled too in order to keep consitency between values !
+        type: string
+        required: false
+      override-pr:
+        description: |
+          Force the PR linked to the uploaded reports.
+          Mostly useful for specific cases (e.g. `workflow_run` workflow triggered by a `pull_request` workflow).
+          
+          In case input is filled, `override-commit` and `override-branch` inputs should be filled too in order
+          to keep consitency between values !
+        type: string
+        required: false
+      override-build:
+        description: |
+          Workflow run ID to link to the uploaded reports.
+          Mostly useful for specific cases (e.g. `workflow_run` workflow).
+          
+          When `run-id` input is provided, this input should most likely have the same value.
+        type: string
+        required: false
+      override-build-url:
+        description: |
+          Workflow run url to link to the uploaded reports.
+          Usually something like `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}` (based on GHA environment variables).
+          Mostly useful for specific cases (e.g. `workflow_run` workflow).
+          
+          In case input is filled, `override-build` input most likely need to be filled too in order to keep consitency between values !
+        type: string
+        required: false
+      follow-symbolic-links:
+        description: |
+          Indicates whether to follow symbolic links when resolving glob path.
+          When looking for group directory for instance.
+        type: boolean
+        default: false
     secrets:
       TOKEN:
         required: true
@@ -30,7 +80,7 @@ jobs:
       list-for-output: ${{ steps.find-groups.outputs.list }}
     permissions:
       contents: read
-      checks: write # For the check run creation !
+      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
     steps:
       # @TODO move actions to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4
@@ -38,6 +88,7 @@ jobs:
           path: custom-action-repo
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+        if: ${{ 'workflow_run' == github.event_name }}
         with:
           name: "My custom check"
           github-token: ${{ github.token }}
@@ -58,7 +109,7 @@ jobs:
 
       - name: Find groups
         id: find-groups
-        uses: ./custom-action-repo/.github/actions/reports-group/find
+        uses: ./custom-action-repo/.github/actions/reports-group/find-action
         with:
           path: job-artifacts
           format: json
@@ -66,8 +117,8 @@ jobs:
       - name: DEBUG
         run: echo '${{ toJson(steps.find-groups.outputs) }}'
 
-      # @TODO create a reports-group/find-from-artifacts action returning a map of group name to the related artefacts
-      # (alternatively, update reports-group/find to manage it, like with a `from-artifacts` ??)
+      # @TODO create a reports-group/find-action-from-artifacts action returning a map of group name to the related artefacts
+      # (alternatively, update reports-group/find-action to manage it, like with a `from-artifacts` ??)
       - name: Build matrix
         id: build-matrix
         uses: actions/github-script@v7
@@ -108,7 +159,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     permissions:
       contents: read
-      checks: write # For the check run creation !
+      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
     steps:
       - name: DEBUG matrix
         run: echo 'matrix='"'"'${{ toJson(matrix) }}'"'"
@@ -124,6 +175,7 @@ jobs:
           path: custom-action-repo
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+        if: ${{ 'workflow_run' == github.event_name }}
         with:
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
@@ -143,7 +195,13 @@ jobs:
 
       - name: Upload reports
         id: upload
-        uses: ./custom-action-repo/.github/actions/reports-group/codecov-uploader
+        uses: ./custom-action-repo/.github/actions/reports-group/codecov-uploader-action
         with:
           path: job-artifact/${{ matrix.path }}
           token: ${{ secrets.TOKEN }}
+          override-commit: ${{ inputs.override-commit }}
+          override-branch: ${{ inputs.override-branch }}
+          override-pr: ${{ inputs.override-pr }}
+          override-build: ${{ inputs.override-build }}
+          override-build-url: ${{ inputs.override-build-url }}
+          follow-symbolic-links: ${{ inputs.follow-symbolic-links }}

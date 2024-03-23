@@ -12,9 +12,8 @@ inputs:
     description: String used to concatenate values when 'string' format is used (default to comma)
     default: ','
   follow-symbolic-links:
-    description: |
-      Indicates whether to follow symbolic links when resolving `path`
-    default: 'true'
+    description: Indicates whether to follow symbolic links when resolving `path`
+    default: 'false'
 
 outputs:
   # @TODO Re-add individual properties since toJson() doesn't seem available everywhere :|

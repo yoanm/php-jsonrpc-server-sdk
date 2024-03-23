@@ -1,20 +1,27 @@
 const {context: ghaContext} = require('@actions/github');
 const {payload: ghaEvent} = ghaContext;
 
-const {isPullRequestEvent, isPushEvent} = require('./workflow-run-event');
+const {isPullRequestEvent} = require('./workflow-run-event');
+import {buildWorkflowRunUrl} from "./common";
 
 /**
- * @returns {GHAContext}
+ * @type {GHAContextGetter}
  */
-export const getContext = () => ({
-    repositoryOwner: ghaContext.repo.owner,
-    repositoryName: ghaContext.repo.repo,
-    commitSha: getCommitSha(),
-    prNumber: getPrNumber(),
-    workflowName: getWorkflowName(),
-    serverUrl: ghaContext.serverUrl,
-    runId: getRunId(),
-});
+export const getContext = () => {
+    const prNumber = getPrNumber();
+    const runId = getRunId();
+
+    return {
+        repositoryOwner: ghaContext.repo.owner,
+        repositoryName: ghaContext.repo.repo,
+        commitSha: getCommitSha(),
+        prNumber: prNumber,
+        workflowName: getWorkflowName(),
+        serverUrl: ghaContext.serverUrl,
+        runId: runId,
+        workflowRunUrl: buildWorkflowRunUrl(ghaContext.serverUrl, ghaContext.repo.owner + '/' + ghaContext.repo.repo, runId, prNumber),
+    }
+};
 
 /**
  * @returns {number|undefined}
@@ -22,9 +29,9 @@ export const getContext = () => ({
 export const getPrNumber = () => isPullRequestEvent() ? ghaEvent.workflow_run.pull_requests[0]?.number : undefined;
 
 /**
- * @returns {string|undefined}
+ * @returns {string}
  */
-export const getCommitSha = () => isPullRequestEvent() || isPushEvent()  ? ghaEvent.workflow_run.head_sha : undefined;
+export const getCommitSha = () => ghaEvent.workflow_run.head_sha;
 
 /**
  * @returns {string}
