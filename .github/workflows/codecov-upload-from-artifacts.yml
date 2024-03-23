@@ -114,7 +114,7 @@ jobs:
         uses: ./custom-action-repo/.github/actions/reports-group/find-action
         with:
           path: job-artifacts
-          format: json
+          follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
 
       - name: DEBUG
         run: echo '${{ toJson(steps.find-groups.outputs) }}'
@@ -130,7 +130,7 @@ jobs:
           script: |
             const {resolve: pathResolve, join: pathJoin, sep: pathSep} = require('path');
             const {PATH_LIST} = process.env;
-            const pathList = JSON.parse(PATH_LIST);
+            const pathList = PATH_LIST.split('\n');
             const artifactDirectory = pathResolve('job-artifacts')
             
             const result = pathList.map(groupPath => {
