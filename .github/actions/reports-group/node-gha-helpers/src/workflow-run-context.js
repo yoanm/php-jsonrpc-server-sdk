@@ -41,4 +41,4 @@ export const getWorkflowName = () => ghaEvent.workflow.name;
 /**
  * @returns {string}
  */
-export const getRunId = () => ghaEvent.workflow.id.toString();
+export const getRunId = () => ghaEvent.workflow_run.id.toString();
