@@ -1,7 +1,7 @@
 const github = require('@actions/github'); // @TODO move to 'imports from' when moved to TS !
 const core = require('@actions/core');
 
-const {GITHUB_REPOSITORY} = process.env;
+// @TODO Find a way to retrieve current job (add the jobId as state to re-use it here !) and forward the annotations as Check run `details_text`
 
 async function run() {
     if (core.getState('check-run-already-concluded').length > 0) {
@@ -19,13 +19,11 @@ async function run() {
     const requestParams = await core.group(
         'Build API params',
         async () => {
-            const [repoOwner, repoName] = GITHUB_REPOSITORY.split('/');
-
             return {
                 conclusion: jobStatus,
                 // Url path parameters
-                owner: repoOwner,
-                repo: repoName,
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
                 check_run_id: checkRunId
             };
         }
