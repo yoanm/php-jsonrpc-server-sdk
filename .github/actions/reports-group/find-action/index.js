@@ -8,9 +8,8 @@ async function run() {
     const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/
     const PATH_INPUT = core.getInput('path', {required: true});
+
     // Following inputs are not marked as required by the action but a default value must be there, so using `required` works
-    const FORMAT_INPUT = core.getInput('format', {required: true});
-    const GLUE_STRING_INPUT = core.getInput('glue-string', {required: true, trimWhitespace: false});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
     const trustedGroupPaths = await core.group(
@@ -34,8 +33,7 @@ async function run() {
             const res = {};
 
             core.info("Build 'list' output");
-            const list = trustedGroupPaths.map(v => SDK.path.withTrailingSeparator(v));
-            res.list = 'json' === FORMAT_INPUT ? JSON.stringify(list)  : list.join(GLUE_STRING_INPUT)
+            res.list = trustedGroupPaths.map(v => SDK.path.withTrailingSeparator(v)).join('\n');
 
             return res;
         }
