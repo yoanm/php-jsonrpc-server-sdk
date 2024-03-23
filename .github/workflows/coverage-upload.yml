@@ -15,6 +15,11 @@ jobs:
       commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
       run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
+      # @TODO move actions to a dedicated repo and remove the checkout
+      - uses: actions/checkout@v4
+        with:
+          path: custom-action-repo
+
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
           github-token: ${{ github.token }}

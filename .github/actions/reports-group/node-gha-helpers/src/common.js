@@ -7,11 +7,7 @@
  * @return {string}
  */
 export function buildWorkflowRunUrl(serverUrl, repositorySlug, runId, prNumber = undefined) {
-    return ghaContext.serverUrl
-        + '/' + ghaContext.repo.owner + '/' + ghaContext.repo.repo
-        + '/actions/runs/'
-        + runId
-        + (!prNumber ? '' : '?pr=' + prNumber);
+    return serverUrl + '/' + repositorySlug + '/actions/runs/' + runId + (!prNumber ? '' : '?pr=' + prNumber);
 }
 
 /**

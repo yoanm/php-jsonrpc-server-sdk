@@ -78,7 +78,6 @@ runs:
           
           core.getInput('path', {required: true});
           core.getInput('token', {required: true});
-          
 
     # @TODO move actions to a dedicated repo and remove the checkout
     - uses: actions/checkout@v4

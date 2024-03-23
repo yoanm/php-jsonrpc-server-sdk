@@ -26,7 +26,7 @@ async function run() {
             const currentJob = await ghaHelpers.fetchCurrentJob(octokit);
             const startedAt = (new Date()).toISOString();
             const summaryRedirectMrkLink = formatMarkdownUrl(
-                '**' + currentWorkflowContext.workflowName + (!currentJob ? ' workflow' : ' → ' + currentJob.name + ' job' )+ '**',
+                '**' + currentWorkflowContext.workflowName + (!currentJob ? '' : '** → **' + currentJob.name )+ '** ' + (!currentJob ? 'workflow' : 'job' ),
                 !currentJob ? currentWorkflowContext.workflowRunUrl : ghaHelpers.buildWorkflowJobRunUrl(currentJob, triggeringWorkflowContext.prNumber)
             );
 
