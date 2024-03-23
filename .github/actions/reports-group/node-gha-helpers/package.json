@@ -1,5 +1,5 @@
 {
-  "name": "node-sdk",
+  "name": "node-gha-helpers",
   "private": true,
   "version": "0.1.0",
   "author": "yoanm",
