@@ -1,0 +1,15 @@
+{
+  "name": "attach-check-run-to-triggering-workflow-action",
+  "private": true,
+  "version": "0.0.0",
+  "author": "yoanm",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "make build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1"
+  }
+}
