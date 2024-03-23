@@ -9,16 +9,20 @@ on:
       run-id:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
-          In case artefacts have been uploadded from another run, this input must be filled with original workflow !
+          In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
         required: false
         default: "${{ github.run_id }}"
         type: string
       override-commit:
-        description: Force the commit linked to the uploaded reports
+        description: |
+          Force the commit SHA linked to the uploaded reports.
+          Mostly useful for specific cases (e.g. `workflow_run` workflow).
+        type: string
         required: false
       follow-symbolic-links:
         description: Indicates whether to follow symbolic links when resolving groups path
-        default: 'false'
+        type: boolean
+        default: false
 
     secrets:
       PROJECT_TOKEN:
@@ -40,7 +44,7 @@ jobs:
       reports: ${{ steps.upload.outputs.reports }}
     permissions:
       contents: read
-      checks: write # For the check run creation !
+      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
     steps:
       # @TODO move actions to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4

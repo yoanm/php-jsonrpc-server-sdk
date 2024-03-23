@@ -244,8 +244,8 @@ jobs:
       contents: read
       checks: write # For the check run creation !
     outputs:
-      commit-sha: ${{ steps.fetch-workflow-metadata-action.outputs.commit-sha }}
-      run-id: ${{ steps.fetch-workflow-metadata-action.outputs.run-id }}
+      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
+      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
@@ -254,7 +254,7 @@ jobs:
           fails-on-triggering-workflow-failure: true
 
       - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata-action
-        id: fetch-workflow-metadata-action
+        id: fetch-workflow-metadata
 
   codacy-uploader:
     name: Codacy

@@ -9,19 +9,41 @@ inputs:
     description: Codecov upload token
     required: true
   override-commit:
-    description: Commit to link to the uploaded reports
+    description: |
+      Force the commit SHA linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+      
+      In case input is filled, `override-branch` input (as well as `override-pr` in case of `pull_request` event)
+      should be filled too in order to keep consitency between values !
     required: false
   override-branch:
-    description: Branch to link to the uploaded reports
+    description: |
+      Force the branch linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+      
+      In case input is filled, `override-commit` input (as well as `override-pr` in case of `pull_request` event)
+      should be filled too in order to keep consitency between values !
     required: false
   override-pr:
-    description: PR to link to the uploaded reports
+    description: |
+      Force the PR linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow triggered by a `pull_request` workflow).
+      
+      In case input is filled, `override-commit` and `override-branch` inputs should be filled too in order
+      to keep consitency between values !
     required: false
   override-build:
-    description: Workflow run to link to the uploaded reports
+    description: |
+      Workflow run ID to link to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
     required: false
   override-build-url:
-    description: Workflow run url to link to the uploaded reports
+    description: |
+      Workflow run url to link to the uploaded reports.
+      Usually something like `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}` (based on GHA environment variables).
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
+      
+      In case input is filled, `override-build` input most likely need to be filled too in order to keep consitency between values !
     required: false
   follow-symbolic-links:
     description: Indicates whether to follow symbolic links when resolving `path`

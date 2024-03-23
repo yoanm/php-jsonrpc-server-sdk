@@ -9,7 +9,9 @@ inputs:
     description: Codacy project token for the repository
     required: true
   override-commit:
-    description: Force the commit linked to the uploaded reports
+    description: |
+      Force the commit SHA linked to the uploaded reports.
+      Mostly useful for specific cases (e.g. `workflow_run` workflow).
     required: false
   follow-symbolic-links:
     description: Indicates whether to follow symbolic links when resolving `path`
