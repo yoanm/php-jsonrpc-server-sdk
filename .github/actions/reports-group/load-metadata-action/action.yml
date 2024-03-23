@@ -6,7 +6,8 @@ inputs:
     description: A group directory or a glob pattern in order to find group directories and merge their metadata
     required: true
   format:
-    description: string (default) or json
+    description: |
+      `string` (default) or `json`
     required: false
     default: 'string'
   glue-string:

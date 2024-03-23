@@ -9,6 +9,7 @@ inputs:
   format:
     description: |
       `clover`, `cobertura`, `lcov`, etc. Default to 'unknown'
+    required: false
     default: 'unknown'
   files:
     description: Multiline list of reports attached to the group
