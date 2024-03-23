@@ -117,11 +117,11 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      # @TODO move reports-group/create action to a dedicated repo
+      # @TODO move reports-group/create-action action to a dedicated repo
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
-        uses: ./.github/actions/reports-group/create
+        uses: ./.github/actions/reports-group/create-action
         with:
           name: unit-tests
           format: clover
@@ -131,11 +131,11 @@ jobs:
             php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      # @TODO move reports-group/create action to a dedicated repo
+      # @TODO move reports-group/create-action action to a dedicated repo
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
-        uses: ./.github/actions/reports-group/create
+        uses: ./.github/actions/reports-group/create-action
         with:
           name: functional-tests
           format: clover
@@ -244,8 +244,8 @@ jobs:
       contents: read
       checks: write # For the check run creation !
     outputs:
-      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
-      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
+      commit-sha: ${{ steps.fetch-workflow-metadata-action.outputs.commit-sha }}
+      run-id: ${{ steps.fetch-workflow-metadata-action.outputs.run-id }}
     steps:
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
@@ -253,8 +253,8 @@ jobs:
           job-status: ${{ job.status }}
           fails-on-triggering-workflow-failure: true
 
-      - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata
-        id: fetch-workflow-metadata
+      - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata-action
+        id: fetch-workflow-metadata-action
 
   codacy-uploader:
     name: Codacy

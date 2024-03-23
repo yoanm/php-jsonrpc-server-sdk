@@ -4,7 +4,7 @@ const {payload: ghaEvent} = ghaContext;
 const {isPullRequestEvent} = require('./workflow-run-event');
 
 /**
- * @returns {GHAContext}
+ * @type {GHAContextGetter}
  */
 export const getContext = () => ({
     repositoryOwner: ghaContext.repo.owner,

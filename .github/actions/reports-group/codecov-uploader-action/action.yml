@@ -65,7 +65,7 @@ runs:
 
     - name: Load groups metadata
       id: load-metadata
-      uses: ./custom-action-repo/.github/actions/reports-group/load-metadata
+      uses: ./custom-action-repo/.github/actions/reports-group/load-metadata-action
       with:
         path: ${{ inputs.path }}
         format: string # String in order to concatenate interesting values
