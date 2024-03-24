@@ -18,11 +18,21 @@ outputs:
   commit-sha:
     description: |
       Full commit SHA.
+      - `push` event => Branch where the push happened
+      - `pull_request` event => Head branch name
+      - `workflow_run` event => Commit upon which the triggering workflow has been executed (should match behaviors described on other cases then)
+      - Other events => Fallback on `github.sha` value
+  branch:
+    description: |
+      Branch name
       - `push` event => latest commit pushed
       - `pull_request` event => latest commit pushed on the pull request
-      - Other events => null
+      - `workflow_run` event => Branch where the triggering workflow has been executed (should match behaviors described on other cases then)
+      - Other events => Fallback on `github.ref` value if it's a branch ref, else the repository default branch is returned
   pull-request:
     description: Pull request number. Available only in case of `pull_request` event !
+  is-pr-from-fork:
+    description: Weither PR head is outside of current repository. Obviously accurate only in case of `pull_request` event !
   workflow-name:
     description: Name of the workflow, either current one or the triggering one (based on `from-triggering-workflow` value).
   run-id:
