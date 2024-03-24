@@ -79,7 +79,7 @@ runs:
     - name: Upload to codacy
       id: upload
       # Temporarily rely on internal fork, waiting for updates to be merges on original action
-      uses: yoanm/codacy-coverage-reporter-action@e8bf406ddc38eb22a7d302eb1d20df5090d36da1
+      uses: yoanm/codacy-coverage-reporter-action@d641c0af7ba34e9ddd18422ca95827100307ad71
       with:
         coverage-reports: ${{ steps.build-uploader-options.outputs.coverage-reports }}
         project-token: ${{ inputs.project-token }}

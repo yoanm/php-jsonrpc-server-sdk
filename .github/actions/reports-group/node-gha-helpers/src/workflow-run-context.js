@@ -15,7 +15,9 @@ export const getContext = () => {
         repositoryOwner: ghaContext.repo.owner,
         repositoryName: ghaContext.repo.repo,
         commitSha: getCommitSha(),
+        branch: getBranch(),
         prNumber: prNumber,
+        isPrFromFork: isPRFromFork(),
         workflowName: getWorkflowName(),
         serverUrl: ghaContext.serverUrl,
         runId: runId,
@@ -42,3 +44,13 @@ export const getWorkflowName = () => ghaEvent.workflow.name;
  * @returns {string}
  */
 export const getRunId = () => ghaEvent.workflow_run.id.toString();
+
+/**
+ * @return {string}
+ */
+export const getBranch = () => ghaEvent.workflow_run.head_branch;
+
+/**
+ * @return {boolean}
+ */
+export const isPRFromFork = () => isPullRequestEvent() && ghaEvent.workflow_run.head_repository.id === ghaEvent.workflow_run.repository.id;

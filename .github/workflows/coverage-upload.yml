@@ -22,6 +22,7 @@ jobs:
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         with:
+          name: "Fetch coverage info"
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
           fails-on-triggering-workflow-failure: true
@@ -51,6 +52,10 @@ jobs:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
       override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
+      override-branch: ${{ needs.fetch-info.outputs.branch }}
+      override-pr: ${{ needs.fetch-info.outputs.pr-number }}
+      override-build: ${{ needs.fetch-info.outputs.run-id }}
+      override-build-url: ${{ needs.fetch-info.outputs.run-url }}
     permissions:
       contents: read
       checks: write # For the check run creation !
