@@ -60,6 +60,8 @@ class JsonRpcResponseErrorNormalizerTest extends TestCase
         $this->assertFalse(empty($debugData['_class']));
         $this->assertFalse(empty($debugData['_code']));
         $this->assertFalse(empty($debugData['_message']));
+        $this->assertFalse(empty($debugData['_file']));
+        $this->assertFalse(empty($debugData['_line']));
         $this->assertFalse(empty($debugData['_trace']));
 
         $this->assertSame(get_class($exception), $debugData['_class']);
