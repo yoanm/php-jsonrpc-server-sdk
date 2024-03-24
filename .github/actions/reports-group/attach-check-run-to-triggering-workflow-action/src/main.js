@@ -24,7 +24,7 @@ async function run() {
                 throw new Error('Unable to guess the commit SHA !');
             }
             const currentJob = await ghaHelpers.fetchCurrentJob(octokit);
-            const startedAt = (new Date()).toISOString();
+            const nowDate = (new Date()).toISOString();
             const summaryRedirectMrkLink = formatMarkdownUrl(
                 '**' + currentWorkflowContext.workflowName + (!currentJob ? '' : '** → **' + currentJob.name )+ '** ' + (!currentJob ? 'workflow' : 'job' ),
                 !currentJob ? currentWorkflowContext.workflowRunUrl : ghaHelpers.buildWorkflowJobRunUrl(currentJob, triggeringWorkflowContext.prNumber)
@@ -33,9 +33,9 @@ async function run() {
             return {
                 name: !!checkName ? checkName : (currentJob?.name ?? currentWorkflowContext.workflowName + ' Check run'),
                 head_sha: triggeringWorkflowContext.commitSha,
-                started_at: startedAt,
+                started_at: !currentJob ? nowDate : currentJob.started_at,
                 conclusion: isSuccessfulJobAsOfNow ? undefined : jobStatus,
-                completed_at: isSuccessfulJobAsOfNow ? undefined : startedAt,
+                completed_at: isSuccessfulJobAsOfNow ? undefined : nowDate,
                 status: isSuccessfulJobAsOfNow ? 'in_progress' : 'completed',
                 output: {
                     title: '🔔 ' + currentWorkflowContext.workflowName,
