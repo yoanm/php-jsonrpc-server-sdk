@@ -1,4 +1,5 @@
 const {context: ghaContext} = require('@actions/github');
+/** @var {{workflow_run?: Record<string, any>}} ghaEvent */
 const {payload: ghaEvent} = ghaContext;
 
 /**

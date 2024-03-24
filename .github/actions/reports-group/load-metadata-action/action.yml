@@ -7,11 +7,12 @@ inputs:
     required: true
   format:
     description: |
-      `string` (default) or `json`
+      `string` (default) or `glob-string`.
+      Format `glob-string` is the same as `string` except that `path` and `reports` properties will be a glob compatible multiline list of path
     required: false
     default: 'string'
   glue-string:
-    description: String used to concatenate values when 'string' format is used (default to comma)
+    description: String used to concatenate values (default to comma)
     required: false
     default: ','
   follow-symbolic-links:

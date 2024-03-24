@@ -1,11 +1,10 @@
-const path = require('path'); // @TODO move to 'imports from' when moved to TS !
-
 const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
 
 const SDK = require('./node-sdk');  // @TODO move to 'imports from' when moved to TS !
 
 // @TODO replace json by glob-string as output ?? Same as string format but with glob compatible path list
-// (easier to manage for inner code, while end-user is still able to fallback on string format with a simple split)
+
+// (easier to manage for inner code, while end-user is still able to fall back on string format with a simple split)
 async function run() {
     const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/
@@ -15,52 +14,25 @@ async function run() {
     const GLUE_STRING_INPUT = core.getInput('glue-string', {required: true, trimWhitespace: false});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
 
-    const trustedMetadataList = await core.group(
+    let trustedMetadataList = await core.group(
         'Build metadata list',
-        async () => {
-            const trustedMetadataPathList = await SDK.find.trustedGroupPaths(PATH_INPUT, trustedPathConverter.toWorkspaceRelative, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT});
-            if (0 === trustedMetadataPathList.length) {
-                core.setFailed('Unable to retrieve any group. Something wrong most likely happened !');
-            }
-
-            return trustedMetadataPathList.map((trustedGroupPath) => {
-                core.info('Load '+ trustedGroupPath);
-
-                return trustedPathConverter.trustedMetadataUnder(trustedGroupPath);
-            });
-        }
+        async () => SDK.load.loadMetadataListFrom(PATH_INPUT, trustedPathConverter, {followSymbolicLinks: FOLLOW_SYMLINK_INPUT})
     );
-    core.debug('Group paths=' + JSON.stringify(trustedMetadataList));
+    core.debug('Metadata list=' + JSON.stringify(trustedMetadataList));
+    if (0 === trustedMetadataList.length) {
+        core.setFailed('Unable to retrieve any metadata. Something wrong most likely happened !');
+    }
 
-    const outputs = await core.group(
-        'Build action outputs',
-        async () => {
-            const res = {};
+    core.info('Build action outputs');
+    const isGlobString = 'glob-string' === FORMAT_INPUT;
 
-            // @TODO move back to dedicated properties (merge array/object properties one by one in case of multi result with json output)
-            core.info("Build 'metadata' output");
-            if ('json' === FORMAT_INPUT) {
-                // Detect if provided `paths` was an actual group directory
-                const isSingleMetadata = trustedMetadataList.length === 1 && path.resolve(trustedMetadataList[0].path) === path.resolve(PATH_INPUT);
-                res.metadata = isSingleMetadata ? trustedMetadataList.shift() : trustedMetadataList;
-            } else {
-                const formatScalar = (key) => [...(new Set(trustedMetadataList.map(m => m[key]))).values()].join(GLUE_STRING_INPUT);
-                const formatList = (key) => [...(new Set(trustedMetadataList.map(m => m[key]).flat())).values()].join(GLUE_STRING_INPUT);
-
-                res.metadata = {
-                    name: formatScalar('name'),
-                    format: formatScalar('format'),
-                    reports: formatList('reports'),
-                    flags: formatList('flags'),
-                    path: formatScalar('path'),
-                };
-            }
-
-            return res;
-        }
-    );
-    core.debug('outputs=' + JSON.stringify(outputs));
-    SDK.outputs.bindFrom(outputs);
+    SDK.outputs.bindFrom({
+        name: SDK.array.mergeStringList(SDK.array.itemsPropertyList(trustedMetadataList, 'name')).join(GLUE_STRING_INPUT),
+        format: SDK.array.mergeStringList(SDK.array.itemsPropertyList(trustedMetadataList, 'format')).join(GLUE_STRING_INPUT),
+        reports: SDK.array.mergeListOfList(SDK.array.itemsPropertyList(trustedMetadataList, 'reports')).join(isGlobString ? '\n' : GLUE_STRING_INPUT),
+        flags: SDK.array.mergeListOfList(SDK.array.itemsPropertyList(trustedMetadataList, 'flags')).join(GLUE_STRING_INPUT),
+        path: SDK.array.mergeStringList(SDK.array.itemsPropertyList(trustedMetadataList, 'path')).join(isGlobString ? '\n' : GLUE_STRING_INPUT),
+    });
 }
 
 run();

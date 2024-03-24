@@ -4,16 +4,9 @@ const core = require('@actions/core');
 const {RUNNER_NAME} = process.env;
 
 /**
- * @typedef {import('@/utils').GitHub} GitHubInterface
- */
-/**
- * @typedef {InstanceType<typeof GitHubInterface>} OctokitInterface
- */
-
-/**
  * @param {OctokitInterface} octokit
  *
- * @returns {Promise<Record<string, any>|undefined>}
+ * @returns {Promise<WorkflowJob|undefined>}
  */
 export async function fetchCurrentJob(octokit) {
     const jobList = await getWorkflowJobsForRunId(octokit, ghaContext.repo.owner, ghaContext.repo.repo, ghaContext.runId);
@@ -44,7 +37,7 @@ export async function fetchCurrentJob(octokit) {
  * @param {string} repo
  * @param {string} runId
  *
- * @return {Promise<Record<string, any>[]>}
+ * @return {Promise<WorkflowJob[]>}
  */
 async function getWorkflowJobsForRunId(octokit, owner, repo, runId) {
     return octokit.paginate(

@@ -13,7 +13,7 @@ async function run() {
     const failsOnTriggeringWorkflowFailure = core.getBooleanInput('fails-on-triggering-workflow-failure', {required: true});
 
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
-    const octokit = getOctokit(githubToken);
+    const octokit = /** @type {OctokitInterface} */getOctokit(githubToken);
 
     const requestParams = await core.group(
         'Build API params',
@@ -70,4 +70,7 @@ async function run() {
     }
 }
 
-run();
+run().catch(e => {
+    core.info('Error caught and ignored ' + e.message);
+    core.debug('Error=' + JSON.stringify(e));
+});

@@ -14,7 +14,7 @@ const {METADATA_FILENAME} = require('./constants');
  * @returns {string} same *untrusted* path with a trailing separator
  */
 export function withTrailingSeparator(untrustedPath) {
-    // by adding an additional trailing separator which will be removed by `path.normalize()` in case it is useless
+    // by adding a trailing separator which will be removed by `path.normalize()` in case it is useless
     return path.normalize(untrustedPath + path.sep);
 }
 
@@ -22,33 +22,62 @@ export function trustedPathHelpers() {
     return trustFrom(GITHUB_WORKSPACE);
 }
 
+/**
+ * @param {string} workspacePath
+ * @param {string} untrustedPath
+ * @param {string} normalizedPath
+ *
+ * @return {string}
+ */
+function formatErrorDetails(workspacePath, untrustedPath, normalizedPath) {
+    return ' Workspace: "' + workspacePath + '"'
+        + ' Path: "' + normalizedPath + '"'
+        + (untrustedPath !== normalizedPath ? ' (provided: "' + untrustedPath + '")' : '');
+}
+
+
 function avoidPoisonNullBytesAttack(untrustedPath) {
     if (untrustedPath.indexOf('\0') !== -1) {
         throw new Error('Potential "Poison Null Bytes" attack detected !');
     }
 }
-function avoidRelativePathAttack(trustedRootPath, untrustedPath) {
+function avoidRelativePathAttack(workspacePath, untrustedPath) {
     const normalizedPath = path.resolve(untrustedPath);
-    if (normalizedPath.indexOf(trustedRootPath) !== 0) {
+    if (normalizedPath.indexOf(workspacePath) !== 0) {
         throw new Error(
-            'Potential "Relative Path" attack detected !\n'
-            + ' Trusted root: "' + trustedRootPath + '"'
-            + ' Path: "' + normalizedPath + '"'
-            + (untrustedPath !== normalizedPath ? ' (provided: "' + untrustedPath + '")' : '')
+            'Potential "Relative Path" attack detected !\n' + formatErrorDetails(workspacePath, untrustedPath, normalizedPath)
         );
     }
 }
 
-function trustFrom(workspacePath) {
+function mustBeStrictlyIn(workspacePath, untrustedPath) {
+    const normalizedPath = path.resolve(untrustedPath);
+    if (path.dirname(normalizedPath) !== workspacePath) {
+        throw new Error(
+            'Path should lead to the workspace directory only !\n' + formatErrorDetails(workspacePath, untrustedPath, normalizedPath)
+        );
+    }
+}
+
+function trustFrom(workspacePath, zeroDepth = false) {
     // Ensure workspace path is ok
     avoidPoisonNullBytesAttack(workspacePath)
     if (!path.isAbsolute(workspacePath)) {
         throw new Error('Workspace path must be an absolute path');
     }
     const helpers = {
+        /**
+         * @param {string} untrustedPath
+         *
+         * @return {string}
+         */
         trust: (untrustedPath) => {
             avoidPoisonNullBytesAttack(untrustedPath);
-            avoidRelativePathAttack(workspacePath, untrustedPath);
+            if (zeroDepth) {
+                mustBeStrictlyIn(workspacePath, untrustedPath);
+            } else {
+                avoidRelativePathAttack(workspacePath, untrustedPath);
+            }
 
             return untrustedPath; // Becomes trusted then :)
         },
@@ -63,19 +92,20 @@ function trustFrom(workspacePath) {
         },
         /**
          * @param {string} untrustedGroupPath
-         * @returns {{name: string, format: string, reports: string[], flags: string[], path: string}}
+         *
+         * @returns {import('./interfaces').Metadata[]}
          */
         trustedMetadataUnder: (untrustedGroupPath) => {
             const trustedPath = helpers.trust(path.join(untrustedGroupPath, METADATA_FILENAME));
             const content = fs.readFileSync(trustedPath).toString();
             core.debug(untrustedGroupPath + ' content=' + content);
 
-            const untrustedMetadata = JSON.parse(content);
+            const untrustedMetadata = /** @type {Metadata} */JSON.parse(content);
             const trustedGroupPath = path.dirname(trustedPath);
             // Ensure `reports` hasn't been tampered with ! (may lead to files outside the directory)
-            const trustedReportPathsConverter = trustFrom(trustedGroupPath);
+            const trustedReportPathsConverter = trustFrom(path.resolve(trustedGroupPath), true);
 
-            return {
+            return /** @type {import('./interfaces').Metadata[]} */{
                 name: untrustedMetadata.name,
                 format: untrustedMetadata.format,
                 reports: untrustedMetadata.reports.map(r => trustedReportPathsConverter.trust(path.join(trustedGroupPath, r))),

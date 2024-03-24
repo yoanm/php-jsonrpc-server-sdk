@@ -31,6 +31,7 @@ async function run() {
     core.debug('API params=' + JSON.stringify(requestParams));
 
     const apiResponse = await core.group('Conclude check-run ', async () => {
+        /** @type {OctokitInterface} */
         const octokit = github.getOctokit(githubToken);
 
         // @TODO Move back to `octokit.rest.checks.update()`
@@ -39,4 +40,5 @@ async function run() {
     core.debug('API call to ' +apiResponse.url + ' => HTTP ' + apiResponse.status);
 }
 
+// No need to wrap cleanup with try/catch, error are ignored anyway
 run();
