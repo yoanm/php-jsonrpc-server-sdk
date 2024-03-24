@@ -63,9 +63,8 @@ export const getBranch = () => {
     }
 
     // In case ref is not a branch (e.g. a tag), fallback to repository default branch
-    return ghaEvent.ref.startsWith('refs/heads') ? ghaEvent.ref.replace('refs/heads/', '') : ghaEvent.repository.default_branch;
+    return ghaContext.ref.startsWith('refs/heads') ? ghaContext.ref.replace('refs/heads/', '') : ghaEvent.repository.default_branch;
 };
-
 
 /**
  * @return {boolean}
