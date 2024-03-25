@@ -5,7 +5,7 @@ const core = require('@actions/core'); // @TODO move to 'imports from' when move
  */
 export function bindFrom(outputs) {
     Object.entries(outputs).map(([outputName, outputValue]) => {
-        core.debug('Output ' + outputName + '=' +outputValue);
+        core.debug('Output ' + outputName + '=' +JSON.stringify(outputValue));
         core.setOutput(outputName, outputValue);
     });
 }
