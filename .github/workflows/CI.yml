@@ -117,11 +117,10 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      # @TODO move reports-group/create-action action to a dedicated repo
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
-        uses: ./.github/actions/reports-group/create-action
+        uses: yoanm/tmp-reports-group-workspace/.github/actions/create-action@develop
         with:
           name: unit-tests
           format: clover
@@ -131,11 +130,10 @@ jobs:
             php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      # @TODO move reports-group/create-action action to a dedicated repo
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
-        uses: ./.github/actions/reports-group/create-action
+        uses: yoanm/tmp-reports-group-workspace/.github/actions/create-action@develop
         with:
           name: functional-tests
           format: clover
@@ -247,24 +245,19 @@ jobs:
       commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
       run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
-      # @TODO move actions to a dedicated repo and remove the checkout
-      - uses: actions/checkout@v4
-        with:
-          path: custom-action-repo
-
-      - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+      - uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
         with:
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
           fails-on-triggering-workflow-failure: true
 
-      - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata-action
+      - uses: yoanm/tmp-reports-group-workspace/.github/actions/fetch-workflow-metadata-action@develop
         id: fetch-workflow-metadata
 
   codacy-uploader:
     name: Codacy
     needs: [fetch-info]
-    uses: ./.github/workflows/codacy-upload-from-artifacts.yml
+    uses: yoanm/tmp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@develop
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
@@ -278,7 +271,7 @@ jobs:
   codecov-uploader:
     name: Codecov
     needs: [fetch-info]
-    uses: ./.github/workflows/codecov-upload-from-artifacts.yml
+    uses: yoanm/tmp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@develop
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
