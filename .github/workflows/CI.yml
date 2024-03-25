@@ -245,7 +245,7 @@ jobs:
       commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
       run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
-      - name: '🟡 Check run'
+      - name: 'Check run ○'
         uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
         with:
           name: 'Fetch coverage info **test**'

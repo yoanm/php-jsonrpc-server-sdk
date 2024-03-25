@@ -12,7 +12,7 @@ jobs:
       contents: read
       checks: write # For the check run creation !
     steps:
-      - name: '🟡 Check run'
+      - name: 'Check run ○'
         uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
         with:
           name: 'Fetch coverage info'
