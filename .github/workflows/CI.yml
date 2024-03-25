@@ -4,7 +4,6 @@ on: # Build any PRs and main branch changes
   pull_request:
     types:
       - opened
-      - edited
       - synchronize
   push:
     branches: [ master ]
