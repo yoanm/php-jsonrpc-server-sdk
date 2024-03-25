@@ -6,22 +6,6 @@ const {METADATA_FILENAME} = require('./constants');
 const glob = require('./glob');
 
 /**
- @param {string} globPattern
- @param {function(untrusted: string): string} toTrustedPath A function ensuring path is valid before returning it
- @param {import('@actions/glob').GlobOptions|undefined} globOptions
-
- @returns {Promise<string[]>} Trusted groups directory path list
- */
-export async function trustedGroupPaths(globPattern, toTrustedPath, globOptions = undefined) {
-    const list = [];
-    for (const fp of await trustedMetadataPaths(globPattern, toTrustedPath, globOptions)) {
-        list.push(path.dirname(fp));
-    }
-
-    return list;
-}
-
-/**
  * @param {string} globPattern
  * @param {function(untrusted: string): string} toTrustedPath A function ensuring path is valid before returning it
  * @param {import('@actions/glob').GlobOptions|undefined} globOptions

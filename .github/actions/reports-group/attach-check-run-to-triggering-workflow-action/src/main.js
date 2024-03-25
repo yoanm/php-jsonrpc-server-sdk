@@ -6,6 +6,7 @@ const ghaHelpers = require('../node-gha-helpers');
 const formatMarkdownUrl = (title, link) => '<a href="' + link + '" target="blank">' + title + '</a>';
 
 async function run() {
+    core.saveState('has-been-triggered', 1);
     /** INPUTS **/
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
@@ -13,7 +14,7 @@ async function run() {
     const failsOnTriggeringWorkflowFailure = core.getBooleanInput('fails-on-triggering-workflow-failure', {required: true});
 
     const isSuccessfulJobAsOfNow = 'success' === jobStatus;
-    const octokit = getOctokit(githubToken);
+    const octokit = /** @type {OctokitInterface} */getOctokit(githubToken);
 
     const requestParams = await core.group(
         'Build API params',
@@ -70,4 +71,7 @@ async function run() {
     }
 }
 
-run();
+run().catch(e => {
+    core.warning('Error caught and ignored ' + e.message);
+    core.debug('Error=' + JSON.stringify(e));
+});

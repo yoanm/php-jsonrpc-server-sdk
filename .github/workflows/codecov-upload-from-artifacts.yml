@@ -10,7 +10,7 @@ on:
       run-id:
         description: |
           The id of the workflow run where the artifacts were uploaded from (default to current run).
-          In case artefacts have been uploadded from another run, this input must be filled with original workflow run id !
+          In case artifacts have been uploadded from another run, this input must be filled with original workflow run id !
         required: false
         type: string
         default: "${{ github.run_id }}"
@@ -69,17 +69,21 @@ on:
       TOKEN:
         required: true
     outputs:
-      groups:
+      groups-count:
         description: TODO
-        value: ${{ jobs.prepare.outputs.list-for-output }}
+        value: ${{ jobs.prepare.outputs.groups-count }}
+      group-paths:
+        description: TODO
+        value: ${{ jobs.prepare.outputs.group-paths }}
 
 jobs:
   prepare:
     name: 📮 🗃️ Prepare uploads
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.build-matrix.outputs.matrix }}
-      list-for-output: ${{ steps.find-groups.outputs.list }}
+      groups-count: ${{ steps.find-groups.outputs.count }}
+      matrix: ${{ steps.find-groups.outputs.matrix }}
+      group-paths: ${{ steps.find-groups.outputs.paths }}
     permissions:
       contents: read
       checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
@@ -114,46 +118,40 @@ jobs:
         uses: ./custom-action-repo/.github/actions/reports-group/find-action
         with:
           path: job-artifacts
+          format: glob-string
+          glue-string: ','
+          artifacts-mode: true
+          group-by: format,flags
+          matrix-mode: true
           follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
 
       - name: DEBUG
         run: echo '${{ toJson(steps.find-groups.outputs) }}'
 
-      # @TODO create a reports-group/find-action-from-artifacts action returning a map of group name to the related artefacts
-      # (alternatively, update reports-group/find-action to manage it, like with a `from-artifacts` ??)
-      - name: Build matrix
-        id: build-matrix
-        uses: actions/github-script@v7
-        env:
-          PATH_LIST: ${{ steps.find-groups.outputs.list }}
-        with:
-          script: |
-            const {resolve: pathResolve, join: pathJoin, sep: pathSep} = require('path');
-            const {PATH_LIST} = process.env;
-            const pathList = PATH_LIST.split('\n');
-            const artifactDirectory = pathResolve('job-artifacts')
-            
-            const result = pathList.map(groupPath => {
-              const absGroupPath = pathResolve(groupPath);
-              core.debug('absGroupPath=' + JSON.stringify(absGroupPath));
-              if (!absGroupPath.startsWith(artifactDirectory)) {
-                core.setFailed('Something wrong there :|')
-              }
-              const segments = absGroupPath.replace(artifactDirectory, '').split(pathSep).filter(v => v.trim().length > 0);
-              core.debug('segments=' + JSON.stringify(segments));
-              
-              return {artifact: segments.shift(), path: pathJoin(...segments)};
-            });
-            core.debug('result=' + JSON.stringify(result));
-            
-            core.setOutput('matrix', JSON.stringify({include: result}));
+      # Codecov uploader requires the repository to be there !
+      # @TODO see if by manually filling sha/branch/pr etc, it's still required !
+      - name: Checkout Repository
+        if: ${{ steps.find-groups.outputs.count == 1 }}
+        uses: actions/checkout@v4
 
-      - name: DEBUG
-        run: echo '${{ toJson(steps.build-matrix.outputs) }}'
+      - name: Fast-lane single group upload
+        if: ${{ steps.find-groups.outputs.count == 1 }}
+        uses: ./custom-action-repo/.github/actions/reports-group/codecov-uploader-action
+        with:
+          path: ${{ steps.find-groups.outputs.paths }}
+          token: ${{ secrets.TOKEN }}
+          override-commit: ${{ inputs.override-commit }}
+          override-branch: ${{ inputs.override-branch }}
+          override-pr: ${{ inputs.override-pr }}
+          override-build: ${{ inputs.override-build }}
+          override-build-url: ${{ inputs.override-build-url }}
+          follow-symbolic-links: ${{ inputs.follow-symbolic-links }}
 
   uploads:
     name: "${{ matrix.artifact }} - ${{ matrix.path }}"
     runs-on: ubuntu-latest
+    # If only one job exists, it should have been already executed on previous job (to avoid popping a runner just for one job)
+    if: ${{ needs.prepare.outputs.groups-count > 1 }}
     needs: [ prepare ]
     strategy:
       fail-fast: true
@@ -174,18 +172,18 @@ jobs:
       # @TODO move actions to a dedicated repo and remove the checkout
       - uses: actions/checkout@v4
         with:
-          path: custom-action-repo
+          path: build/custom-action-repo
 
-      - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+      - uses: ./build/custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
         if: ${{ 'workflow_run' == github.event_name }}
         with:
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
 
-      - name: Download '${{ matrix.artifact }}' artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
+          pattern: ${{ matrix.artifact }}
           path: job-artifact
           github-token: ${{ github.token }} # Required in order to use `run-id` parameter !
           run-id: ${{ inputs.run-id }} # Required in case workflow is executed from another run (e.g. `workflow_run`)
@@ -197,7 +195,7 @@ jobs:
 
       - name: Upload reports
         id: upload
-        uses: ./custom-action-repo/.github/actions/reports-group/codecov-uploader-action
+        uses: ./build/custom-action-repo/.github/actions/reports-group/codecov-uploader-action
         with:
           path: job-artifact/${{ matrix.path }}
           token: ${{ secrets.TOKEN }}

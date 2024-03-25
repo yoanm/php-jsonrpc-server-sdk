@@ -116,7 +116,6 @@ async function run() {
             return res;
         }
     );
-    core.debug('outputs=' + JSON.stringify(outputs));
     SDK.outputs.bindFrom(outputs);
 }
 
