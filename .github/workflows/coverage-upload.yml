@@ -11,38 +11,43 @@ jobs:
     permissions:
       contents: read
       checks: write # For the check run creation !
-    outputs:
-      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
-      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
-      - uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
+      - name: '🟡 Check run'
+        uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
         with:
-          name: "Fetch coverage info"
-          github-token: ${{ github.token }}
-          job-status: ${{ job.status }}
+          name: 'Fetch coverage info'
           fails-on-triggering-workflow-failure: true
 
       - uses: yoanm/tmp-reports-group-workspace/.github/actions/fetch-workflow-metadata-action@develop
         id: fetch-workflow-metadata
 
+    outputs:
+      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
+      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
+
   codacy-uploader:
     name: Codacy
     needs: [fetch-info]
     uses: yoanm/tmp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@develop
-    with:
-      artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
     permissions:
       contents: read
       checks: write # For the check run creation !
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+    with:
+      artifacts-pattern: coverage-groups-*
+      run-id: ${{ needs.fetch-info.outputs.run-id }}
+      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
 
   codecov-uploader:
     name: Codecov
     needs: [fetch-info]
     uses: yoanm/tmp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@develop
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
+    secrets:
+      TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
@@ -51,11 +56,6 @@ jobs:
       override-pr: ${{ needs.fetch-info.outputs.pr-number }}
       override-build: ${{ needs.fetch-info.outputs.run-id }}
       override-build-url: ${{ needs.fetch-info.outputs.run-url }}
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    secrets:
-      TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   debug-context:
     name: DEBUG - context
