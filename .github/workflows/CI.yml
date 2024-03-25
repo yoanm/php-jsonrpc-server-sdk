@@ -245,10 +245,10 @@ jobs:
       commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
       run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
-      - uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
+      - name: 'Check run ○'
+        uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
         with:
-          github-token: ${{ github.token }}
-          job-status: ${{ job.status }}
+          name: 'Fetch coverage info **test**'
           fails-on-triggering-workflow-failure: true
 
       - uses: yoanm/tmp-reports-group-workspace/.github/actions/fetch-workflow-metadata-action@develop
