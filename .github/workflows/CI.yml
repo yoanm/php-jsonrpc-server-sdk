@@ -18,11 +18,8 @@ concurrency:
 env:
   TEST_OUTPUT_STYLE: pretty
   COMPOSER_OPTIONS: --optimize-autoloader
-  CODACY_CACHE_PATH: ~/.cache/codacy
-  CODACY_BIN: ~/.cache/codacy/codacy.sh
 
 jobs:
-## Untrusted >>>
   debug-context:
     name: DEBUG - context
     runs-on: ubuntu-latest
@@ -234,66 +231,3 @@ jobs:
 
       - name: Test
         run: make test-unit && make test-functional
-## <<< Untrusted
-## Trusted - to move to a workflow_run workflow >>>
-  fetch-info:
-    name: Fetch triggering workflow metadata
-    runs-on: ubuntu-latest
-    needs: [tests]
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    outputs:
-      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
-      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
-    steps:
-      # @TODO move actions to a dedicated repo and remove the checkout
-      - uses: actions/checkout@v4
-        with:
-          path: custom-action-repo
-
-      - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
-        with:
-          github-token: ${{ github.token }}
-          job-status: ${{ job.status }}
-          fails-on-triggering-workflow-failure: true
-
-      - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata-action
-        id: fetch-workflow-metadata
-
-  codacy-uploader:
-    name: Codacy
-    needs: [fetch-info]
-    uses: ./.github/workflows/codacy-upload-from-artifacts.yml
-    with:
-      artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    secrets:
-      PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-
-  codecov-uploader:
-    name: Codecov
-    needs: [fetch-info]
-    uses: ./.github/workflows/codecov-upload-from-artifacts.yml
-    with:
-      artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    secrets:
-      TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-  debug-uploads:
-    name: DEBUG - Uploaders
-    runs-on: ubuntu-latest
-    needs: [ codacy-uploader, codecov-uploader ]
-    steps:
-      - run: echo 'codecov='"'"'${{ toJson(needs.codecov-uploader) }}'"'"
-      - run: echo 'codacy='"'"'${{ toJson(needs.codacy-uploader) }}'"'"
-## <<< Trusted - to move to a workflow_run workflow
