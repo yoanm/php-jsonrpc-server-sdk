@@ -117,11 +117,10 @@ jobs:
       - name: Tests
         run: make test-unit && make test-functional
 
-      # @TODO move reports-group/create-action action to a dedicated repo
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
-        uses: ./.github/actions/reports-group/create-action
+        uses: yoanm/tmp-reports-group-workspace/.github/actions/create-action@develop
         with:
           name: unit-tests
           format: clover
@@ -131,11 +130,10 @@ jobs:
             php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      # @TODO move reports-group/create-action action to a dedicated repo
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
-        uses: ./.github/actions/reports-group/create-action
+        uses: yoanm/tmp-reports-group-workspace/.github/actions/create-action@develop
         with:
           name: functional-tests
           format: clover
