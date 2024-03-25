@@ -15,25 +15,20 @@ jobs:
       commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
       run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
     steps:
-      # @TODO move actions to a dedicated repo and remove the checkout
-      - uses: actions/checkout@v4
-        with:
-          path: custom-action-repo
-
-      - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
+      - uses: yoanm/tmp-reports-group-workspace/.github/actions/attach-check-run-to-triggering-workflow-action@develop
         with:
           name: "Fetch coverage info"
           github-token: ${{ github.token }}
           job-status: ${{ job.status }}
           fails-on-triggering-workflow-failure: true
 
-      - uses: ./custom-action-repo/.github/actions/reports-group/fetch-workflow-metadata-action
+      - uses: yoanm/tmp-reports-group-workspace/.github/actions/fetch-workflow-metadata-action@develop
         id: fetch-workflow-metadata
 
   codacy-uploader:
     name: Codacy
     needs: [fetch-info]
-    uses: ./.github/workflows/codacy-upload-from-artifacts.yml
+    uses: yoanm/tmp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@develop
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
@@ -47,7 +42,7 @@ jobs:
   codecov-uploader:
     name: Codecov
     needs: [fetch-info]
-    uses: ./.github/workflows/codecov-upload-from-artifacts.yml
+    uses: yoanm/tmp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@develop
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
