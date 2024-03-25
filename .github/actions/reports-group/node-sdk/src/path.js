@@ -14,8 +14,11 @@ const {METADATA_FILENAME} = require('./constants');
  * @returns {string} same *untrusted* path with a trailing separator
  */
 export function withTrailingSeparator(untrustedPath) {
-    // by adding a trailing separator which will be removed by `path.normalize()` in case it is useless
-    return path.normalize(untrustedPath + path.sep);
+    if (untrustedPath.length && path.sep !== untrustedPath[untrustedPath.length - 1]) {
+        return untrustedPath + path.sep
+    }
+
+    return untrustedPath;
 }
 
 export function trustedPathHelpers() {

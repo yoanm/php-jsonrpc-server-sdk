@@ -10,19 +10,19 @@ description: |
     name: Prepare upload
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.upload.outputs.matrix }} # See job "Upload" below
-      groups: ${{ steps.upload.outputs.paths }} # List of path to reports group directories
+      matrix: $\{{ steps.upload.outputs.matrix }} # See job "Upload" below
+      groups: $\{{ steps.upload.outputs.paths }} # List of path to reports group directories
     permissions:
       contents: read
-      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
+      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if $\{{ !inputs.with-check-run }}
     steps:
       # ... fetch data (checkout, artefacts, etc)
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
-        if: ${{ 'workflow_run' == github.event_name }}
+        if: $\{{ 'workflow_run' == github.event_name }}
         with:
-          github-token: ${{ github.token }}
-          job-status: ${{ job.status }}
+          github-token: $\{{ github.token }}
+          job-status: $\{{ job.status }}
       - name: Find reports groups
         id: find-groups
         uses: reports-group/find-action@v0.1.0
@@ -40,19 +40,19 @@ description: |
     name: Upload groups
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.upload.outputs.matrix }} # See job "Upload" below
-      groups: ${{ steps.upload.outputs.paths }} # List of path to reports group directories
+      matrix: $\{{ steps.upload.outputs.matrix }} # See job "Upload" below
+      groups: $\{{ steps.upload.outputs.paths }} # List of path to reports group directories
     permissions:
       contents: read
-      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if ${{ !inputs.with-check-run }}
+      checks: write # For the check run creation ! @TODO check if doable to use inputs there and set read rather than write if `!inputs.with-check-run`
     steps:
       # ... fetch data (checkout, artefacts, etc)
 
       - uses: ./custom-action-repo/.github/actions/reports-group/attach-check-run-to-triggering-workflow-action
-        if: ${{ 'workflow_run' == github.event_name }}
+        if: $\{{ 'workflow_run' == github.event_name }}
         with:
-          github-token: ${{ github.token }}
-          job-status: ${{ job.status }}
+          github-token: $\{{ github.token }}
+          job-status: $\{{ job.status }}
       - name: Find reports groups
         id: find-groups
         uses: reports-group/find-action@v0.1.0
@@ -112,7 +112,7 @@ inputs:
   glue-string:
     description: String used to concatenate values.
     required: false
-  // "Filtering" phases
+  # "Filtering" phases
   forbidden-groups:
     description: |
       Multiline list of group name.
@@ -177,7 +177,7 @@ inputs:
       Note: "Allowed" phase is performed **after "Forbidden" phase**.
     required: false
     default: ''
-  // Artifact mode
+  # Artifact mode
   artifacts-mode:
     description: |
       Each root directory of the provided `path` will be treated as artifact content. `path` must be a single valid path and not a glob pattern !
@@ -186,14 +186,14 @@ inputs:
       Note: `artifacts-mode` is applied **after ""Filtering" phases** (`forbidden-*` and `allowed-*`)
     required: false
     default: 'false'
-  // Path-only mode
+  # Path-only mode
   paths-only-mode:
     description: |
       Setting this to `true` will avoid subsequent operation (only filtering in & out has been performed and `artifacts-mode` enabled if needed) and just
       build the list of path. Use this along with `path` input from reports-group/load-metadata-action in order to quickly merge multiple group into one.
     required: false
     default: 'false'
-  // "Grouping" phase
+  # "Grouping" phase
   group-by:
     description: |
       Comma separated list of field used to group metadata list as a set of list. 
@@ -208,11 +208,11 @@ inputs:
       Note: "Grouping" phase is performed **after the "Filtering" phase** (`forbidden-*` and `allowed-*`) and after `artifacts-mode` may have been enabled
     required: false
     default: ''
-  // Matrix mode
+  # Matrix mode
   matrix-mode:
     description: |
       Setting this to `true` will create an output named `matrix` (`list` output won't be filled !) containing a JSON matrix object.
-      Re-use it to create job matrix: `matrix: ${{ fromJson(STEP_OUTPUTS.matrix) }}`
+      Re-use it to create job matrix: `matrix: $\{{ fromJson(STEP_OUTPUTS.matrix) }}`
       
       Note: `matrix-mode` is applied at the very end of the process, job context will be the shape attached to `format` description, based on all previous inputs configured
     required: false
@@ -240,7 +240,7 @@ outputs:
   matrix:
     description: |
       Filled only with `matrix` format and if `paths-only-mode` is not enabled !
-      A JSON encoded object which can be re-used as Job matrix by using the following notation: `matrix: ${{ fromJson(STEP_OUTPUTS.matrix) }}`
+      A JSON encoded object which can be re-used as Job matrix by using the following notation: `matrix: $\{{ fromJson(STEP_OUTPUTS.matrix) }}`
       
       See `format` and `matrix-mode` description to figure out the metatada shape based on your inputs
 

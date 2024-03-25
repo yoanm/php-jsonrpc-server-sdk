@@ -5,20 +5,17 @@ const core = require('@actions/core'); // @TODO move to 'imports from' when move
 
 const SDK = require('./node-sdk'); // @TODO move to 'imports from' when moved to TS !
 
-// @TODO replace json by glob-string as output ?? Same as string format but with glob compatible path list
-
-// (easier to manage for inner code, while end-user is still able to fall back on string format with a simple split)
 async function run() {
     const trustedPathConverter = SDK.path.trustedPathHelpers();
     /** INPUTS **/
     const PATH_INPUT = core.getInput('path', {required: true});
     // Following inputs are not marked as required by the action but a default value must be there, so using `required` works
     const FORMAT_INPUT = core.getInput('format', {required: true});
-    const GLUE_STRING_INPUT = core.getInput('format', {required: 'json' !== FORMAT_INPUT, trimWhitespace: false});
+    const GLUE_STRING_INPUT = core.getInput('glue-string', {required: 'json' !== FORMAT_INPUT, trimWhitespace: false});
     const FOLLOW_SYMLINK_INPUT = core.getBooleanInput('follow-symbolic-links', {required: true});
+    const ENABLE_PATH_ONLY_MODE = core.getBooleanInput('paths-only-mode', {required: true});
     const ENABLE_ARTIFACT_MODE = core.getBooleanInput('artifacts-mode', {required: true});
     const ENABLE_MATRIX_MODE = core.getBooleanInput('matrix-mode', {required: true});
-    const ENABLE_PATH_ONLY_MODE = core.getBooleanInput('matrix-mode', {required: true});
     // Following inputs are optionals !
     const GROUP_BY_INPUT = core.getInput('group-by');
     const trustedPathInput = trustedPathConverter.trust(PATH_INPUT);
@@ -36,32 +33,38 @@ async function run() {
     core.debug('Filter metadata list');
     trustedMetadataList = SDK.filter.filterMetadataList(
         trustedMetadataList,
-        core.getMultilineInput('exclude-groups'), core.getMultilineInput('exclude-formats'), core.getMultilineInput('exclude-flags'), core.getMultilineInput('exclude-paths'),
-        core.getMultilineInput('only-include-groups'), core.getMultilineInput('only-include-formats'), core.getMultilineInput('only-include-flags'), core.getMultilineInput('only-include-paths')
-    );
+        {
+            groups: core.getMultilineInput('exclude-groups'),
+            formats: core.getMultilineInput('exclude-formats'),
+            flags: core.getMultilineInput('exclude-flags'),
+            paths: core.getMultilineInput('exclude-paths'),
+        },
+        {
+            groups: core.getMultilineInput('only-include-groups'),
+            formats: core.getMultilineInput('only-include-formats'),
+            flags: core.getMultilineInput('only-include-flags'),
+            paths: core.getMultilineInput('only-include-paths')
+        }
+    )
     core.debug('New metadata list=' + JSON.stringify(trustedMetadataList));
     // Apply `artifacts` mode if needed
     if (ENABLE_ARTIFACT_MODE) {
         core.debug('Apply artifact mode');
-        if (trustedPathInput.split('\n').length !== 1 || trustedPathInput.includes('*') || trustedPathInput.includes('?') || trustedPathInput.includes(']')) {
-            core.setFailed('You must provide a single valid path when `artifacts-mode` option is enabled !')
-        }
         if (!statSync(trustedPathInput).isDirectory()) {
-            core.setFailed('You must provide a single valid path when `artifacts-mode` option is enabled !')
+            core.setFailed('Provided path is not a valid directory. You must provide a single valid path when `artifacts-mode` is enabled !')
         }
-        const artifactDownloadDirectory = SDK.path.withTrailingSeparator(path.resolve(trustedPathInput));
+        const trustedArtifactDwlDirPath = SDK.path.withTrailingSeparator(path.resolve(trustedPathInput));
         const artifactList = new Set();
 
         trustedMetadataList = trustedMetadataList.map(metadata => {
             const absGroupPath = path.resolve(metadata.path);
-            const pathFromDwlDirectory = path.normalize(absGroupPath.replace(artifactDownloadDirectory, ''));
-            const [artifactName] = pathFromDwlDirectory.split(path.sep);
+            const trustedPathFromDwlDirectory = path.normalize(absGroupPath.replace(trustedArtifactDwlDirPath, ''));
+            const [artifactName] = trustedPathFromDwlDirectory.split(path.sep);
 
             metadata.artifact = artifactName;
             artifactList.add(metadata.artifact);
-            metadata.path = pathFromDwlDirectory;
-            metadata.path = SDK.path.withTrailingSeparator(0 === metadata.path.length ? '.' : metadata.path);
-            metadata.reports = metadata.reports.map(v => path.relative(v, artifactDownloadDirectory));
+            metadata.path = SDK.path.withTrailingSeparator(0 === trustedPathFromDwlDirectory.length ? '.' : trustedPathFromDwlDirectory);
+            metadata.reports = metadata.reports.map(v => trustedPathConverter.trust(path.relative(trustedArtifactDwlDirPath, v)));
 
             return metadata;
         });
@@ -71,7 +74,7 @@ async function run() {
     }
     // Apply `path-only` mode ?
     if (ENABLE_PATH_ONLY_MODE) {
-        core.debug('Apply paths-only mode');
+        core.info('Apply paths-only mode');
         SDK.outputs.bindFrom({
             count: trustedMetadataList.length,
             paths: trustedMetadataList.map(({reports}) => reports).flat().join('\n'),
@@ -85,8 +88,7 @@ async function run() {
     let trustedMetadataListOfList = [trustedMetadataList];
     /** @type {MergeField[]} */
     const groupByItemList = GROUP_BY_INPUT.length > 0 ? GROUP_BY_INPUT.split(',') : [];
-    const isMultiGroup = groupByItemList.length > 0;
-    if (isMultiGroup) {
+    if (groupByItemList.length > 0) {
         core.info('Merge metadata list');
         trustedMetadataListOfList = SDK.merge.groupMetadataList(trustedMetadataList, groupByItemList);
         core.debug('New metadata list=' + JSON.stringify(trustedMetadataListOfList));
@@ -97,12 +99,13 @@ async function run() {
 
     // Apply `matrix-mode`
     if (ENABLE_MATRIX_MODE) {
-        core.debug('Apply matrix mode');
+        core.info('Apply matrix mode');
+
         SDK.outputs.bindFrom({
             ...outputs,
             list: undefined,
             matrix: JSON.stringify({
-                includes: outputs.list.map(md => Array.isArray(md.name) ? JSON.stringify(md) : md)
+                include: outputs.list.map(md => Array.isArray(md.name) ? JSON.stringify(md) : md)
             }),
         });
         core.debug('Matrix mode applied');

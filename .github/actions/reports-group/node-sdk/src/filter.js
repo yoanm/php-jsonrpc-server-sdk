@@ -1,24 +1,17 @@
 /**
+ * @typedef {{groups?: string[], formats?: string[], flags?: string[], paths?: string[]}} Filters
+ */
+/**
  * @param {import('./interfaces').Metadata[]} list
- * @param {string[]} forbiddenGroupList
- * @param {string[]} forbiddenFormatList
- * @param {string[]} forbiddenFlagList
- * @param {string[]} forbiddenPathList
- * @param {string[]} allowedGroupList
- * @param {string[]} allowedFormatList
- * @param {string[]} allowedFlagList
- * @param {string[]} allowedPathList
+ * @param {Filters} excluded
+ * @param {Filters} included
  *
  * @return {import('./interfaces').Metadata[]}
  */
-export function filterMetadataList(
-    list,
-    forbiddenGroupList, forbiddenFormatList, forbiddenFlagList, forbiddenPathList,
-    allowedGroupList, allowedFormatList, allowedFlagList, allowedPathList
-) {
+export function filterMetadataList(list, excluded, included) {
     if (
-        !forbiddenGroupList.length && !forbiddenFormatList.length && !forbiddenFlagList.length && !forbiddenPathList.length &&
-        !allowedGroupList.length && !allowedFormatList.length && !allowedFlagList.length && !allowedPathList.length
+        !excluded.groups?.length && !excluded.formats?.length && !excluded.flags?.length && !excluded.paths?.length
+        && !included.groups?.length && !included.formats?.length && !included.flags?.length && !included.paths?.length
     ) {
         // Nothing to filter in or out
         return list;
@@ -29,15 +22,15 @@ export function filterMetadataList(
         // Forbidden before Allowed !
         if (
             // Forbidden
-            (forbiddenGroupList.length > 0 && forbiddenGroupList.includes(metadata.name))
-            || (forbiddenFormatList.length > 0 && forbiddenFormatList.includes(metadata.format))
-            || (forbiddenFlagList.length > 0 && forbiddenFlagList.filter(allowedFlag => metadata.flags.includes(allowedFlag)).length > 0)
-            || (forbiddenPathList.length > 0 && forbiddenPathList.filter(allowedPath => metadata.path.includes(allowedPath)).length > 0)
+            (excluded.groups?.length > 0 && excluded.groups.includes(metadata.name))
+            || (excluded.formats?.length > 0 && excluded.formats.includes(metadata.format))
+            || (excluded.flags?.length > 0 && excluded.flags.filter(allowedFlag => metadata.flags.includes(allowedFlag)).length > 0)
+            || (excluded.paths?.length > 0 && excluded.paths.filter(allowedPath => metadata.path.includes(allowedPath)).length > 0)
             // Allowed
-            || (allowedGroupList.length > 0 && !allowedGroupList.includes(metadata.name))
-            || (allowedFormatList.length > 0 && !allowedFormatList.includes(metadata.format))
-            || (allowedFlagList.length > 0 && allowedFlagList.filter(allowedFlag => metadata.flags.includes(allowedFlag)).length === 0)
-            || (allowedPathList.length > 0 && allowedPathList.filter(allowedPath => metadata.path.includes(allowedPath)).length === 0)
+            || (included.groups?.length > 0 && !included.groups.includes(metadata.name))
+            || (included.formats?.length > 0 && !included.formats.includes(metadata.format))
+            || (included.flags?.length > 0 && included.flags.filter(v => metadata.flags.includes(v)).length === 0)
+            || (included.paths?.length > 0 && included.paths.filter(v => metadata.path.includes(v)).length === 0)
         ) {
             continue;
         }

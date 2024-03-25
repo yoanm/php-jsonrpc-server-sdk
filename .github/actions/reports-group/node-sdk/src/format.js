@@ -1,5 +1,7 @@
 import path from "path";
 
+const core = require('@actions/core'); // @TODO move to 'imports from' when moved to TS !
+
 const SDK = require("../index");
 
 /**
@@ -20,12 +22,12 @@ export function convertMetadataListToMetadataJson(mdList) {
 
 /**
  * @param {MetadataJson} metadataJson
- * @param {string} glueString
  * @param {string} format
+ * @param {string} glueString
  *
  * @return {MetadataString}
  */
-export function convertMetadataJsonToMetadataString(metadataJson, glueString, format) {
+export function convertMetadataJsonToMetadataString(metadataJson, format, glueString) {
     const isGlobStringFormat = 'glob-string' === format;
 
     return {
@@ -48,10 +50,15 @@ export function convertMetadataJsonToMetadataString(metadataJson, glueString, fo
  */
 export function convertMetadataListToFindActionOutput(trustedMetadataListOfList, format, glueString, artifactModeEnabled) {
     const metadataJsonList = trustedMetadataListOfList.map(trustedMetadataList => convertMetadataListToMetadataJson(trustedMetadataList));
+
     /** @type {string[]} */
     const reportPathList = [];
     for (const metadataJson of metadataJsonList) {
-        metadataJson.reports.forEach(pList => pList.forEach(p => reportPathList.push(artifactModeEnabled ? path.join(metadataJson.artifact[key], p) : p)));
+        [...metadataJson.reports.entries()].forEach(
+            ([key, pList]) => pList.forEach(
+                p => reportPathList.push(artifactModeEnabled ? path.join(metadataJson.artifact[key], p) : p)
+            )
+        );
     }
 
     /** @type {string} */
@@ -67,7 +74,7 @@ export function convertMetadataListToFindActionOutput(trustedMetadataListOfList,
         /** `string` or `glob-string` format **/
         return {
             ...res,
-            list: res.list.map(jsonItem => convertMetadataJsonToMetadataString(jsonItem, glueString, format))
+            list: res.list.map(jsonItem => convertMetadataJsonToMetadataString(jsonItem, format, glueString))
         };
     }
 

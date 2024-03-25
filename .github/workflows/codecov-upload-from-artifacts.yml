@@ -69,7 +69,10 @@ on:
       TOKEN:
         required: true
     outputs:
-      groups:
+      groups-count:
+        description: TODO
+        value: ${{ jobs.prepare.outputs.groups-count }}
+      group-paths:
         description: TODO
         value: ${{ jobs.prepare.outputs.group-paths }}
 
@@ -78,6 +81,7 @@ jobs:
     name: 📮 🗃️ Prepare uploads
     runs-on: ubuntu-latest
     outputs:
+      groups-count: ${{ steps.find-groups.outputs.count }}
       matrix: ${{ steps.find-groups.outputs.matrix }}
       group-paths: ${{ steps.find-groups.outputs.paths }}
     permissions:
@@ -146,7 +150,8 @@ jobs:
   uploads:
     name: "${{ matrix.artifact }} - ${{ matrix.path }}"
     runs-on: ubuntu-latest
-    if: ${{ steps.find-groups.outputs.count > 1 }}
+    # If only one job exists, it should have been already executed on previous job (to avoid popping a runner just for one job)
+    if: ${{ needs.prepare.outputs.groups-count > 1 }}
     needs: [ prepare ]
     strategy:
       fail-fast: true
@@ -192,7 +197,7 @@ jobs:
         id: upload
         uses: ./build/custom-action-repo/.github/actions/reports-group/codecov-uploader-action
         with:
-          path: ${{ matrix.path }}
+          path: job-artifact/${{ matrix.path }}
           token: ${{ secrets.TOKEN }}
           override-commit: ${{ inputs.override-commit }}
           override-branch: ${{ inputs.override-branch }}

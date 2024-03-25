@@ -26,7 +26,7 @@ function groupByFieldValue(list, mergeField) {
 
 /**
  * @param {import('./interfaces').Metadata[]} list
- * @param {MergeField[]} mergeByFieldList
+ * @param {(MergeField & string)[]} mergeByFieldList
  *
  * @return {import('./interfaces').Metadata[][]}
  */
@@ -37,7 +37,7 @@ export function groupMetadataList(list, mergeByFieldList) {
     const mergeByFieldListCopy = [...mergeByFieldList];
     const mergeField = mergeByFieldListCopy.shift();
 
-    if (!ALLOWED_MERGED_VALUES.includes(/** @type string **/mergeField)) {
+    if (!ALLOWED_MERGED_VALUES.includes(mergeField)) {
         core.warning('"' + mergeField + '" is not allowed as merge field, ignored ! Allowed ' + ALLOWED_MERGED_VALUES.join(','));
 
         return groupMetadataList(list, mergeByFieldListCopy);

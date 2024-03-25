@@ -17,7 +17,7 @@ export async function trustedMetadataPaths(globPattern, toTrustedPath, globOptio
     core.debug('Find metadata paths with ' + globPattern);
 
     const list = [];
-    for await (const fp of glob.lookup(finalPattern, {...globOptions, implicitDescendants: false})) {
+    for await (const fp of glob.lookup(finalPattern, globOptions)) {
         list.push(fp);
     }
 

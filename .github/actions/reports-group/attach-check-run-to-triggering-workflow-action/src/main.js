@@ -6,6 +6,7 @@ const ghaHelpers = require('../node-gha-helpers');
 const formatMarkdownUrl = (title, link) => '<a href="' + link + '" target="blank">' + title + '</a>';
 
 async function run() {
+    core.saveState('has-been-triggered', 1);
     /** INPUTS **/
     const githubToken = core.getInput('github-token', {required: true});
     const jobStatus = core.getInput('job-status', {required: true});
@@ -71,6 +72,6 @@ async function run() {
 }
 
 run().catch(e => {
-    core.info('Error caught and ignored ' + e.message);
+    core.warning('Error caught and ignored ' + e.message);
     core.debug('Error=' + JSON.stringify(e));
 });
