@@ -37,7 +37,6 @@ jobs:
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
 
   codecov-uploader:
     name: Codecov
