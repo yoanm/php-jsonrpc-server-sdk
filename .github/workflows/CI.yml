@@ -19,46 +19,6 @@ env:
   COMPOSER_OPTIONS: --optimize-autoloader
 
 jobs:
-  debug-context:
-    name: DEBUG - context
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo '{'
-          echo '"github.action": ${{ toJson(github.action) }},'
-          echo '"github.action_path": ${{ toJson(github.action_path) }},'
-          echo '"github.action_ref": ${{ toJson(github.action_ref) }},'
-          echo '"github.action_repository": ${{ toJson(github.action_repository) }},'
-          echo '"github.action_status": ${{ toJson(github.action_status) }},'
-          echo '"github.actor": ${{ toJson(github.actor) }},'
-          echo '"github.actor_id": ${{ toJson(github.actor_id) }},'
-          echo '"github.base_ref": ${{ toJson(github.base_ref) }},'
-          echo '"github.event": ${{ toJson(github.event) }},'
-          echo '"github.event_name": ${{ toJson(github.event_name) }},'
-          echo '"github.event_path": ${{ toJson(github.event_path) }},'
-          echo '"github.head_ref": ${{ toJson(github.head_ref) }},'
-          echo '"github.job": ${{ toJson(github.job) }},'
-          echo '"github.path": ${{ toJson(github.path) }},'
-          echo '"github.ref": ${{ toJson(github.ref) }},'
-          echo '"github.ref_name": ${{ toJson(github.ref_name) }},'
-          echo '"github.ref_protected": ${{ toJson(github.ref_protected) }},'
-          echo '"github.ref_type": ${{ toJson(github.ref_type) }},'
-          echo '"github.repository": ${{ toJson(github.repository) }},'
-          echo '"github.repository_id": ${{ toJson(github.repository_id) }},'
-          echo '"github.repository_owner": ${{ toJson(github.repository_owner) }},'
-          echo '"github.repository_owner_id": ${{ toJson(github.repository_owner_id) }},'
-          echo '"github.repositoryUrl": ${{ toJson(github.repositoryUrl) }},'
-          echo '"github.run_id": ${{ toJson(github.run_id) }},'
-          echo '"github.run_number": ${{ toJson(github.run_number) }},'
-          echo '"github.run_attempt": ${{ toJson(github.run_attempt) }},'
-          echo '"github.sha": ${{ toJson(github.sha) }},'
-          echo '"github.triggering_actor": ${{ toJson(github.triggering_actor) }},'
-          echo '"github.workflow": ${{ toJson(github.workflow) }},'
-          echo '"github.workflow_ref": ${{ toJson(github.workflow_ref) }},'
-          echo '"github.workflow_sha": ${{ toJson(github.workflow_sha) }},'
-          echo '"github.workspace": ${{ toJson(github.workspace) }}'
-          echo '}'
-
   tests:
     name: UTs & FTs - PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
