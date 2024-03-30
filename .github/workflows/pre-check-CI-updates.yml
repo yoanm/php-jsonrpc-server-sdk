@@ -1,10 +1,10 @@
 name: 'Test CI updates'
-description: |
-  As CI workflow relies on `workflow_run` trigger for upload, this workflow is used in order to ease updates made on 
-  CI workflow (or linked workflows/actions). It's kind of pre-check to ensure once updates are merged on main branch, 
-  the `workflow_run` workflow execution will behave as expected.
+# [DESCRIPTION]
+# As CI workflow relies on `workflow_run` trigger for upload, this workflow is used in order to ease updates made on
+# CI workflow (or linked workflows/actions). It's kind of pre-check to ensure once updates are merged on main branch,
+# the `workflow_run` workflow execution will behave as expected.
 
-on: # Build any PRs and main branch changes
+on:
   pull_request:
     types:
       - opened
@@ -16,7 +16,6 @@ on: # Build any PRs and main branch changes
       - '.github/workflows/coverage-upload.yml'
       - '.github/workflows/reusable-CI-workflow.yml'
       - '.github/workflows/reusable-coverage-upload-workflow.yml'
-
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
@@ -31,6 +30,7 @@ jobs:
 
   upload:
     name: Upload
+    needs: [tests]
     permissions:
       contents: read
       checks: write # For the check run creation !

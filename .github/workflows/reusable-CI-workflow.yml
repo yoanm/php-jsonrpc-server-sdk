@@ -10,7 +10,7 @@ env:
 
 jobs:
   tests:
-    name: UTs & FTs - PHP ${{ matrix.php-version }}
+    name: PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
     env:
       COVERAGE_TYPE: xdebug
@@ -100,7 +100,7 @@ jobs:
           if-no-files-found: error
 
   static-checks:
-    name: Static checks
+    name: Static analysis
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
