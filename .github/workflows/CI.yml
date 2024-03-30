@@ -7,8 +7,9 @@ on: # Build any PRs and main branch changes
       - opened
       - synchronize
     paths-ignore:
-      # In case of updates to those workflows, they must be pre-check by pre-check-CI-updates.yml instead !
-      - '.github/workflows/pre-check-CI-updates.yml' # This workflow
+      # In case of updates to those workflows, they must be pre-checked by `pre-check-CI-updates.yml` rather than this workflow !
+      # Any updates on those workflows are expected to be restricted to those workflows only ! (no update on code for instance)
+      - '.github/workflows/pre-check-CI-updates.yml'
       - '.github/workflows/CI.yml'
       - '.github/workflows/coverage-upload.yml'
       - '.github/workflows/reusable-CI-workflow.yml'

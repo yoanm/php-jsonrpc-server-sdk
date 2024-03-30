@@ -39,6 +39,7 @@ jobs:
     secrets:
       PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
     with:
+      job-name: "Codacy"
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
       #override-commit: ${{ needs.fetch-info.outputs.commit-sha }} # Uploader action doesn't support it !
@@ -53,6 +54,7 @@ jobs:
     secrets:
       TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
+      job-name: "Codecov"
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
       override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
