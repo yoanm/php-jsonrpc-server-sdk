@@ -1,0 +1,115 @@
+name: 'Coverage upload reusable workflow'
+
+on:
+  workflow_call:
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
+      CODECOV_TOKEN:
+        required: true
+
+jobs:
+  fetch-info:
+    name: Fetch triggering workflow metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
+    steps:
+      - name: 'Check run ○'
+        uses: yoanm/temp-reports-group-workspace/gha-attach-check-run-to-triggering-workflow@improve
+        with:
+          name: 'Fetch coverage info'
+          fails-on-triggering-workflow-failure: true
+
+      - uses: yoanm/temp-reports-group-workspace/gha-fetch-workflow-metadata@improve
+        id: fetch-workflow-metadata
+
+    outputs:
+      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
+      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
+
+  codacy-uploader:
+    name: Codacy
+    needs: [fetch-info]
+    uses: yoanm/temp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@improve
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
+    secrets:
+      PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+    with:
+      artifacts-pattern: coverage-groups-*
+      run-id: ${{ needs.fetch-info.outputs.run-id }}
+      override-job-name: "Codacy title"
+      force-git-commit: ${{ needs.fetch-info.outputs.commit-sha }}
+      # force-uploader-language: ...
+      # force-uploader-coverage-parser: ...
+      # force-uploader-cli-version: ...
+
+  codecov-uploader:
+    name: Codecov
+    needs: [fetch-info]
+    uses: yoanm/temp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@improve
+    permissions:
+      contents: read
+      checks: write # For the check run creation !
+    secrets:
+      TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    with:
+      artifacts-pattern: coverage-groups-*
+      run-id: ${{ needs.fetch-info.outputs.run-id }}
+      override-job-name: "Codecov title"
+      force-git-commit: ${{ needs.fetch-info.outputs.commit-sha }}
+      force-git-branch: ${{ needs.fetch-info.outputs.branch }}
+      force-gh-pr: ${{ needs.fetch-info.outputs.pr-number }}
+      force-uploader-build: ${{ needs.fetch-info.outputs.run-id }}
+      force-uploader-build-url: ${{ needs.fetch-info.outputs.run-url }}
+
+  debug-context:
+    name: DEBUG - context
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo '{'
+          echo '"github.action": ${{ toJson(github.action) }},'
+          echo '"github.action_path": ${{ toJson(github.action_path) }},'
+          echo '"github.action_ref": ${{ toJson(github.action_ref) }},'
+          echo '"github.action_repository": ${{ toJson(github.action_repository) }},'
+          echo '"github.action_status": ${{ toJson(github.action_status) }},'
+          echo '"github.actor": ${{ toJson(github.actor) }},'
+          echo '"github.actor_id": ${{ toJson(github.actor_id) }},'
+          echo '"github.base_ref": ${{ toJson(github.base_ref) }},'
+          echo '"github.event": ${{ toJson(github.event) }},'
+          echo '"github.event_name": ${{ toJson(github.event_name) }},'
+          echo '"github.event_path": ${{ toJson(github.event_path) }},'
+          echo '"github.head_ref": ${{ toJson(github.head_ref) }},'
+          echo '"github.job": ${{ toJson(github.job) }},'
+          echo '"github.path": ${{ toJson(github.path) }},'
+          echo '"github.ref": ${{ toJson(github.ref) }},'
+          echo '"github.ref_name": ${{ toJson(github.ref_name) }},'
+          echo '"github.ref_protected": ${{ toJson(github.ref_protected) }},'
+          echo '"github.ref_type": ${{ toJson(github.ref_type) }},'
+          echo '"github.repository": ${{ toJson(github.repository) }},'
+          echo '"github.repository_id": ${{ toJson(github.repository_id) }},'
+          echo '"github.repository_owner": ${{ toJson(github.repository_owner) }},'
+          echo '"github.repository_owner_id": ${{ toJson(github.repository_owner_id) }},'
+          echo '"github.repositoryUrl": ${{ toJson(github.repositoryUrl) }},'
+          echo '"github.run_id": ${{ toJson(github.run_id) }},'
+          echo '"github.run_number": ${{ toJson(github.run_number) }},'
+          echo '"github.run_attempt": ${{ toJson(github.run_attempt) }},'
+          echo '"github.sha": ${{ toJson(github.sha) }},'
+          echo '"github.triggering_actor": ${{ toJson(github.triggering_actor) }},'
+          echo '"github.workflow": ${{ toJson(github.workflow) }},'
+          echo '"github.workflow_ref": ${{ toJson(github.workflow_ref) }},'
+          echo '"github.workflow_sha": ${{ toJson(github.workflow_sha) }},'
+          echo '"github.workspace": ${{ toJson(github.workspace) }}'
+          echo '}'
+
+  debug-uploads:
+    name: DEBUG - Uploaders
+    runs-on: ubuntu-latest
+    needs: [ codacy-uploader, codecov-uploader ]
+    steps:
+      - run: echo 'codecov='"'"'${{ toJson(needs.codecov-uploader) }}'"'"
+      - run: echo 'codacy='"'"'${{ toJson(needs.codacy-uploader) }}'"'"
