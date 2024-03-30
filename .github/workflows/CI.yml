@@ -2,14 +2,21 @@ name: 'CI'
 
 on: # Build any PRs and main branch changes
   workflow_dispatch: # Allows to run the workflow manually from the Actions tab
-#  pull_request:
-#    types:
-#      - opened
-#      - synchronize
-#  push:
-#    branches: [ master ]
-#  schedule:
-#    - cron: '0 0 1 * *' # Every month
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths-ignore:
+      # In case of updates to those workflows, they must be pre-check by pre-check-CI-updates.yml instead !
+      - '.github/workflows/pre-check-CI-updates.yml' # This workflow
+      - '.github/workflows/CI.yml'
+      - '.github/workflows/coverage-upload.yml'
+      - '.github/workflows/reusable-CI-workflow.yml'
+      - '.github/workflows/reusable-coverage-upload-workflow.yml'
+  push:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 1 * *' # Every month
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"

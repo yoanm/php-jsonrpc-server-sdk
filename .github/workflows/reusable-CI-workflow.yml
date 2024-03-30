@@ -1,57 +1,14 @@
-name: 'CI-test'
+name: 'CI reusable workflow'
 
-on: # Build any PRs and main branch changes
-  pull_request:
-    types:
-      - opened
-      - synchronize
+on:
+  workflow_call:
 
-concurrency:
-  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
-  cancel-in-progress: true
+
+env:
+  TEST_OUTPUT_STYLE: pretty
+  COMPOSER_OPTIONS: --optimize-autoloader
 
 jobs:
-  debug-context:
-    name: DEBUG - context
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo '{'
-          echo '"github.action": ${{ toJson(github.action) }},'
-          echo '"github.action_path": ${{ toJson(github.action_path) }},'
-          echo '"github.action_ref": ${{ toJson(github.action_ref) }},'
-          echo '"github.action_repository": ${{ toJson(github.action_repository) }},'
-          echo '"github.action_status": ${{ toJson(github.action_status) }},'
-          echo '"github.actor": ${{ toJson(github.actor) }},'
-          echo '"github.actor_id": ${{ toJson(github.actor_id) }},'
-          echo '"github.base_ref": ${{ toJson(github.base_ref) }},'
-          echo '"github.event": ${{ toJson(github.event) }},'
-          echo '"github.event_name": ${{ toJson(github.event_name) }},'
-          echo '"github.event_path": ${{ toJson(github.event_path) }},'
-          echo '"github.head_ref": ${{ toJson(github.head_ref) }},'
-          echo '"github.job": ${{ toJson(github.job) }},'
-          echo '"github.path": ${{ toJson(github.path) }},'
-          echo '"github.ref": ${{ toJson(github.ref) }},'
-          echo '"github.ref_name": ${{ toJson(github.ref_name) }},'
-          echo '"github.ref_protected": ${{ toJson(github.ref_protected) }},'
-          echo '"github.ref_type": ${{ toJson(github.ref_type) }},'
-          echo '"github.repository": ${{ toJson(github.repository) }},'
-          echo '"github.repository_id": ${{ toJson(github.repository_id) }},'
-          echo '"github.repository_owner": ${{ toJson(github.repository_owner) }},'
-          echo '"github.repository_owner_id": ${{ toJson(github.repository_owner_id) }},'
-          echo '"github.repositoryUrl": ${{ toJson(github.repositoryUrl) }},'
-          echo '"github.run_id": ${{ toJson(github.run_id) }},'
-          echo '"github.run_number": ${{ toJson(github.run_number) }},'
-          echo '"github.run_attempt": ${{ toJson(github.run_attempt) }},'
-          echo '"github.sha": ${{ toJson(github.sha) }},'
-          echo '"github.triggering_actor": ${{ toJson(github.triggering_actor) }},'
-          echo '"github.workflow": ${{ toJson(github.workflow) }},'
-          echo '"github.workflow_ref": ${{ toJson(github.workflow_ref) }},'
-          echo '"github.workflow_sha": ${{ toJson(github.workflow_sha) }},'
-          echo '"github.workspace": ${{ toJson(github.workspace) }}'
-          echo '}'
-
-
   tests:
     name: UTs & FTs - PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
@@ -70,7 +27,7 @@ jobs:
           - php-version: '8.2'
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
 # @TODO Figure out if coverage for every version is actually useful or not
 #      - name: Enable coverage
@@ -91,7 +48,7 @@ jobs:
 
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.composer
@@ -146,7 +103,7 @@ jobs:
     name: Static checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup PHP 8.2
         uses: shivammathur/setup-php@v2
@@ -160,7 +117,7 @@ jobs:
 
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.composer
@@ -175,7 +132,7 @@ jobs:
 
       - name: Dependencies check
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/dependency-review-action@v1
+        uses: actions/dependency-review-action@v4
 
   nightly-tests:
     name: Nightly - PHP ${{ matrix.php-version }}
@@ -193,7 +150,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
@@ -207,7 +164,7 @@ jobs:
 
       - name: Setup cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.composer
@@ -221,56 +178,3 @@ jobs:
 
       - name: Test
         run: make test-unit && make test-functional
-
-
-  fetch-info:
-    name: Fetch triggering workflow metadata
-    needs: [tests, static-checks, nightly-tests]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    steps:
-      - name: 'Check run ○'
-        uses: yoanm/temp-reports-group-workspace/gha-attach-check-run-to-triggering-workflow@improve
-        with:
-          name: 'Fetch coverage info'
-          fails-on-triggering-workflow-failure: true
-
-      - uses: yoanm/temp-reports-group-workspace/gha-fetch-workflow-metadata@improve
-        id: fetch-workflow-metadata
-    outputs:
-      commit-sha: ${{ steps.fetch-workflow-metadata.outputs.commit-sha }}
-      run-id: ${{ steps.fetch-workflow-metadata.outputs.run-id }}
-
-  codacy-uploader:
-    name: Codacy
-    needs: [ fetch-info ]
-    uses: yoanm/temp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@improve
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    secrets:
-      PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-    with:
-      artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.run-id }}
-      #override-commit: ${{ needs.fetch-info.outputs.commit-sha }} # Uploader action doesn't support it !
-
-  codecov-uploader:
-    name: Codecov
-    needs: [ fetch-info ]
-    uses: yoanm/temp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@improve
-    permissions:
-      contents: read
-      checks: write # For the check run creation !
-    secrets:
-      TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    with:
-      artifacts-pattern: coverage-groups-*
-      run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
-      override-branch: ${{ needs.fetch-info.outputs.branch }}
-      override-pr: ${{ needs.fetch-info.outputs.pr-number }}
-      override-build: ${{ needs.fetch-info.outputs.run-id }}
-      override-build-url: ${{ needs.fetch-info.outputs.run-url }}
