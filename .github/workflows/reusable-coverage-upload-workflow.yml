@@ -41,7 +41,7 @@ jobs:
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-job-name: "Codacy"
+      override-job-name: "Codacy title"
       #override-commit: ${{ needs.fetch-info.outputs.commit-sha }} # Uploader action doesn't support it !
 
   codecov-uploader:
@@ -56,7 +56,7 @@ jobs:
     with:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
-      override-job-name: "Codecov"
+      override-job-name: "Codecov title"
       override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
       override-branch: ${{ needs.fetch-info.outputs.branch }}
       override-pr: ${{ needs.fetch-info.outputs.pr-number }}
