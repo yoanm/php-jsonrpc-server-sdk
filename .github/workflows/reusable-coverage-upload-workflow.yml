@@ -42,7 +42,10 @@ jobs:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
       override-job-name: "Codacy title"
-      #override-commit: ${{ needs.fetch-info.outputs.commit-sha }} # Uploader action doesn't support it !
+      force-git-commit: ${{ needs.fetch-info.outputs.commit-sha }}
+      # force-uploader-language: ...
+      # force-uploader-coverage-parser: ...
+      # force-uploader-cli-version: ...
 
   codecov-uploader:
     name: Codecov
@@ -57,11 +60,11 @@ jobs:
       artifacts-pattern: coverage-groups-*
       run-id: ${{ needs.fetch-info.outputs.run-id }}
       override-job-name: "Codecov title"
-      override-commit: ${{ needs.fetch-info.outputs.commit-sha }}
-      override-branch: ${{ needs.fetch-info.outputs.branch }}
-      override-pr: ${{ needs.fetch-info.outputs.pr-number }}
-      override-build: ${{ needs.fetch-info.outputs.run-id }}
-      override-build-url: ${{ needs.fetch-info.outputs.run-url }}
+      force-git-commit: ${{ needs.fetch-info.outputs.commit-sha }}
+      force-git-branch: ${{ needs.fetch-info.outputs.branch }}
+      force-gh-pr: ${{ needs.fetch-info.outputs.pr-number }}
+      force-uploader-build: ${{ needs.fetch-info.outputs.run-id }}
+      force-uploader-build-url: ${{ needs.fetch-info.outputs.run-url }}
 
   debug-context:
     name: DEBUG - context
