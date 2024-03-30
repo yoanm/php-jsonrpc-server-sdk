@@ -10,4 +10,7 @@ jobs:
     permissions:
       contents: read
       checks: write # For the check run creation !
+    secrets:
+      CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     uses: ./.github/workflows/reusable-coverage-upload-workflow.yml

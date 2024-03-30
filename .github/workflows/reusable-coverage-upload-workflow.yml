@@ -2,6 +2,11 @@ name: 'Coverage upload reusable workflow'
 
 on:
   workflow_call:
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
+      CODECOV_TOKEN:
+        required: true
 
 jobs:
   fetch-info:
