@@ -34,7 +34,7 @@ jobs:
   codacy-uploader:
     name: Codacy
     needs: [fetch-info]
-    uses: yoanm/temp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@v0
+    uses: yoanm/temp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@from-sub-folders
     permissions:
       contents: read
       checks: write # For the check run creation !
