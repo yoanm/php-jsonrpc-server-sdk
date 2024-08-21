@@ -35,7 +35,7 @@ jobs:
   codacy-uploader:
     name: Codacy
     needs: [fetch-info]
-    uses: yoanm/temp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@from-sub-folders
+    uses: yoanm/temp-reports-group-workspace/.github/workflows/codacy-upload-from-artifacts.yml@v0
     permissions:
       contents: read
       checks: write # For the check run creation !
@@ -52,7 +52,7 @@ jobs:
   codecov-uploader:
     name: Codecov
     needs: [fetch-info]
-    uses: yoanm/temp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@from-sub-folders
+    uses: yoanm/temp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@v0
     permissions:
       contents: read
       checks: write # For the check run creation !
