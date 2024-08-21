@@ -29,7 +29,7 @@ jobs:
     uses: ./.github/workflows/reusable-CI-workflow.yml
 
   upload:
-    name: Upload
+    name: Coverage
     needs: [tests]
     permissions:
       contents: read
