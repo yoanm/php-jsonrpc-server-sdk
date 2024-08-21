@@ -18,8 +18,9 @@ jobs:
     steps:
       - name: 'Check run ○'
         uses: yoanm/temp-reports-group-workspace/gha-attach-check-run-to-triggering-workflow@v0
+        if: ${{ 'workflow_run' == github.event_name }}
         with:
-          name: 'Fetch coverage info'
+          name: 'Fetch triggering workflow metadata'
           fails-on-triggering-workflow-failure: true
 
       - uses: yoanm/temp-reports-group-workspace/gha-fetch-workflow-metadata@v0
@@ -51,7 +52,7 @@ jobs:
   codecov-uploader:
     name: Codecov
     needs: [fetch-info]
-    uses: yoanm/temp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@v0
+    uses: yoanm/temp-reports-group-workspace/.github/workflows/codecov-upload-from-artifacts.yml@from-sub-folders
     permissions:
       contents: read
       checks: write # For the check run creation !
