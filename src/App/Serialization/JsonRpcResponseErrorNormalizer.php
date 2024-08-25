@@ -62,6 +62,8 @@ class JsonRpcResponseErrorNormalizer
             '_class' => get_class($error),
             '_code' => $error->getCode(),
             '_message' => $error->getMessage(),
+            '_file' => $error->getFile(),
+            '_line' => $error->getLine(),
         ];
 
         $trace = $this->filterErrorTrace($error->getTrace());
