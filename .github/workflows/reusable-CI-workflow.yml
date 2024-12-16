@@ -66,7 +66,7 @@ jobs:
       - name: Create "unit tests" reports directory
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: unit-tests-coverage-group
-        uses: yoanm/temp-reports-group-workspace/create-group@dependabot/npm_and_yarn/security-prod-0189ad7b96
+        uses: yoanm/temp-reports-group-workspace/create-group@v0
         with:
           name: unit-tests
           format: clover
@@ -79,7 +79,7 @@ jobs:
       - name: Create "functional tests" coverage group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         id: functional-tests-coverage-group
-        uses: yoanm/temp-reports-group-workspace/create-group@dependabot/npm_and_yarn/security-prod-0189ad7b96
+        uses: yoanm/temp-reports-group-workspace/create-group@v0
         with:
           name: functional-tests
           format: clover
