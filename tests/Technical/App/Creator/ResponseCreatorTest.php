@@ -2,6 +2,7 @@
 namespace Tests\Technical\App\Creator;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\App\Creator\ResponseCreator;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
 
@@ -10,6 +11,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
  */
 class ResponseCreatorTest extends TestCase
 {
+    use ProphecyTrait;
+
     const DEFAULT_JSONRPC = '2.0';
     const DEFAULT_ID = '1234567890';
     const DEFAULT_METHOD = 'defaultMethod';
@@ -34,9 +37,7 @@ class ResponseCreatorTest extends TestCase
         $response = $this->responseCreator->createErrorResponse($exception);
 
         $this->assertInstanceOf(JsonRpcInternalErrorException::class, $response->getError());
-        $this->assertSame(
-            $message,
-            $response->getError()->getErrorData()[JsonRpcInternalErrorException::DATA_PREVIOUS_KEY]
-        );
+        $this->assertEmpty($response->getError()->getErrorData());
+        $this->assertSame($exception, $response->getError()->getPrevious());
     }
 }

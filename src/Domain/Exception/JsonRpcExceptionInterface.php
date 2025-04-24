@@ -4,7 +4,7 @@ namespace Yoanm\JsonRpcServer\Domain\Exception;
 /**
  * Interface JsonRpcExceptionInterface
  */
-interface JsonRpcExceptionInterface
+interface JsonRpcExceptionInterface extends \Throwable
 {
     /**
      * @return int JsonRpc error code

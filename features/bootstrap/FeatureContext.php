@@ -4,6 +4,7 @@ namespace Tests\Functional\BehatContext;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use Coduo\PHPMatcher\PHPUnit\PHPMatcherAssertions;
 use PHPUnit\Framework\Assert;
 use Tests\Functional\BehatContext\Helper\FakeEndpointCreator;
 
@@ -12,6 +13,8 @@ use Tests\Functional\BehatContext\Helper\FakeEndpointCreator;
  */
 class FeatureContext extends AbstractContext
 {
+    use PHPMatcherAssertions;
+
     const KEY_JSON_RPC = 'jsonrpc';
     const KEY_ID = 'id';
     const KEY_RESULT = 'result';
@@ -25,6 +28,8 @@ class FeatureContext extends AbstractContext
     private $lastResponse = null;
     /** @var  EventsContext */
     private $eventsContext;
+
+    private bool $enableJsonRpcResponseErrorNormalizer = false;
 
     /**
      * @BeforeScenario
@@ -41,11 +46,20 @@ class FeatureContext extends AbstractContext
     }
 
     /**
+     * @Given JsonRpcResponseErrorNormalizer is enabled
+     */
+    public function givenJsonRpcResponseErrorNormalizerIsEnabled()
+    {
+        $this->enableJsonRpcResponseErrorNormalizer =  true;
+    }
+
+    /**
      * @When I send following payload:
      */
     public function whenISendTheFollowingPayload(PyStringNode $payload)
     {
-        $endpoint = (new FakeEndpointCreator())->create($this->eventsContext->getDispatcher());
+        $endpoint = (new FakeEndpointCreator())
+            ->create($this->eventsContext->getDispatcher(), $this->enableJsonRpcResponseErrorNormalizer);
 
         $this->lastResponse = $endpoint->index($payload->getRaw());
     }
@@ -63,8 +77,7 @@ class FeatureContext extends AbstractContext
      */
     public function thenIShouldHaveTheFollowingResponse(PyStringNode $expectedResult)
     {
-        // Decode content to get rid of any indentation/spacing/... issues
-        Assert::assertEquals(
+        $this->assertMatchesPattern(
             $this->jsonDecode($expectedResult->getRaw()),
             $this->getLastResponseDecoded()
         );

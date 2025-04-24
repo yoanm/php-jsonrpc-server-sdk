@@ -2,6 +2,7 @@
 namespace Tests\Functional\Domain\Event\Action;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\Domain\Event\Action\OnMethodFailureEvent;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
@@ -16,6 +17,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcRequest;
  */
 class OnMethodFailureEventTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldManageAResultFromAMethodAndARequest()
     {
         $exception = new \Exception('my-message');

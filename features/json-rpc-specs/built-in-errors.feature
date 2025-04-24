@@ -124,9 +124,34 @@ Feature: Ensure JSON-RPC errors specifications
       "id": "297c8498-5a54-471c-ac75-917be6435607",
       "error": {
         "code": -32603,
+        "message": "Internal error"
+      }
+    }
+    """
+
+  Scenario: Internal error (-32603) with JsonRpcResponseErrorNormalizer
+    Given JsonRpcResponseErrorNormalizer is enabled
+    When I send following payload:
+    """
+    {
+      "jsonrpc": "2.0",
+      "id": "297c8498-5a54-471c-ac75-917be6435607",
+      "method": "method-that-throw-an-exception-during-execution"
+    }
+    """
+    Then last response should be a valid json-rpc error
+    And I should have the following response:
+    """
+    {
+      "jsonrpc": "2.0",
+      "id": "297c8498-5a54-471c-ac75-917be6435607",
+      "error": {
+        "code": -32603,
         "message": "Internal error",
         "data": {
-          "previous": "method-that-throw-an-exception-during-execution execution exception"
+          "_class": "Exception",
+          "_code": 0,
+          "_message": "method-that-throw-an-exception-during-execution execution exception"
         }
       }
     }

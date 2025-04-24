@@ -1,0 +1,180 @@
+name: 'CI reusable workflow'
+
+on:
+  workflow_call:
+
+
+env:
+  TEST_OUTPUT_STYLE: pretty
+  COMPOSER_OPTIONS: --optimize-autoloader
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+    env:
+      COVERAGE_TYPE: xdebug
+      COVERAGE_OUTPUT_STYLE: clover
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix:
+        include:
+          # Bare minimum => Lowest versions allowed by composer config
+          - php-version: '8.0'
+            composer-flag: --prefer-lowest
+          # Up-to-date versions => Latest versions allowed by composer config
+          - php-version: '8.2'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+# @TODO Figure out if coverage for every version is actually useful or not
+#      - name: Enable coverage
+#        if: ${{ matrix.php-version == '8.2' }}
+#        run: |
+#          echo "COVERAGE_OUTPUT_STYLE=clover" >> $GITHUB_ENV
+#          echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        env:
+          update: true # Always use latest available patch for the version
+          fail-fast: true # step will fail if an extension or tool fails to set up
+        with:
+          php-version: '${{ matrix.php-version }}'
+          tools: composer
+          coverage: ${{ env.COVERAGE_TYPE }}
+
+      - name: Setup cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer
+            ./vendor
+          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
+          key: tests-${{ matrix.php-version }}-${{ matrix.composer-flag }}-${{ hashFiles('composer.json') }}
+
+      - name: Build
+        run: |
+          make build
+
+      - name: Tests
+        run: make test-unit && make test-functional
+
+      - name: Create "unit tests" reports directory
+        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
+        id: unit-tests-coverage-group
+        uses: yoanm/temp-reports-group-workspace/create-group@v0
+        with:
+          name: unit-tests
+          format: clover
+          files: build/coverage-phpunit/unit.clover
+          flags: |
+            unit-tests
+            php-${{ matrix.php-version }}
+          path: build/coverage-groups
+
+      - name: Create "functional tests" coverage group
+        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
+        id: functional-tests-coverage-group
+        uses: yoanm/temp-reports-group-workspace/create-group@v0
+        with:
+          name: functional-tests
+          format: clover
+          files: |
+            build/coverage-phpunit/functional.clover
+            build/coverage-behat/clover.xml
+          flags: |
+            functional-tests
+            php-${{ matrix.php-version }}
+          path: build/coverage-groups
+
+      - name: Upload coverage reports
+        if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-groups-php${{ matrix.php-version }}
+          path: build/coverage-groups
+          if-no-files-found: error
+
+  static-checks:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2 # Latest supported
+          tools: composer
+          coverage: none
+        env:
+          # Always use latest available patch for the version
+          update: true
+
+      - name: Setup cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer
+          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
+          key: tests-${{ env.PHP_VERSION }}-${{ hashFiles('composer.json') }}
+
+      - name: Build
+        run: make build
+
+      - name: ComposerRequireChecker
+        uses: docker://webfactory/composer-require-checker:4.5.0
+
+      - name: Dependencies check
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/dependency-review-action@v4
+
+  nightly-tests:
+    name: Nightly - PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_OPTIONS: '--optimize-autoloader --ignore-platform-req=php+'
+    continue-on-error: true
+    needs: [ static-checks, tests ]
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        php-version:
+          - '8.3' # Current php dev version
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '${{ matrix.php-version }}'
+          tools: composer
+          coverage: none
+        env:
+          # Always use latest available patch for the version
+          update: true
+
+      - name: Setup cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer
+            ./vendor
+          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
+          key: tests-${{ matrix.php-version }}-${{ hashFiles('composer.json') }}
+
+      - name: Build
+        run: |
+          make build
+
+      - name: Test
+        run: make test-unit && make test-functional

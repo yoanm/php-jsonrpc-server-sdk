@@ -26,20 +26,29 @@
     }
   },
   "suggest": {
-    "yoanm/jsonrpc-server-sdk-psr11-resolver": "Compatible PSR11 method resolver",
     "yoanm/jsonrpc-params-symfony-validator-sdk": "Compatible params validator",
     "yoanm/jsonrpc-server-doc-sdk": "Create documentation for your server",
     "symfonyx/symfony-jsonrpc-http-server": "JSON-RPC HTTP Symfony server Bundle"
   },
   "require": {
-    "php": ">=7.1",
+    "php": "^8.0",
     "ext-json": "*"
   },
   "require-dev": {
-    "behat/behat": "~3.0",
-    "squizlabs/php_codesniffer": "3.*",
-    "phpunit/phpunit": "^7.0 || ^8.0",
-    "yoanm/php-unit-extended": "^1.0",
-    "yoanm/jsonrpc-server-doc-sdk": "^0.2"
+    "behat/behat": "^3.9.0",
+    "coduo/php-matcher": "^6.0",
+    "dvdoug/behat-code-coverage": "^5.0",
+    "phpspec/prophecy": "^1.15",
+    "phpspec/prophecy-phpunit": "^2.0",
+    "phpunit/phpunit": "^9.6",
+    "squizlabs/php_codesniffer": "^3.5",
+    "yoanm/jsonrpc-server-doc-sdk": "^0.3 || ^1.0",
+    "yoanm/php-unit-extended": "^2.0"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
   }
 }

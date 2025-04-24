@@ -1,7 +1,8 @@
 <?php
-namespace Tests\Technical\Domain\Exception;
+namespace Tests\Functional\Domain\Exception;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
 
 /**
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
  */
 class JsonRpcInternalErrorExceptionTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testShouldHaveTheRightJsonRpcErrorCode()
     {
         $exception = new JsonRpcInternalErrorException();
@@ -25,13 +28,7 @@ class JsonRpcInternalErrorExceptionTest extends TestCase
 
         $exception = new JsonRpcInternalErrorException($previousException);
 
-        $this->assertArrayHasKey(
-            JsonRpcInternalErrorException::DATA_PREVIOUS_KEY,
-            $exception->getErrorData()
-        );
-        $this->assertSame(
-            $message,
-            $exception->getErrorData()[JsonRpcInternalErrorException::DATA_PREVIOUS_KEY]
-        );
+        $this->assertEmpty($exception->getErrorData());
+        $this->assertSame($previousException, $exception->getPrevious());
     }
 }

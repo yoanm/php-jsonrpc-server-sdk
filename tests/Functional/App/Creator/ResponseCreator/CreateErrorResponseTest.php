@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Functional\App\Creator\ResponseCreator;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
 
@@ -11,6 +12,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
  */
 class CreateErrorResponseTest extends BaseTestCase
 {
+    use ProphecyTrait;
+
     /**
      * Should handle error
      */

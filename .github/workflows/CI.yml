@@ -1,0 +1,35 @@
+name: 'CI'
+
+on: # Build any PRs and main branch changes
+  workflow_dispatch: # Allows to run the workflow manually from the Actions tab
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths-ignore:
+      # In case of updates to those workflows, they must be pre-checked by `pre-check-CI-updates.yml` rather than this workflow !
+      # Any updates on those workflows are expected to be restricted to those workflows only ! (no update on code for instance)
+      - '.github/workflows/pre-check-CI-updates.yml'
+      - '.github/workflows/CI.yml'
+      - '.github/workflows/coverage-upload.yml'
+      - '.github/workflows/reusable-CI-workflow.yml'
+      - '.github/workflows/reusable-coverage-upload-workflow.yml'
+  push:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 1 * *' # Every month
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+env:
+  TEST_OUTPUT_STYLE: pretty
+  COMPOSER_OPTIONS: --optimize-autoloader
+
+jobs:
+  tests:
+    name: Tests
+    permissions:
+      contents: read
+    uses: ./.github/workflows/reusable-CI-workflow.yml

@@ -2,8 +2,11 @@
 namespace Tests\Functional\App\Serialization;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseErrorNormalizer;
 use Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer;
 use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcException;
+use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcInternalErrorException;
 use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
 
 /**
@@ -14,6 +17,8 @@ use Yoanm\JsonRpcServer\Domain\Model\JsonRpcResponse;
  */
 class JsonRpcResponseNormalizerTest extends TestCase
 {
+    use ProphecyTrait;
+
     const EXPECTED_KEY_JSONRPC_VERSION = 'jsonrpc';
     const EXPECTED_KEY_ID = 'id';
     const EXPECTED_KEY_RESULT = 'result';
@@ -131,5 +136,47 @@ class JsonRpcResponseNormalizerTest extends TestCase
 
         $this->assertArrayHasKey(self::EXPECTED_SUB_KEY_ERROR_DATA, $errorObject, 'Error data not found');
         $this->assertSame($data, $errorObject[self::EXPECTED_SUB_KEY_ERROR_DATA], 'Error data not expected');
+    }
+
+    public function testShouldConcealErrorDataWithoutErrorNormalizer()
+    {
+        $this->responseNormalizer = new JsonRpcResponseNormalizer();
+
+        $exceptionMessage = 'Test exception';
+        $exceptionCode = 12345;
+
+        try {
+            throw new \RuntimeException($exceptionMessage, $exceptionCode);
+        } catch (\Throwable $exception) {
+            // shutdown test exception as prepared
+        }
+
+        $response = (new JsonRpcResponse())
+            ->setError(new JsonRpcInternalErrorException($exception));
+
+        $result = $this->responseNormalizer->normalize($response);
+
+        $this->assertTrue(empty($result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA]));
+    }
+
+    public function testShouldShowErrorDataWithErrorNormalizer()
+    {
+        $this->responseNormalizer = new JsonRpcResponseNormalizer(new JsonRpcResponseErrorNormalizer());
+
+        $exceptionMessage = 'Test exception';
+        $exceptionCode = 12345;
+
+        try {
+            throw new \RuntimeException($exceptionMessage, $exceptionCode);
+        } catch (\Throwable $exception) {
+            // shutdown test exception as prepared
+        }
+
+        $response = (new JsonRpcResponse())
+            ->setError(new JsonRpcInternalErrorException($exception));
+
+        $result = $this->responseNormalizer->normalize($response);
+
+        $this->assertFalse(empty($result[self::EXPECTED_KEY_ERROR][self::EXPECTED_SUB_KEY_ERROR_DATA]));
     }
 }
