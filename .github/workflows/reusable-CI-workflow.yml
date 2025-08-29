@@ -27,7 +27,7 @@ jobs:
           - php-version: '8.2'
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
 # @TODO Figure out if coverage for every version is actually useful or not
 #      - name: Enable coverage
@@ -103,7 +103,7 @@ jobs:
     name: Static analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP 8.2
         uses: shivammathur/setup-php@v2
@@ -150,7 +150,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
