@@ -44,7 +44,7 @@ jobs:
             php-version: '${{ inputs.php-min-version }}'
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Enable coverage only for specific version(s) !
       # Usually highest version(s), plus additional ones in case of code used only with specific versions
@@ -122,7 +122,7 @@ jobs:
     env:
       PHP_VERSION: ${{ inputs.php-max-version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP ${{ env.PHP_VERSION }}
         id: setup-php
@@ -193,9 +193,7 @@ jobs:
           key: tests-php${{ steps.setup-php.outputs.php-version }}-${{ hashFiles('composer.json') }}
 
       - name: Build with PHP ${{ steps.setup-php.outputs.php-version }}
-        run: |
-          composer config minimum-stability dev \
-          && make build
+        run: make build
 
       - name: Test
         run: make test-unit && make test-functional
