@@ -2,70 +2,88 @@ name: 'CI reusable workflow'
 
 on:
   workflow_call:
-
+    inputs:
+      # >>>> Dummy env-inputs
+      # Goal here is just to have access to variable values
+      # in order to build job matrix as `env` variable is not available there
+      php-min-version:
+        default: '8.0'
+        description: Lowest PHP version to assess (e.g Lowest supported version including security support)
+        required: false
+        type: string
+      php-max-version:
+        default: '8.2'
+        description: Highest PHP version to assess (e.g Highest supported version)
+        required: false
+        type: string
+      php-next-version:
+        default: '8.3'
+        description: Next (currently not supported) PHP version to assess (e.g Current dev version)
+        required: false
+        type: string
+      # <<<< Dummy env-inputs
 
 env:
+  COMPOSER_PREFER_STABLE: '1'
   TEST_OUTPUT_STYLE: pretty
-  COMPOSER_OPTIONS: --optimize-autoloader
 
 jobs:
   tests:
-    name: PHP ${{ matrix.php-version }}
+    name: ${{ matrix.job-name }}
     runs-on: ubuntu-latest
     env:
-      COVERAGE_TYPE: xdebug
+      COVERAGE_TYPE: none
       COVERAGE_OUTPUT_STYLE: clover
     strategy:
       fail-fast: true
-      max-parallel: 4
       matrix:
         include:
-          # Bare minimum => Lowest versions allowed by composer config
-          - php-version: '8.0'
-            composer-flag: --prefer-lowest
-          # Up-to-date versions => Latest versions allowed by composer config
-          - php-version: '8.2'
+          - job-name: Up to date versions # => Highest versions allowed by composer config
+            php-version: '${{ inputs.php-max-version }}'
+          - job-name: Bare minimum # => Lowest versions allowed by composer config
+            php-version: '${{ inputs.php-min-version }}'
     steps:
       - name: Check out code
         uses: actions/checkout@v5
 
-# @TODO Figure out if coverage for every version is actually useful or not
-#      - name: Enable coverage
-#        if: ${{ matrix.php-version == '8.2' }}
-#        run: |
-#          echo "COVERAGE_OUTPUT_STYLE=clover" >> $GITHUB_ENV
-#          echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
+      # Enable coverage only for specific version(s) !
+      # Usually highest version(s), plus additional ones in case of code used only with specific versions
+      - name: Enable coverage
+        if: ${{ matrix.php-version == inputs.php-max-version }}
+        run: |
+          echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
 
       - name: Setup PHP ${{ matrix.php-version }}
+        id: setup-php
         uses: shivammathur/setup-php@v2
         env:
-          update: true # Always use latest available patch for the version
+          update: true # whether to use latest available patch for the version or not
           fail-fast: true # step will fail if an extension or tool fails to set up
         with:
-          php-version: '${{ matrix.php-version }}'
+          php-version: ${{ matrix.php-version }}
           tools: composer
           coverage: ${{ env.COVERAGE_TYPE }}
 
-      - name: Setup cache
-        id: cache
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Setup cache for PHP ${{ steps.setup-php.outputs.php-version }}
         uses: actions/cache@v4
         with:
           path: |
-            ~/.composer
-            ./vendor
-          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
-          key: tests-${{ matrix.php-version }}-${{ matrix.composer-flag }}-${{ hashFiles('composer.json') }}
+            ${{ steps.composer-cache.outputs.dir }}
+          # Clear the cache if composer.json (as composer.lock is not available) has been updated
+          key: tests-php${{ steps.setup-php.outputs.php-version }}-${{ hashFiles('composer.json') }}
 
-      - name: Build
-        run: |
-          make build
+      - name: Build with PHP ${{ steps.setup-php.outputs.php-version }}
+        run: make build
 
       - name: Tests
         run: make test-unit && make test-functional
 
-      - name: Create "unit tests" reports directory
+      - name: Create "unit tests" reports group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        id: unit-tests-coverage-group
         uses: yoanm/temp-reports-group-workspace/create-group@v0
         with:
           name: unit-tests
@@ -76,9 +94,8 @@ jobs:
             php-${{ matrix.php-version }}
           path: build/coverage-groups
 
-      - name: Create "functional tests" coverage group
+      - name: Create "functional tests" reports group
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
-        id: functional-tests-coverage-group
         uses: yoanm/temp-reports-group-workspace/create-group@v0
         with:
           name: functional-tests
@@ -95,36 +112,42 @@ jobs:
         if: ${{ env.COVERAGE_TYPE == 'xdebug' }}
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-groups-php${{ matrix.php-version }}
+          name: coverage-groups-php${{ steps.setup-php.outputs.php-version }}
           path: build/coverage-groups
           if-no-files-found: error
 
   static-checks:
     name: Static analysis
     runs-on: ubuntu-latest
+    env:
+      PHP_VERSION: ${{ inputs.php-max-version }}
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup PHP 8.2
+      - name: Setup PHP ${{ env.PHP_VERSION }}
+        id: setup-php
         uses: shivammathur/setup-php@v2
+        env:
+          update: true # Always use latest available patch for the version
+          fail-fast: true # step will fail if an extension or tool fails to set up
         with:
-          php-version: 8.2 # Latest supported
+          php-version: ${{ env.PHP_VERSION }}
           tools: composer
           coverage: none
-        env:
-          # Always use latest available patch for the version
-          update: true
 
-      - name: Setup cache
-        id: cache
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Setup cache for PHP ${{ steps.setup-php.outputs.php-version }}
         uses: actions/cache@v4
         with:
           path: |
-            ~/.composer
-          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
-          key: tests-${{ env.PHP_VERSION }}-${{ hashFiles('composer.json') }}
+            ${{ steps.composer-cache.outputs.dir }}
+          # Clear the cache if composer.json (as composer.lock is not available) has been updated
+          key: tests-php${{ steps.setup-php.outputs.php-version }}-${{ hashFiles('composer.json') }}
 
-      - name: Build
+      - name: Build with PHP ${{ steps.setup-php.outputs.php-version }}
         run: make build
 
       - name: ComposerRequireChecker
@@ -135,46 +158,42 @@ jobs:
         uses: actions/dependency-review-action@v4
 
   nightly-tests:
-    name: Nightly - PHP ${{ matrix.php-version }}
+    name: Nightly
     runs-on: ubuntu-latest
     env:
-      COMPOSER_OPTIONS: '--optimize-autoloader --ignore-platform-req=php+'
+      PHP_VERSION: ${{ inputs.php-next-version }}
+      COMPOSER_IGNORE_PLATFORM_REQ: 'php+'
     continue-on-error: true
-    needs: [ static-checks, tests ]
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        php-version:
-          - '8.3' # Current php dev version
-
+    needs: [ tests ]
     steps:
       - name: Check out code
         uses: actions/checkout@v5
 
-      - name: Setup PHP ${{ matrix.php-version }}
+      - name: Setup PHP ${{ env.PHP_VERSION }}
+        id: setup-php
         uses: shivammathur/setup-php@v2
+        env:
+          update: true # whether to use latest available patch for the version or not
+          fail-fast: true # step will fail if an extension or tool fails to set up
         with:
-          php-version: '${{ matrix.php-version }}'
+          php-version: ${{ env.PHP_VERSION }}
           tools: composer
           coverage: none
-        env:
-          # Always use latest available patch for the version
-          update: true
 
-      - name: Setup cache
-        id: cache
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Setup cache for PHP ${{ steps.setup-php.outputs.php-version }}
         uses: actions/cache@v4
         with:
           path: |
-            ~/.composer
-            ./vendor
-          # Clear the cache if composer json (as composer.lock is in the repo) has been updated
-          key: tests-${{ matrix.php-version }}-${{ hashFiles('composer.json') }}
+            ${{ steps.composer-cache.outputs.dir }}
+          # Clear the cache if composer.json (as composer.lock is not available) has been updated
+          key: tests-php${{ steps.setup-php.outputs.php-version }}-${{ hashFiles('composer.json') }}
 
-      - name: Build
-        run: |
-          make build
+      - name: Build with PHP ${{ steps.setup-php.outputs.php-version }}
+        run: make build
 
       - name: Test
         run: make test-unit && make test-functional
