@@ -1,4 +1,4 @@
-name: 'Nightly reusable workflow - OLD'
+name: 'Nightly reusable workflow'
 
 on:
   workflow_call:

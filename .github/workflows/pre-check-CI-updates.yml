@@ -40,7 +40,7 @@ jobs:
     permissions:
       contents: read
       checks: write # For the check run creation !
-    uses: ./.github/workflows/reusable-nightly-tests-workflow.yml
+    uses: ./.github/workflows/reusable/nightly-tests.yml
 
   upload:
     name: Coverage
