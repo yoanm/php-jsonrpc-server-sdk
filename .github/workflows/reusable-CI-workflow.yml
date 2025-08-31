@@ -13,9 +13,9 @@ jobs:
     env:
       VERSIONS_FILEPATH: .github/workflows/supported-versions.json
     outputs:
-      php-min-version: ${{ steps.parse-versions.outputs.php-min-version }}
-      php-max-version: ${{ steps.parse-versions.outputs.php-max-version }}
-      php-next-version: ${{ steps.parse-versions.outputs.php-next-version }}
+      php-min: ${{ steps.parse-versions.outputs.php-min-version }}
+      php-max: ${{ steps.parse-versions.outputs.php-max-version }}
+      php-next: ${{ steps.parse-versions.outputs.php-next-version }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out supported version file
@@ -44,9 +44,9 @@ jobs:
       matrix:
         include:
           - job-name: Up to date versions # => Highest versions allowed by composer config
-            php-version: '${{ needs.fetch-supported-versions.outputs.php-max-version }}'
+            php-version: '${{ needs.fetch-supported-versions.outputs.php-max }}'
           - job-name: Bare minimum # => Lowest versions allowed by composer config
-            php-version: '${{ needs.fetch-supported-versions.outputs.php-min-version }}'
+            php-version: '${{ needs.fetch-supported-versions.outputs.php-min }}'
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -54,7 +54,7 @@ jobs:
       # Enable coverage only for specific version(s) !
       # Usually highest version(s), plus additional ones in case of code used only with specific versions
       - name: Enable coverage
-        if: ${{ matrix.php-version == needs.fetch-supported-versions.outputs.php-max-version }}
+        if: ${{ matrix.php-version == needs.fetch-supported-versions.outputs.php-max }}
         run: |
           echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
 
@@ -126,7 +126,7 @@ jobs:
     needs: [fetch-supported-versions]
     runs-on: ubuntu-latest
     env:
-      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-max-version }}
+      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-max }}
     steps:
       - uses: actions/checkout@v5
 
@@ -169,7 +169,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
-      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-next-version }}
+      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-next }}
       COMPOSER_IGNORE_PLATFORM_REQ: 'php+'
     steps:
       - name: Check out code
