@@ -14,23 +14,19 @@ jobs:
     env:
       VERSIONS_FILEPATH: .github/workflows/supported-versions.json
     outputs:
-      php-min: ${{ steps.parse-php-versions.outputs.min }}
-      php-max: ${{ steps.parse-php-versions.outputs.max }}
-      php-next: ${{ steps.parse-php-versions.outputs.next }}
+      php-min: ${{ steps.fetch-php-versions.outputs.min }}
+      php-max: ${{ steps.fetch-php-versions.outputs.max }}
+      php-next: ${{ steps.fetch-php-versions.outputs.next }}
     steps:
-
-      # @TODO Remove the following step and uncomment the next one (only there for local action usage!)
-      - name: Check out supported version file
+      - name: Check out supported version file (only)
         uses: actions/checkout@v5
-      #- name: Check out supported version file (only)
-      #  uses: actions/checkout@v5
-      #  with:
-      #    sparse-checkout: ${{ env.VERSIONS_FILEPATH }}
-      #    sparse-checkout-cone-mode: false
+        with:
+          sparse-checkout: ${{ env.VERSIONS_FILEPATH }}
+          sparse-checkout-cone-mode: false
 
-      - name: Fetch versions
-        id: parse-php-versions
-        uses: ./.github/actions/supported-versions-parser
+      - name: Fetch PHP supported versions
+        id: fetch-php-versions
+        uses: yoanm/gha-supported-versions-parser@feature/init
         with:
           dependency: php
           path: ${{ env.VERSIONS_FILEPATH }}
