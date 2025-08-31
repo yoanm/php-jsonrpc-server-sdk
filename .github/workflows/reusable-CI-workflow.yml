@@ -11,8 +11,6 @@ jobs:
   fetch-supported-versions:
     name: Fetch supported versions
     runs-on: ubuntu-latest
-    env:
-      VERSIONS_FILEPATH: .github/workflows/supported-versions.json
     outputs:
       php-min: ${{ steps.fetch-php-versions.outputs.min }}
       php-max: ${{ steps.fetch-php-versions.outputs.max }}
@@ -23,7 +21,8 @@ jobs:
         uses: yoanm/gha-supported-versions-parser@feature/init
         with:
           dependency: php
-          path: ${{ env.VERSIONS_FILEPATH }}
+          path: .github/workflows/supported-versions.json
+
   tests:
     name: ${{ matrix.job-name }}
     needs: [fetch-supported-versions]
