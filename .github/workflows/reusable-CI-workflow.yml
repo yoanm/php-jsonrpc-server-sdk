@@ -2,34 +2,30 @@ name: 'CI reusable workflow'
 
 on:
   workflow_call:
-    inputs:
-      # >>>> Dummy env-inputs
-      # Goal here is just to have access to variable values
-      # in order to build job matrix as `env` variable is not available there
-      php-min-version:
-        default: '8.0'
-        description: Lowest PHP version to assess (e.g Lowest supported version including security support)
-        required: false
-        type: string
-      php-max-version:
-        default: '8.4'
-        description: Highest PHP version to assess (e.g Highest supported version)
-        required: false
-        type: string
-      php-next-version:
-        default: '8.5'
-        description: Next (currently not supported) PHP version to assess (e.g Current dev version)
-        required: false
-        type: string
-      # <<<< Dummy env-inputs
 
 env:
   COMPOSER_PREFER_STABLE: '1'
   TEST_OUTPUT_STYLE: pretty
 
 jobs:
+  fetch-supported-versions:
+    name: Fetch supported versions
+    runs-on: ubuntu-latest
+    outputs:
+      php-min: ${{ steps.fetch-php-versions.outputs.min }}
+      php-max: ${{ steps.fetch-php-versions.outputs.max }}
+      php-next: ${{ steps.fetch-php-versions.outputs.next }}
+    steps:
+      - name: Fetch PHP supported versions
+        id: fetch-php-versions
+        uses: yoanm/gha-supported-versions-parser@feature/init
+        with:
+          dependency: php
+          path: .github/workflows/supported-versions.json
+
   tests:
     name: ${{ matrix.job-name }}
+    needs: [fetch-supported-versions]
     runs-on: ubuntu-latest
     env:
       COVERAGE_TYPE: none
@@ -39,9 +35,9 @@ jobs:
       matrix:
         include:
           - job-name: Up to date versions # => Highest versions allowed by composer config
-            php-version: '${{ inputs.php-max-version }}'
+            php-version: '${{ needs.fetch-supported-versions.outputs.php-max }}'
           - job-name: Bare minimum # => Lowest versions allowed by composer config
-            php-version: '${{ inputs.php-min-version }}'
+            php-version: '${{ needs.fetch-supported-versions.outputs.php-min }}'
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -49,7 +45,7 @@ jobs:
       # Enable coverage only for specific version(s) !
       # Usually highest version(s), plus additional ones in case of code used only with specific versions
       - name: Enable coverage
-        if: ${{ matrix.php-version == inputs.php-max-version }}
+        if: ${{ matrix.php-version == needs.fetch-supported-versions.outputs.php-max }}
         run: |
           echo "COVERAGE_TYPE=xdebug" >> $GITHUB_ENV
 
@@ -118,9 +114,10 @@ jobs:
 
   static-checks:
     name: Static analysis
+    needs: [fetch-supported-versions]
     runs-on: ubuntu-latest
     env:
-      PHP_VERSION: ${{ inputs.php-max-version }}
+      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-max }}
     steps:
       - uses: actions/checkout@v5
 
@@ -159,12 +156,12 @@ jobs:
 
   nightly-tests:
     name: Nightly
+    needs: [ fetch-supported-versions, tests ]
     runs-on: ubuntu-latest
-    env:
-      PHP_VERSION: ${{ inputs.php-next-version }}
-      COMPOSER_IGNORE_PLATFORM_REQ: 'php+'
     continue-on-error: true
-    needs: [ tests ]
+    env:
+      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-next }}
+      COMPOSER_IGNORE_PLATFORM_REQ: 'php+'
     steps:
       - name: Check out code
         uses: actions/checkout@v5
