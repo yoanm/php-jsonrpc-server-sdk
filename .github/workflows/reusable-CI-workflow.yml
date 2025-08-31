@@ -18,17 +18,12 @@ jobs:
       php-max: ${{ steps.fetch-php-versions.outputs.max }}
       php-next: ${{ steps.fetch-php-versions.outputs.next }}
     steps:
-      - name: Check out supported version file (only)
-        shell: bash
-        run: |
-          curl "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref }}/${{ env.VERSIONS_FILEPATH }}" > /tmp/supported-versions.json
-
       - name: Fetch PHP supported versions
         id: fetch-php-versions
         uses: yoanm/gha-supported-versions-parser@feature/init
         with:
           dependency: php
-          path: /tmp/supported-versions.json
+          path: ${{ env.VERSIONS_FILEPATH }}
   tests:
     name: ${{ matrix.job-name }}
     needs: [fetch-supported-versions]
