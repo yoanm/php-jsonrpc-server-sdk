@@ -19,17 +19,16 @@ jobs:
       php-next: ${{ steps.fetch-php-versions.outputs.next }}
     steps:
       - name: Check out supported version file (only)
-        uses: actions/checkout@v5
-        with:
-          sparse-checkout: ${{ env.VERSIONS_FILEPATH }}
-          sparse-checkout-cone-mode: false
+        shell: bash
+        run: |
+          curl "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref }}/${{ env.VERSIONS_FILEPATH }}" > /tmp/supported-versions.json
 
       - name: Fetch PHP supported versions
         id: fetch-php-versions
         uses: yoanm/gha-supported-versions-parser@feature/init
         with:
           dependency: php
-          path: ${{ env.VERSIONS_FILEPATH }}
+          path: /tmp/supported-versions.json
   tests:
     name: ${{ matrix.job-name }}
     needs: [fetch-supported-versions]
