@@ -1,0 +1,59 @@
+name: gha-supported-versions-parser
+description: |
+  @TODO
+#branding: # @TODO
+#  icon: tag
+#  color: yellow
+
+inputs:
+  dependency:
+    description: Dependency name to fetch
+    required: true
+  path:
+    description: Path to the supported versions file
+    required: true
+
+outputs:
+  min:
+    description: Minimal version configured for the given dependency
+    value: ${{ steps.parse-versions.outputs.min }}
+  max:
+    description: Maximal version configured for the given dependency
+    value: ${{ steps.parse-versions.outputs.max }}
+  next:
+    description: Next version configured for the given dependency
+    value: ${{ steps.parse-versions.outputs.next }}
+
+runs:
+  using: composite
+  steps:
+    # Even if an input is marked as "required", empty/no value may be passed !
+    - shell: bash
+      run: |
+        # Validate provided inputs ...
+
+        if [[ -z "${{ inputs.dependency }}" ]]; then
+          echo '::error::You must provide a dependency !'
+          exit 1
+        elif [[ -z "${{ inputs.path }}" ]]; then
+          echo '::error::You must provide a path !'
+          exit 1
+        fi
+
+    - id: parse-versions
+      shell: bash
+      run: |
+        # Parse ${{ inputs.dependency }} versions ...
+
+        # Lowest version to assess (e.g Lowest supported version including security support)
+        MIN=$( jq -r '.${{ inputs.dependency }}.min' ${{ inputs.path }} )
+        echo "Min ${{ inputs.dependency }} version: $MIN"
+        echo "min=$MIN" >> $GITHUB_OUTPUT
+        # Highest version to assess (e.g Highest supported version)
+        MAX=$( jq -r '.${{ inputs.dependency }}.max' ${{ inputs.path }} )
+        echo "Max ${{ inputs.dependency }} version: $MAX"
+        echo "max=$MAX" >> $GITHUB_OUTPUT
+        # Next (currently not supported) version to assess (e.g Current dev version)
+        NEXT=$( jq -r '.${{ inputs.dependency }}.next' ${{ inputs.path }} )
+        echo "Next ${{ inputs.dependency }} version: $NEXT"
+        echo "next=$NEXT" >> $GITHUB_OUTPUT

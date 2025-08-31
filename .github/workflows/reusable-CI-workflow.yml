@@ -10,28 +10,30 @@ env:
 jobs:
   fetch-supported-versions:
     name: Fetch supported versions
+    runs-on: ubuntu-latest
     env:
       VERSIONS_FILEPATH: .github/workflows/supported-versions.json
     outputs:
-      php-min: ${{ steps.parse-versions.outputs.php-min-version }}
-      php-max: ${{ steps.parse-versions.outputs.php-max-version }}
-      php-next: ${{ steps.parse-versions.outputs.php-next-version }}
-    runs-on: ubuntu-latest
+      php-min: ${{ steps.parse-php-versions.outputs.min }}
+      php-max: ${{ steps.parse-php-versions.outputs.max }}
+      php-next: ${{ steps.parse-php-versions.outputs.next }}
     steps:
+
+      # @TODO Remove the following step and uncomment the next one (only there for local action usage!)
       - name: Check out supported version file
         uses: actions/checkout@v5
+      #- name: Check out supported version file (only)
+      #  uses: actions/checkout@v5
+      #  with:
+      #    sparse-checkout: ${{ env.VERSIONS_FILEPATH }}
+      #    sparse-checkout-cone-mode: false
+
+      - name: Fetch versions
+        id: parse-php-versions
+        uses: ./.github/actions/supported-versions-parser
         with:
-          sparse-checkout: ${{ env.VERSIONS_FILEPATH }}
-          sparse-checkout-cone-mode: false
-      - name: Parse versions
-        id: parse-versions
-        run: |
-          # Lowest PHP version to assess (e.g Lowest supported version including security support)
-          echo "php-min-version=$( jq -r '.php.min' ${{ env.VERSIONS_FILEPATH }} )" >> $GITHUB_OUTPUT
-          # Highest PHP version to assess (e.g Highest supported version)
-          echo "php-max-version=$( jq -r '.php.max' ${{ env.VERSIONS_FILEPATH }} )" >> $GITHUB_OUTPUT
-          # Next (currently not supported) PHP version to assess (e.g Current dev version)
-          echo "php-next-version=$( jq -r '.php.next' ${{ env.VERSIONS_FILEPATH }} )" >> $GITHUB_OUTPUT
+          dependency: php
+          path: ${{ env.VERSIONS_FILEPATH }}
   tests:
     name: ${{ matrix.job-name }}
     needs: [fetch-supported-versions]
