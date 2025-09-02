@@ -3,4 +3,5 @@ build
 #A library must not provide a composer.lock file
 composer.lock
 
+#Phpunit
 .phpunit.result.cache
