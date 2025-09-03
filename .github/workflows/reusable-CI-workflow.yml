@@ -35,7 +35,7 @@ jobs:
           dependency: php
 
   tests:
-    name: ${{ matrix.job-name }}
+    name: PHP ${{ matrix.php-version }} - ${{ matrix.job-name }}
     needs: [fetch-supported-versions]
     runs-on: ubuntu-latest
     permissions:
@@ -170,7 +170,7 @@ jobs:
         uses: actions/dependency-review-action@v4
 
   nightly-tests:
-    name: Nightly
+    name: Nightly PHP ${{ needs.fetch-supported-versions.outputs.php-next }}
     needs: [ fetch-supported-versions, tests ]
     if: ${{ github.event_name == 'push' || ( github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'with-nightly-tests') ) }}
     runs-on: ubuntu-latest
@@ -178,20 +178,19 @@ jobs:
       contents: read
     continue-on-error: true
     env:
-      PHP_VERSION: ${{ needs.fetch-supported-versions.outputs.php-next }}
       COMPOSER_IGNORE_PLATFORM_REQ: 'php+'
     steps:
       - name: Check out code
         uses: actions/checkout@v5
 
-      - name: Setup PHP ${{ env.PHP_VERSION }}
+      - name: Setup PHP ${{ needs.fetch-supported-versions.outputs.php-next }}
         id: setup-php
         uses: shivammathur/setup-php@v2
         env:
           update: true # whether to use latest available patch for the version or not
           fail-fast: true # step will fail if an extension or tool fails to set up
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ needs.fetch-supported-versions.outputs.php-next }}
           tools: composer
           coverage: none
 
