@@ -77,9 +77,6 @@ jobs:
         run: |
           git checkout feature/increase-supported-version \
             || git switch --create feature/increase-supported-version 
-          # DEBUG - !! TO REMOVE !!
-          ls -ail
-          ls ${{ env.V_FILE }}
 
       - name: Fetch PHP currently supported versions
         id: fetch-php-supported-versions
@@ -94,8 +91,6 @@ jobs:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.latest }}
           TEMP_DIR: ${{ runner.temp }}
         run: |
-          # DEBUG - !! TO REMOVE !!
-          echo "BEFORE" && cat $V_FILE
           # Directly overwritting the original file is not working with JQ as it leads to an empty file
           # => A temporary file is required instead
           TMP_FILE="${TEMP_DIR}/supported-versions-auto-update.tmp"
@@ -103,8 +98,6 @@ jobs:
             '. *= {"php": {"max": $version}}' \
             $V_FILE > $TMP_FILE
           cp $TMP_FILE $V_FILE
-          # DEBUG - !! TO REMOVE !!
-          echo "AFTER" && cat $V_FILE
 
       - name: Update nightly version
         if: ${{ steps.fetch-php-supported-versions.outputs.next != steps.fetch-php-new-versions.outputs.nightly }}
@@ -112,8 +105,6 @@ jobs:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.nightly }}
           TEMP_DIR: ${{ runner.temp }}
         run: |
-          # DEBUG - !! TO REMOVE !!
-          echo "BEFORE" && cat $V_FILE
           # Directly overwritting the original file is not working with JQ as it leads to an empty file
           # => A temporary file is required instead
           TMP_FILE="${TEMP_DIR}/supported-versions-auto-update.tmp"
@@ -121,8 +112,6 @@ jobs:
             '. *= {"php": {"next": $version}}' \
             $V_FILE > $TMP_FILE
           cp $TMP_FILE $V_FILE
-          # DEBUG - !! TO REMOVE !!
-          echo "AFTER" && cat $V_FILE
 
       - name: "Add / commit / push"
         env:
@@ -141,8 +130,7 @@ jobs:
             git commit \
               -m "Update supported versions (${DATE})" \
               -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
-            #git push --set-upstream origin feature/increase-supported-version;
-            git push origin;
+            git push --set-upstream origin feature/increase-supported-version;
           else
             echo "Nothing to commit !";
           fi;
