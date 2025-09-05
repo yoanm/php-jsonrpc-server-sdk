@@ -23,7 +23,7 @@ concurrency:
 env:
   COMMIT_AUTHOR_NAME: github-actions
   COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-  V_FILE: .github/workflows/.supported-versions.json # TODO - REPLACE BY THE FOLLOWING BEFORE MERGE -> .supported-versions.json
+  V_FILE: .github/workflows/supported-versions.json # TODO - REPLACE BY THE FOLLOWING BEFORE MERGE -> .supported-versions.json
   UPDATE_BRANCH: feature/increase-supported-version
 
 jobs:
@@ -79,8 +79,9 @@ jobs:
       - name: Create/Switch to update branch
         env:
           BRANCH: ${{ env.UPDATE_BRANCH }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
+          git checkout "${BRANCH}" || git checkout --track origin/${DEFAULT_BRANCH} -b "${BRANCH}"
 
       - name: Fetch PHP currently supported versions
         id: fetch-php-supported-versions
