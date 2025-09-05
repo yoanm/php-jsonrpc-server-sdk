@@ -31,6 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # non-sense, but supported version file being under workflows directory,
+      # it's not possible to push it without workflows write permission ...
+      # Which is translated to 'actions' permission here
+      actions: write
     defaults:
       run:
         working-directory: 'my-repo'
