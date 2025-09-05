@@ -89,7 +89,6 @@ jobs:
         with:
           path: my-repo/${{ env.V_FILE }}
           dependency: php
-          with-summary: false
 
       - name: Update max version
         if: ${{ steps.fetch-php-supported-versions.outputs.max != steps.fetch-php-new-versions.outputs.latest }}
