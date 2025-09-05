@@ -1,14 +1,6 @@
 name: 'Supported versions auto-update'
 
 on:
-  ## >>> FOR TEST PURPOSE ONLY
-  # Uncomment the following for test purpose
-  # @TODO - TO COMMENT BEFORE MERGE !!
-  pull_request:
-    types:
-      - opened
-      - synchronize
-  ## <<< FOR TEST PURPOSE ONLY
   workflow_dispatch: # Allows to run the workflow manually from the Actions tab
   schedule:
     - cron: '0 0 1 * *' # Every month
@@ -21,10 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMMIT_AUTHOR_NAME: github-actions
-  COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   V_FILE: .supported-versions.json
-  UPDATE_BRANCH: feature/increase-supported-version
+  UPDATE_BRANCH: auto/feature/increase-supported-version
 
 jobs:
   php:
@@ -89,17 +79,16 @@ jobs:
         with:
           path: my-repo/${{ env.V_FILE }}
           dependency: php
+          with-summary: false
 
       - name: Update max version
         if: ${{ steps.fetch-php-supported-versions.outputs.max != steps.fetch-php-new-versions.outputs.latest }}
         env:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.latest }}
-          TEMP_DIR: ${{ runner.temp }}
-        run: |
           # Directly overwritting the original file is not working with JQ as it leads to an empty file
           # => A temporary file is required instead
-          
-          TMP_FILE="${TEMP_DIR}/supported-versions-auto-update.tmp"
+          TMP_FILE: "${{ runner.temp }}/supported-versions-auto-update.tmp"
+        run: |
           jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"max": $version}}' \
             $V_FILE > $TMP_FILE
@@ -110,12 +99,10 @@ jobs:
         if: ${{ steps.fetch-php-supported-versions.outputs.next != steps.fetch-php-new-versions.outputs.nightly }}
         env:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.nightly }}
-          TEMP_DIR: ${{ runner.temp }}
-        run: |
           # Directly overwritting the original file is not working with JQ as it leads to an empty file
           # => A temporary file is required instead
-          TMP_FILE="${TEMP_DIR}/supported-versions-auto-update.tmp"
-          
+          TMP_FILE: "${{ runner.temp }}/supported-versions-auto-update.tmp"
+        run: |
           jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"next": $version}}' \
             $V_FILE > $TMP_FILE
@@ -125,20 +112,22 @@ jobs:
       - name: "Add / commit / push"
         env:
           FILES: ${{ env.V_FILE }}
+          COMMIT_AUTHOR_NAME: github-actions
+          COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           DATE: ${{ steps.datetime.outputs.value }}
           SERVER_URL: ${{ github.server_url }}
           REPO_NAME: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
           BRANCH: ${{ env.UPDATE_BRANCH }}
         run: |
-          git config user.name "${{ env.COMMIT_AUTHOR_NAME }}"
-          git config user.email "${{ env.COMMIT_AUTHOR_EMAIL }}"
+          git config user.name "${COMMIT_AUTHOR_NAME}"
+          git config user.email "${COMMIT_AUTHOR_EMAIL}"
           git add $FILES
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
             git diff --cached --color $FILES
             git commit \
-              -m "Update supported versions (${DATE})" \
+              -m "Update PHP supported versions (${DATE})" \
               -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
             git push --set-upstream origin "${BRANCH}";
           else
