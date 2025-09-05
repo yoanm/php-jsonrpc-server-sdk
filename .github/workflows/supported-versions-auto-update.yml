@@ -85,7 +85,7 @@ jobs:
 
       - name: Fetch PHP currently supported versions
         id: fetch-php-supported-versions
-        uses: yoanm/gha-supported-versions-parser@v1
+        uses: yoanm/gha-supported-versions-parser@yoanm-patch-1
         with:
           path: my-repo/${{ env.V_FILE }}
           dependency: php
