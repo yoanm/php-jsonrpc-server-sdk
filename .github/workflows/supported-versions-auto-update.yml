@@ -23,7 +23,8 @@ concurrency:
 env:
   COMMIT_AUTHOR_NAME: github-actions
   COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-  V_FILE: .supported-versions.json
+  V_FILE: .github/workflows/.supported-versions.json # TODO - REPLACE BY THE FOLLOWING BEFORE MERGE -> .supported-versions.json
+  UPDATE_BRANCH: feature/increase-supported-version
 
 jobs:
   php:
@@ -73,11 +74,13 @@ jobs:
         with:
           path: 'my-repo'
           ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
 
       - name: Create/Switch to update branch
+        env:
+          BRANCH: ${{ env.UPDATE_BRANCH }}
         run: |
-          git checkout feature/increase-supported-version \
-            || git switch --create feature/increase-supported-version 
+          git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
 
       - name: Fetch PHP currently supported versions
         id: fetch-php-supported-versions
@@ -94,10 +97,12 @@ jobs:
         run: |
           # Directly overwritting the original file is not working with JQ as it leads to an empty file
           # => A temporary file is required instead
+          
           TMP_FILE="${TEMP_DIR}/supported-versions-auto-update.tmp"
           jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"max": $version}}' \
             $V_FILE > $TMP_FILE
+          
           cp $TMP_FILE $V_FILE
 
       - name: Update nightly version
@@ -109,9 +114,11 @@ jobs:
           # Directly overwritting the original file is not working with JQ as it leads to an empty file
           # => A temporary file is required instead
           TMP_FILE="${TEMP_DIR}/supported-versions-auto-update.tmp"
+          
           jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"next": $version}}' \
             $V_FILE > $TMP_FILE
+          
           cp $TMP_FILE $V_FILE
 
       - name: "Add / commit / push"
@@ -121,6 +128,7 @@ jobs:
           SERVER_URL: ${{ github.server_url }}
           REPO_NAME: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
+          BRANCH: ${{ env.UPDATE_BRANCH }}
         run: |
           git config user.name "${{ env.COMMIT_AUTHOR_NAME }}"
           git config user.email "${{ env.COMMIT_AUTHOR_EMAIL }}"
@@ -131,7 +139,7 @@ jobs:
             git commit \
               -m "Update supported versions (${DATE})" \
               -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
-            git push --set-upstream origin feature/increase-supported-version;
+            git push --set-upstream origin "${BRANCH}";
           else
             echo "Nothing to commit !";
           fi;
