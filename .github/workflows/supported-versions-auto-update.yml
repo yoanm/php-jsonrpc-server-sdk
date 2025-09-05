@@ -1,0 +1,130 @@
+name: 'Supported versions auto-update'
+
+on:
+  ## >>> FOR TEST PURPOSE ONLY
+  # Uncomment the following for test purpose
+  # @TODO - TO COMMENT BEFORE MERGE !!
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  ## <<< FOR TEST PURPOSE ONLY
+  workflow_dispatch: # Allows to run the workflow manually from the Actions tab
+  schedule:
+    - cron: '0 0 1 * *' # Every month
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+env:
+  COMMIT_AUTHOR_NAME: github-actions
+  COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+  V_FILE: .github/workflows/supported-versions.json
+
+jobs:
+  php:
+    name: PHP
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: 'my-repo'
+    steps:
+
+      - name: Get current date/time
+        id: datetime
+        run: echo "::set-output name=value::$(date +'%Y-%m-%d')"
+        working-directory: '/tmp' # Repository is not yet there => use tmp directory as working directory
+
+      - name: "Checkout yoanm/php-versions"
+        uses: actions/checkout@v5
+        with:
+          repository: 'yoanm/php-versions'
+          path: 'php-versions-repo'
+          sparse-checkout: |
+            actives.json
+            qa-releases.json
+
+      - name: Find lowest/latest supported version and nightly version
+        id: fetch-php-new-versions
+        working-directory: 'php-versions-repo'
+        run: |
+          LOWEST=$(jq -r '(.[] | keys | sort) | first' actives.json)
+          echo "Lowest supported version: ${LAST_SUPPORTED}"
+          
+          LATEST=$(jq -r '(.[] | keys | sort) | last' actives.json)
+          echo "Latest supported version: ${LAST_SUPPORTED}"
+          
+          NIGHTLY=$(jq -r 'last(.[] | .[] | select(.supported == false)) | .short_version' qa-releases.json)
+          echo "Nightly version: ${NIGHTLY}"
+          
+          
+          echo "lowest=${LOWEST}" >> $GITHUB_OUTPUT
+          echo "latest=${LATEST}" >> $GITHUB_OUTPUT
+          echo "nightly=${NIGHTLY}" >> $GITHUB_OUTPUT
+
+      - name: "Checkout current repository"
+        uses: actions/checkout@v5
+        with:
+          path: 'my-repo'
+
+      - name: Create/Switch to update branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git checkout feature/increase-supported-version \
+            || git checkout --track "origin/${DEFAULT_BRANCH}" -b feature/increase-supported-version 
+
+      - name: Fetch PHP currently supported versions
+        id: fetch-php-supported-versions
+        uses: yoanm/gha-supported-versions-parser@v1
+        with:
+          path: ${{ env.V_FILE }}
+          dependency: php
+
+      - name: Update max version
+        if: ${{ steps.fetch-php-supported-versions.outputs.max != steps.fetch-php-new-versions.outputs.latest }}
+        env:
+          VERSION: ${{ steps.fetch-php-new-versions.outputs.max }}
+        run: |
+          jq -r --monochrome-output --arg version "${VERSION}"\
+            '. *= {"php": {"max": $version}}' \
+            $V_FILE \
+          > $V_FILE
+
+      - name: Update nightly version
+        if: ${{ steps.fetch-php-supported-versions.outputs.nightly != steps.fetch-php-new-versions.outputs.nightly }}
+        env:
+          VERSION: ${{ steps.fetch-php-new-versions.outputs.nightly }}
+        run: |
+          jq -r --monochrome-output --arg version "${VERSION}"\
+            '. *= {"php": {"nightly": $version}}' \
+            $V_FILE \
+          > $V_FILE
+
+      - name: "Add / commit / push"
+        env:
+          FILES: ${{ env.V_FILE }}
+          DATE: ${{ steps.datetime.outputs.value }}
+          SERVER_URL: ${{ github.server_url }}
+          REPO_NAME: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config user.name "${{ env.COMMIT_AUTHOR_NAME }}"
+          git config user.email "${{ env.COMMIT_AUTHOR_EMAIL }}"
+          git add $FILES
+          if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
+            echo "Pushing updated files:"
+            git diff --cached --color $FILES
+            git commit \
+              -m "Update supported versions (${DATE})" \
+              -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
+            git push origin;          
+          else
+            echo "Nothing to commit !";
+          fi;
