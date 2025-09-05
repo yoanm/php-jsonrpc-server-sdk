@@ -9,7 +9,7 @@ permissions:
 env:
   COMPOSER_PREFER_STABLE: '1'
   TEST_OUTPUT_STYLE: pretty
-  SUPPORTED_VERSIONS_FILE_PATH: .github/workflows/supported-versions.json
+  SUPPORTED_VERSIONS_FILE_PATH: .supported-versions.json
 
 jobs:
   fetch-supported-versions:
