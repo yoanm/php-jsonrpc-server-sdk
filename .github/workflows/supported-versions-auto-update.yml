@@ -60,13 +60,13 @@ jobs:
           LATEST=$(jq -r '(.[] | keys | sort) | last' actives.json)
           echo "Latest supported version: ${LATEST}"
           
-          NIGHTLY=$(jq -r 'last(.[] | .[] | select(.supported == false)) | .short_version' qa-releases.json)
-          echo "Nightly version: ${NIGHTLY}"
+          NEXT=$(jq -r 'last(.[] | .[] | select(.supported == false)) | .short_version' qa-releases.json)
+          echo "Nightly version: ${NEXT}"
           
           
           echo "lowest=${LOWEST}" >> $GITHUB_OUTPUT
           echo "latest=${LATEST}" >> $GITHUB_OUTPUT
-          echo "nightly=${NIGHTLY}" >> $GITHUB_OUTPUT
+          echo "next=${NEXT}" >> $GITHUB_OUTPUT
 
       - name: "Checkout current repository"
         uses: actions/checkout@v5
@@ -94,27 +94,27 @@ jobs:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.max }}
         run: |
           # DEBUG - !! TO REMOVE !!
-          cat $V_FILE
+          echo "BEFORE" && cat $V_FILE
           jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"max": $version}}' \
             $V_FILE \
-          > $V_FILE
+          # > $V_FILE
           # DEBUG - !! TO REMOVE !!
-          cat $V_FILE
+          echo "AFTER" && cat $V_FILE
 
       - name: Update nightly version
-        if: ${{ steps.fetch-php-supported-versions.outputs.nightly != steps.fetch-php-new-versions.outputs.nightly }}
+        if: ${{ steps.fetch-php-supported-versions.outputs.next != steps.fetch-php-new-versions.outputs.next }}
         env:
-          VERSION: ${{ steps.fetch-php-new-versions.outputs.nightly }}
+          VERSION: ${{ steps.fetch-php-new-versions.outputs.next }}
         run: |
           # DEBUG - !! TO REMOVE !!
-          cat $V_FILE
+          echo "BEFORE" && cat $V_FILE
           jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"next": $version}}' \
             $V_FILE \
-          > $V_FILE
+          # > $V_FILE
           # DEBUG - !! TO REMOVE !!
-          cat $V_FILE
+          echo "AFTER" && cat $V_FILE
 
       - name: "Add / commit / push"
         env:
