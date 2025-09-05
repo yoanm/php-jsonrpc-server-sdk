@@ -55,10 +55,10 @@ jobs:
         working-directory: 'php-versions-repo'
         run: |
           LOWEST=$(jq -r '(.[] | keys | sort) | first' actives.json)
-          echo "Lowest supported version: ${LAST_SUPPORTED}"
+          echo "Lowest supported version: ${LOWEST}"
           
           LATEST=$(jq -r '(.[] | keys | sort) | last' actives.json)
-          echo "Latest supported version: ${LAST_SUPPORTED}"
+          echo "Latest supported version: ${LATEST}"
           
           NIGHTLY=$(jq -r 'last(.[] | .[] | select(.supported == false)) | .short_version' qa-releases.json)
           echo "Nightly version: ${NIGHTLY}"
@@ -74,17 +74,18 @@ jobs:
           path: 'my-repo'
 
       - name: Create/Switch to update branch
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           git checkout feature/increase-supported-version \
-            || git checkout --track "origin/${DEFAULT_BRANCH}" -b feature/increase-supported-version 
+            || git switch --create feature/increase-supported-version 
+          # DEBUG - !! TO REMOVE !!
+          ls -ail
+          ls ${{ env.V_FILE }}
 
       - name: Fetch PHP currently supported versions
         id: fetch-php-supported-versions
         uses: yoanm/gha-supported-versions-parser@v1
         with:
-          path: ${{ env.V_FILE }}
+          path: my-repo/${{ env.V_FILE }}
           dependency: php
 
       - name: Update max version
@@ -92,20 +93,28 @@ jobs:
         env:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.max }}
         run: |
-          jq -r --monochrome-output --arg version "${VERSION}"\
+          # DEBUG - !! TO REMOVE !!
+          cat $V_FILE
+          jq -r --monochrome-output --arg version "${VERSION}" \
             '. *= {"php": {"max": $version}}' \
             $V_FILE \
           > $V_FILE
+          # DEBUG - !! TO REMOVE !!
+          cat $V_FILE
 
       - name: Update nightly version
         if: ${{ steps.fetch-php-supported-versions.outputs.nightly != steps.fetch-php-new-versions.outputs.nightly }}
         env:
           VERSION: ${{ steps.fetch-php-new-versions.outputs.nightly }}
         run: |
-          jq -r --monochrome-output --arg version "${VERSION}"\
-            '. *= {"php": {"nightly": $version}}' \
+          # DEBUG - !! TO REMOVE !!
+          cat $V_FILE
+          jq -r --monochrome-output --arg version "${VERSION}" \
+            '. *= {"php": {"next": $version}}' \
             $V_FILE \
           > $V_FILE
+          # DEBUG - !! TO REMOVE !!
+          cat $V_FILE
 
       - name: "Add / commit / push"
         env:
@@ -124,7 +133,8 @@ jobs:
             git commit \
               -m "Update supported versions (${DATE})" \
               -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
-            git push origin;          
+            #git push --set-upstream origin feature/increase-supported-version;
+            git push origin;
           else
             echo "Nothing to commit !";
           fi;
