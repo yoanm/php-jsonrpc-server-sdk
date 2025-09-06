@@ -21,7 +21,7 @@ jobs:
     secrets:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: yoanm/.github/.github/workflows/reusable-coverage-upload-manager.yml@feature/init # @TODO - !! Move to a tag before merging !!
+    uses: yoanm/.github/.github/workflows/reusable-coverage-upload-manager.yml@v1
     with:
       artifacts-pattern: coverage-groups-*
       with-codacy: true

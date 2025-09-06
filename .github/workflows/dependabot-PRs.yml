@@ -12,6 +12,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: yoanm/.github/.github/workflows/reusable-dependabot-PRs-manager.yml@feature/init # @TODO - !! Move to a tag before merging !!
+    uses: yoanm/.github/.github/workflows/reusable-dependabot-PRs-manager.yml@v1
     with:
       label: 'with-nightly-tests'
