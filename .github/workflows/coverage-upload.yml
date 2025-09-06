@@ -1,6 +1,11 @@
 name: 'Coverage'
 on:
   workflow_call: # Allows pre-check-CI-updates.yml to call it in case of update
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
+      CODECOV_TOKEN:
+        required: true
   workflow_run:
     workflows: ["CI"]
     types: [completed]
