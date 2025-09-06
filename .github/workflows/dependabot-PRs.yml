@@ -6,7 +6,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  dependabot:
+  job:
+    name: ".github"
     if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'yoanm/php-jsonrpc-server-sdk'
     permissions:
       contents: write
