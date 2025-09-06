@@ -8,6 +8,7 @@ permissions:
 
 jobs:
   job:
+    name: ".github"
     permissions:
       contents: read
     uses: yoanm/.github/.github/workflows/reusable-CI-for-PHP.yml@feature/init # @TODO - !! Move to a tag before merging !!
