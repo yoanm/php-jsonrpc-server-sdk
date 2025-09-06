@@ -20,7 +20,7 @@ permissions:
   checks: write # For the check run creation !
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
+  group: "pre-check-CI-${{ github.head_ref || github.ref }}"
   cancel-in-progress: true
 
 jobs:
