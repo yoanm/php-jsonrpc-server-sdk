@@ -7,14 +7,24 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
   cancel-in-progress: true
 
 env:
+  AUTHOR_NAME: github-actions
+  AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   V_FILE: .supported-versions.json
   UPDATE_BRANCH: auto/feature/increase-supported-version
+  ISSUE_TITLE: "[AUTO] update supported versions"
+  PR_TITLE: "Update supported versions"
+  ASSIGNEE_HANDLES: "yoanm"
+
+  SERVER_URL: ${{ github.server_url }}
+  REPO_NAME: ${{ github.repository }}
+  RUN_ID: ${{ github.run_id }}
 
 jobs:
   php:
@@ -22,47 +32,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    defaults:
-      run:
-        working-directory: 'my-repo'
+      issues: write
     steps:
 
       - name: Get current date/time
         id: datetime
         run: echo "value=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-        working-directory: '/tmp' # Repository is not yet there => use tmp directory as working directory
-
-      - name: "Checkout yoanm/php-versions"
-        uses: actions/checkout@v5
-        with:
-          repository: 'yoanm/php-versions'
-          path: 'php-versions-repo'
-          sparse-checkout: |
-            actives.json
-            qa-releases.json
-
-      - name: Find lowest/latest supported version and nightly version
-        id: fetch-php-new-versions
-        working-directory: 'php-versions-repo'
-        run: |
-          LOWEST=$(jq -r '(.[] | keys | sort) | first' actives.json)
-          echo "Lowest supported version: ${LOWEST}"
-          
-          LATEST=$(jq -r '(.[] | keys | sort) | last' actives.json)
-          echo "Latest supported version: ${LATEST}"
-          
-          NIGHTLY=$(jq -r 'last(.[] | .[] | select(.supported == false)) | .short_version' qa-releases.json)
-          echo "Nightly version: ${NIGHTLY}"
-          
-          
-          echo "lowest=${LOWEST}" >> $GITHUB_OUTPUT
-          echo "latest=${LATEST}" >> $GITHUB_OUTPUT
-          echo "nightly=${NIGHTLY}" >> $GITHUB_OUTPUT
 
       - name: "Checkout current repository"
         uses: actions/checkout@v5
         with:
-          path: 'my-repo'
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
 
@@ -73,63 +52,65 @@ jobs:
         run: |
           git checkout "${BRANCH}" || git checkout --track origin/${DEFAULT_BRANCH} -b "${BRANCH}"
 
-      - name: Fetch PHP currently supported versions
-        id: fetch-php-supported-versions
-        uses: yoanm/gha-supported-versions-parser@v1
+      - name: Update versions
+        id: update-versions
+        uses: yoanm/gha-php-supported-versions-auto-update@v0
         with:
-          path: my-repo/${{ env.V_FILE }}
-          dependency: php
-          with-summary: false
-
-      - name: Update max version
-        if: ${{ steps.fetch-php-supported-versions.outputs.max != steps.fetch-php-new-versions.outputs.latest }}
-        env:
-          VERSION: ${{ steps.fetch-php-new-versions.outputs.latest }}
-          # Directly overwritting the original file is not working with JQ as it leads to an empty file
-          # => A temporary file is required instead
-          TMP_FILE: "${{ runner.temp }}/supported-versions-auto-update.tmp"
-        run: |
-          jq -r --monochrome-output --arg version "${VERSION}" \
-            '. *= {"php": {"max": $version}}' \
-            $V_FILE > $TMP_FILE
-          
-          cp $TMP_FILE $V_FILE
-
-      - name: Update nightly version
-        if: ${{ steps.fetch-php-supported-versions.outputs.next != steps.fetch-php-new-versions.outputs.nightly }}
-        env:
-          VERSION: ${{ steps.fetch-php-new-versions.outputs.nightly }}
-          # Directly overwritting the original file is not working with JQ as it leads to an empty file
-          # => A temporary file is required instead
-          TMP_FILE: "${{ runner.temp }}/supported-versions-auto-update.tmp"
-        run: |
-          jq -r --monochrome-output --arg version "${VERSION}" \
-            '. *= {"php": {"next": $version}}' \
-            $V_FILE > $TMP_FILE
-          
-          cp $TMP_FILE $V_FILE
+          path: ${{ env.V_FILE }}
 
       - name: "Add / commit / push"
+        id: commit-and-push
+        if: ${{ steps.update-versions.outputs.updated == '1' }}
         env:
-          FILES: ${{ env.V_FILE }}
-          COMMIT_AUTHOR_NAME: github-actions
-          COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           DATE: ${{ steps.datetime.outputs.value }}
-          SERVER_URL: ${{ github.server_url }}
-          REPO_NAME: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          BRANCH: ${{ env.UPDATE_BRANCH }}
         run: |
-          git config user.name "${COMMIT_AUTHOR_NAME}"
-          git config user.email "${COMMIT_AUTHOR_EMAIL}"
-          git add $FILES
+          git config user.name "${AUTHOR_NAME}"
+          git config user.email "${AUTHOR_EMAIL}"
+          git add $V_FILE
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
-            git diff --cached --color $FILES
-            git commit \
-              -m "Update PHP supported versions (${DATE})" \
-              -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
-            git push --set-upstream origin "${BRANCH}";
+            git diff --cached --color $V_FILE
+            git commit -m "Update PHP supported versions (${DATE})" -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
+            git push --set-upstream origin "${UPDATE_BRANCH}";
+            ISSUE_NEEDED=1
           else
             echo "Nothing to commit !";
+            ISSUE_NEEDED=0
           fi;
+
+          echo "issue-needed=${ISSUE_NEEDED}" >> $GITHUB_OUTPUT
+
+      - name: "Create issue"
+        if: ${{ steps.commit-and-push.outputs.issue-needed == 1 }}
+        env:
+          BODY_FILE: ${{ runner.temp }}/body-file.txt
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
+          ISSUE_URL=$(gh issue list --search "state:open author:@me \"${ISSUE_TITLE}\"" --json url --jq '.[0].url')
+          if [[ -z "${ISSUE_URL}" ]]; then
+            echo "Creating new issue"
+            gh issue create --title "${ISSUE_TITLE}" --body "${ISSUE_BODY_HEADER}" --assignee "${ASSIGNEE_HANDLES}" > issue_url.txt
+
+            ISSUE_URL=$(cat issue_url.txt)
+            if [[ -z "${ISSUE_URL}" ]]; then
+              echo "::error::Unable to retrieve the issue URL !"
+              exit 1
+            fi
+            ISSUE_ID=$(gh issue view "${ISSUE_URL}" --json number --jq '.number')
+            if [[ -z "${ISSUE_ID}" ]]; then
+              echo "::error::Unable to retrieve the issue ID !"
+              exit 1
+            fi
+            
+            echo "Update issue with proper link to create the PR"
+            PR_ENCODED_TITLE=$(jq -rn --arg x "${PR_TITLE}" '$x|@uri')
+            PR_BODY_ENCODED=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')
+            echo "${ISSUE_BODY_HEADER}" > ${BODY_FILE}
+            echo "" >> ${BODY_FILE}
+            echo "Create PR [there](https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1&assignees=${ASSIGNEE_HANDLES}&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${BODY_FILE}
+
+            gh issue edit "${ISSUE_URL}" --body-file "${BODY_FILE}"
+          else
+            echo "Issue already exists: ${ISSUE_URL}"
+          fi
