@@ -6,28 +6,12 @@ permissions:
   pull-requests: write
 
 jobs:
-  dependabot:
-    name: Auto-merge & Labels
+  job:
+    name: ".github"
     if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'yoanm/php-jsonrpc-server-sdk'
-    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-    steps:
-      - name: Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v2.4.0
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Add custom labels
-        run: gh pr edit "${{github.event.pull_request.html_url}}" --add-label "with-nightly-tests"
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Enable auto-merge for Dependabot PRs
-        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'}}
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: yoanm/.github/.github/workflows/reusable-dependabot-PRs-manager.yml@v1
+    with:
+      label: 'with-nightly-tests'
