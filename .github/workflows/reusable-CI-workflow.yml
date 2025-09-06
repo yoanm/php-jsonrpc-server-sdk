@@ -1,0 +1,15 @@
+name: 'CI reusable workflow'
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  job:
+    permissions:
+      contents: read
+    uses: yoanm/.github/.github/workflows/reusable-CI-for-PHP.yml@feature/init # @TODO - !! Move to a tag before merging !!
+    with:
+      supported-versions-file-path: .supported-versions.json

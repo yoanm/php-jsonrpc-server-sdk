@@ -1,11 +1,5 @@
 name: 'Coverage'
 on:
-  workflow_call: # Allows pre-check-CI-updates.yml to call it in case of update
-    secrets:
-      CODACY_PROJECT_TOKEN:
-        required: true
-      CODECOV_TOKEN:
-        required: true
   workflow_run:
     workflows: ["CI"]
     types: [completed]
@@ -23,4 +17,4 @@ jobs:
     secrets:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: yoanm/.github/.github/workflows/reusable-coverage-upload-manager.yml@feature/init # @TODO - !! Move to a tag before merging !!
+    uses: ./.github/workflows/reusable-coverage-upload-workflow.yml

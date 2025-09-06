@@ -12,15 +12,15 @@ on:
     branches: [master] # Only for PR targeting master branch
     paths: # /!\ Duplicate the same list as `on.pull_request.paths-ignore` property value for CI workflow !
       - '.github/workflows/pre-check-CI-updates.yml' # This workflow
-      - '.github/workflows/CI.yml'
-      - '.github/workflows/coverage-upload.yml'
+      - '.github/workflows/reusable-CI-workflow.yml'
+      - '.github/workflows/reusable-coverage-upload-workflow.yml'
 
 permissions:
   contents: read
   checks: write # For the check run creation !
 
 concurrency:
-  group: "pre-check-CI-${{ github.head_ref || github.ref }}"
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
     name: Tests
     permissions:
       contents: read
-    uses: ./.github/workflows/CI.yml
+    uses: ./.github/workflows/reusable-CI-workflow.yml
 
   coverage:
     name: Coverage
@@ -39,4 +39,4 @@ jobs:
     secrets:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: ./.github/workflows/coverage-upload.yml
+    uses: ./.github/workflows/reusable-coverage-upload-workflow.yml

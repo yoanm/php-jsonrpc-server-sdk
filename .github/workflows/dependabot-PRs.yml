@@ -7,9 +7,10 @@ permissions:
 
 jobs:
   dependabot:
-    name: Auto-merge & Labels
     if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'yoanm/php-jsonrpc-server-sdk'
     permissions:
       contents: write
       pull-requests: write
     uses: yoanm/.github/.github/workflows/reusable-dependabot-PRs-manager.yml@feature/init # @TODO - !! Move to a tag before merging !!
+    with:
+      label: 'with-nightly-tests'

@@ -2,7 +2,6 @@ name: 'CI'
 
 on: # Build any PRs and main branch changes
   workflow_dispatch: # Allows to run the workflow manually from the Actions tab
-  workflow_call: # Allows pre-check-CI-updates.yml to call it in case of update
   pull_request:
     types:
       - opened
@@ -11,11 +10,12 @@ on: # Build any PRs and main branch changes
       # >>> CI Pre-check
       # In case of updates to those workflows, they must be pre-checked by `pre-check-CI-updates.yml` rather than this workflow !
       # Any updates on those workflows are expected to be restricted to those workflows only ! (no update on code for instance)
-      - '.github/workflows/CI.yml'
-      - '.github/workflows/coverage-upload.yml'
       - '.github/workflows/pre-check-CI-updates.yml'
+      - '.github/workflows/reusable-CI-workflow.yml'
+      - '.github/workflows/reusable-coverage-upload-workflow.yml'
       # <<< CI Pre-check
       # >>> Irrelevant files (no impact whatsoever on this GHWorkflow)
+      - '.github/workflows/coverage-upload.yml' # Executed for on master (workflow_run), no impact here
       - '.github/workflows/dependabot-PRs.yml' # Executed for dependabot PRs, no impact here
       - '**/*.md'
       - '**/LICENSE'
@@ -33,7 +33,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: "CI-${{ github.head_ref || github.ref }}"
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
   cancel-in-progress: true
 
 env:
@@ -44,4 +44,4 @@ jobs:
     name: Tests
     permissions:
       contents: read
-    uses: yoanm/.github/.github/workflows/reusable-CI-for-PHP.yml@feature/init # @TODO - !! Move to a tag before merging !!
+    uses: ./.github/workflows/reusable-CI-workflow.yml
