@@ -17,4 +17,4 @@ jobs:
     secrets:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: ./.github/workflows/reusable-coverage-upload-workflow.yml
+    uses: yoanm/.github/.github/workflows/reusable-coverage-upload-manager.yml@feature/init # @TODO - !! Move to a tag before merging !!

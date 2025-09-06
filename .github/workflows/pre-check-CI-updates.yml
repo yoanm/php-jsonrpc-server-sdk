@@ -12,8 +12,8 @@ on:
     branches: [master] # Only for PR targeting master branch
     paths: # /!\ Duplicate the same list as `on.pull_request.paths-ignore` property value for CI workflow !
       - '.github/workflows/pre-check-CI-updates.yml' # This workflow
-      - '.github/workflows/reusable-CI-workflow.yml'
-      - '.github/workflows/reusable-coverage-upload-workflow.yml'
+      - '.github/workflows/CI.yml'
+      - '.github/workflows/coverage-upload.yml'
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
     name: Tests
     permissions:
       contents: read
-    uses: ./.github/workflows/reusable-CI-workflow.yml
+    uses: ./.github/workflows/CI.yml
 
   coverage:
     name: Coverage
@@ -39,4 +39,4 @@ jobs:
     secrets:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    uses: ./.github/workflows/reusable-coverage-upload-workflow.yml
+    uses: ./.github/workflows/coverage-upload.yml
