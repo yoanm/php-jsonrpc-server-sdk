@@ -65,7 +65,7 @@ jobs:
             git diff --cached --color ${{ env.V_FILE }}
             git commit \
               -m "${{ env.UPDATE_TITLE }} ($(date +'%Y-%m-%d'))" \
-              -m "See ${{ env.SERVER_URL }}/${{ env.REPO_NAME }}/actions/runs/${{ env.RUN_ID }}";
+              -m "See ${{ env.SERVER_URL }}/${{ env.REPO_NAME }}/actions/runs/${{ env.RUN_ID }}/job/${{ job.check_run_id }}";
             git push --set-upstream origin "${{ env.UPDATE_BRANCH }}";
             ISSUE_NEEDED=1
           else
