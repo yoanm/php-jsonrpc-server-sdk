@@ -16,7 +16,7 @@ concurrency:
 env:
   COMMIT_AUTHOR_NAME: github-actions
   COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-  SUPPORTED_VERSION_FILE: .supported-versions.json
+  SUPPORTED_VERSIONS_FILE: .supported-versions.json
   SERVER_URL: ${{ github.server_url }}
   REPO_NAME: ${{ github.repository }}
   RUN_ID: ${{ github.run_id }}
@@ -51,7 +51,7 @@ jobs:
         id: update-versions
         uses: yoanm/gha-php-supported-versions-auto-update@v0
         with:
-          path: ${{ env.SUPPORTED_VERSION_FILE }}
+          path: ${{ env.SUPPORTED_VERSIONS_FILE }}
 
       - name: "Add / commit / push"
         id: commit-and-push
@@ -59,10 +59,10 @@ jobs:
         run: |
           git config user.name "${COMMIT_AUTHOR_NAME}"
           git config user.email "${COMMIT_AUTHOR_EMAIL}"
-          git add ${SUPPORTED_VERSION_FILE}
+          git add ${SUPPORTED_VERSIONS_FILE}
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
-            git diff --cached --color ${SUPPORTED_VERSION_FILE}
+            git diff --cached --color ${SUPPORTED_VERSIONS_FILE}
             git commit \
               -m "${UPDATE_TITLE} ($(date +'%Y-%m-%d'))" \
               -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}/job/${{ job.check_run_id }}";
@@ -88,7 +88,7 @@ jobs:
             # In order to create the PR with a body stating that it fixes the newly created issue, the issue id is required !
             # => First create the issue, then retrieve its id and create the proper link to create the PR
           
-            ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
+            ISSUE_BODY_HEADER="Supported versions file has been updated !"
             
             echo "Creating new issue"
             gh issue create --title "${ISSUE_TITLE}" --body "${ISSUE_BODY_HEADER}" --assignee "${ISSUE_ASSIGNEE}" > issue_url.txt
