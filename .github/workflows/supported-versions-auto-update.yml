@@ -14,14 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AUTHOR_NAME: github-actions
-  AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-  V_FILE: .supported-versions.json
-  UPDATE_BRANCH: auto/feature/increase-supported-version
-  ISSUE_TITLE: "[AUTO] update supported versions"
-  PR_TITLE: "Update supported versions"
-  ASSIGNEE_HANDLES: "yoanm"
-
+  COMMIT_AUTHOR_NAME: github-actions
+  COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+  SUPPORTED_VERSIONS_FILE: .supported-versions.json
   SERVER_URL: ${{ github.server_url }}
   REPO_NAME: ${{ github.repository }}
   RUN_ID: ${{ github.run_id }}
@@ -33,12 +28,12 @@ jobs:
     permissions:
       contents: write
       issues: write
+    env:
+      UPDATE_BRANCH: auto/update-supported-versions/php
+      UPDATE_TITLE: "Update PHP supported versions"
+      ISSUE_ASSIGNEE: "yoanm"
+      PR_LABELS: "with-nightly-tests"
     steps:
-
-      - name: Get current date/time
-        id: datetime
-        run: echo "value=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
       - name: "Checkout current repository"
         uses: actions/checkout@v5
         with:
@@ -56,21 +51,21 @@ jobs:
         id: update-versions
         uses: yoanm/gha-php-supported-versions-auto-update@v0
         with:
-          path: ${{ env.V_FILE }}
+          path: ${{ env.SUPPORTED_VERSIONS_FILE }}
 
       - name: "Add / commit / push"
         id: commit-and-push
         if: ${{ steps.update-versions.outputs.updated == '1' }}
-        env:
-          DATE: ${{ steps.datetime.outputs.value }}
         run: |
-          git config user.name "${AUTHOR_NAME}"
-          git config user.email "${AUTHOR_EMAIL}"
-          git add $V_FILE
+          git config user.name "${COMMIT_AUTHOR_NAME}"
+          git config user.email "${COMMIT_AUTHOR_EMAIL}"
+          git add ${SUPPORTED_VERSIONS_FILE}
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
-            git diff --cached --color $V_FILE
-            git commit -m "Update PHP supported versions (${DATE})" -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
+            git diff --cached --color ${SUPPORTED_VERSIONS_FILE}
+            git commit \
+              -m "${UPDATE_TITLE} ($(date +'%Y-%m-%d'))" \
+              -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}/job/${{ job.check_run_id }}";
             git push --set-upstream origin "${UPDATE_BRANCH}";
             ISSUE_NEEDED=1
           else
@@ -83,15 +78,21 @@ jobs:
       - name: "Create issue"
         if: ${{ steps.commit-and-push.outputs.issue-needed == 1 }}
         env:
-          BODY_FILE: ${{ runner.temp }}/body-file.txt
+          ISSUE_TITLE: "[AUTO] ${{ env.UPDATE_TITLE }}"
+          PR_TITLE: ${{ env.UPDATE_TITLE }}
+          BODY_TMP_FILE: ${{ runner.temp }}/body-file.txt
           GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
           ISSUE_URL=$(gh issue list --search "state:open author:@me \"${ISSUE_TITLE}\"" --json url --jq '.[0].url')
           if [[ -z "${ISSUE_URL}" ]]; then
+            # In order to create the PR with a body stating that it fixes the newly created issue, the issue id is required !
+            # => First create the issue, then retrieve its id and create the proper link to create the PR
+          
+            ISSUE_BODY_HEADER="Supported versions file has been updated !"
+            
             echo "Creating new issue"
-            gh issue create --title "${ISSUE_TITLE}" --body "${ISSUE_BODY_HEADER}" --assignee "${ASSIGNEE_HANDLES}" > issue_url.txt
-
+            gh issue create --title "${ISSUE_TITLE}" --body "${ISSUE_BODY_HEADER}" --assignee "${ISSUE_ASSIGNEE}" > issue_url.txt
+            
             ISSUE_URL=$(cat issue_url.txt)
             if [[ -z "${ISSUE_URL}" ]]; then
               echo "::error::Unable to retrieve the issue URL !"
@@ -104,13 +105,19 @@ jobs:
             fi
             
             echo "Update issue with proper link to create the PR"
-            PR_ENCODED_TITLE=$(jq -rn --arg x "${PR_TITLE}" '$x|@uri')
-            PR_BODY_ENCODED=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')
-            echo "${ISSUE_BODY_HEADER}" > ${BODY_FILE}
-            echo "" >> ${BODY_FILE}
-            echo "Create PR [there](https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1&assignees=${ASSIGNEE_HANDLES}&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${BODY_FILE}
+            CREATE_PR_URL="https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1"
+            # Manage PR's title
+            CREATE_PR_URL="${CREATE_PR_URL}&title=$(jq -rn --arg x "${PR_TITLE}" '$x|@uri')"
+            # Manage PR's body
+            CREATE_PR_URL="${CREATE_PR_URL}&body=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')"
+            # Manage PR's labels
+            CREATE_PR_URL="${CREATE_PR_URL}&labels=$(jq -rn --arg x "${PR_LABELS}" '$x|@uri')"
+            
+            echo "${ISSUE_BODY_HEADER}" > ${BODY_TMP_FILE}
+            echo "" >> ${BODY_TMP_FILE}
+            echo "Create PR [there](${CREATE_PR_URL})" >> ${BODY_TMP_FILE}
 
-            gh issue edit "${ISSUE_URL}" --body-file "${BODY_FILE}"
+            gh issue edit "${ISSUE_URL}" --body-file "${BODY_TMP_FILE}"
           else
             echo "Issue already exists: ${ISSUE_URL}"
           fi
