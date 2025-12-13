@@ -1,5 +1,8 @@
 coverage:
   range: "80...100"
+  status:
+    project: true
+    patch: true
 
 flags:
   nightly:
