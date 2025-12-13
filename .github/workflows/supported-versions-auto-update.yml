@@ -108,7 +108,7 @@ jobs:
             PR_BODY_ENCODED=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')
             echo "${ISSUE_BODY_HEADER}" > ${BODY_FILE}
             echo "" >> ${BODY_FILE}
-            echo "Create PR [there](https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1&assignees=${ASSIGNEE_HANDLES}&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${BODY_FILE}
+            echo "Create PR [there](https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1&assignees=${ASSIGNEE_HANDLES}&labels=with-nightly-tests&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${BODY_FILE}
 
             gh issue edit "${ISSUE_URL}" --body-file "${BODY_FILE}"
           else
