@@ -14,6 +14,10 @@ build:
       - command: make build
         title: Build deps
         idle_timeout: 240
+      # Pin behat/behat below 3.16.1
+      # Starting at v3.17.0, no coverage file is generated due to XDebug driver badly managed
+      - title: Fix XDebug driver badly managed
+        command: composer update dvdoug/behat-code-coverage -W --with "behat/behat:<=3.16.1"
   tests:
     stop_on_failure: true
     override:
