@@ -34,10 +34,6 @@ jobs:
       ISSUE_ASSIGNEE: "yoanm"
       PR_LABELS: "with-nightly-tests"
     steps:
-      - name: Get current date/time
-        id: datetime
-        run: echo "value=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
       - name: "Checkout current repository"
         uses: actions/checkout@v5
         with:
@@ -60,17 +56,15 @@ jobs:
       - name: "Add / commit / push"
         id: commit-and-push
         if: ${{ steps.update-versions.outputs.updated == '1' }}
-        env:
-          DATE: ${{ steps.datetime.outputs.value }}
         run: |
-          git config user.name "${COMMIT_AUTHOR_NAME}"
-          git config user.email "${COMMIT_AUTHOR_EMAIL}"
-          git add $V_FILE
+          git config user.name "${{ env.COMMIT_AUTHOR_NAME }}"
+          git config user.email "${{ env.COMMIT_AUTHOR_EMAIL }}"
+          git add ${{ env.V_FILE }}
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
-            git diff --cached --color $V_FILE
-            git commit -m "${{ env.UPDATE_TITLE }} (${DATE})" -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}";
-            git push --set-upstream origin "${UPDATE_BRANCH}";
+            git diff --cached --color ${{ env.V_FILE }}
+            git commit -m "${{ env.UPDATE_TITLE }} ($(date +'%Y-%m-%d'))" -m "See ${{ env.SERVER_URL }}/${{ env.REPO_NAME }}/actions/runs/${{ env.RUN_ID }}";
+            git push --set-upstream origin "${{ env.UPDATE_BRANCH }}";
             ISSUE_NEEDED=1
           else
             echo "Nothing to commit !";
@@ -88,13 +82,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
-          ISSUE_URL=$(gh issue list --search "state:open author:@me \"${ISSUE_TITLE}\"" --json url --jq '.[0].url')
+          ISSUE_URL=$(gh issue list --search "state:open author:@me \"${{ env.ISSUE_TITLE }}\"" --json url --jq '.[0].url')
           if [[ -z "${ISSUE_URL}" ]]; then
             # In order to create the PR with a body stating that it fixes the newly created issue, the issue id is required !
             # => First create the issue, then retrieve its id and create the proper link to create the PR
           
             echo "Creating new issue"
-            gh issue create --title "${ISSUE_TITLE}" --body "${ISSUE_BODY_HEADER}" --assignee "${ISSUE_ASSIGNEE}" > issue_url.txt
+            gh issue create --title "${{ env.ISSUE_TITLE }}" --body "${ISSUE_BODY_HEADER}" --assignee "${{ env.ISSUE_ASSIGNEE }}" > issue_url.txt
             
             ISSUE_URL=$(cat issue_url.txt)
             if [[ -z "${ISSUE_URL}" ]]; then
@@ -108,13 +102,13 @@ jobs:
             fi
             
             echo "Update issue with proper link to create the PR"
-            PR_ENCODED_TITLE=$(jq -rn --arg x "${PR_TITLE}" '$x|@uri')
+            PR_ENCODED_TITLE=$(jq -rn --arg x "${{ env.PR_TITLE }}" '$x|@uri')
             PR_BODY_ENCODED=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')
-            echo "${ISSUE_BODY_HEADER}" > ${BODY_FILE}
-            echo "" >> ${BODY_FILE}
-            echo "Create PR [there](https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1&assignees=${ISSUE_ASSIGNEE}&labels=${PR_LABELS}&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${BODY_FILE}
+            echo "${ISSUE_BODY_HEADER}" > ${{ env.BODY_FILE }}
+            echo "" >> ${{ env.BODY_FILE }}
+            echo "Create PR [there](https://github.com/${{ env.REPO_NAME }}/compare/${{ env.UPDATE_BRANCH }}?quick_pull=1&assignees=${{ env.ISSUE_ASSIGNEE }}&labels=${{ env.PR_LABELS }}&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${{ env.BODY_FILE }}
 
-            gh issue edit "${ISSUE_URL}" --body-file "${BODY_FILE}"
+            gh issue edit "${ISSUE_URL}" --body-file "${{ env.BODY_FILE }}"
           else
             echo "Issue already exists: ${ISSUE_URL}"
           fi
