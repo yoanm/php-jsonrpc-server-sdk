@@ -16,7 +16,7 @@ concurrency:
 env:
   COMMIT_AUTHOR_NAME: github-actions
   COMMIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-  V_FILE: .supported-versions.json
+  SUPPORTED_VERSION_FILE: .supported-versions.json
   SERVER_URL: ${{ github.server_url }}
   REPO_NAME: ${{ github.repository }}
   RUN_ID: ${{ github.run_id }}
@@ -51,22 +51,22 @@ jobs:
         id: update-versions
         uses: yoanm/gha-php-supported-versions-auto-update@v0
         with:
-          path: ${{ env.V_FILE }}
+          path: ${{ env.SUPPORTED_VERSION_FILE }}
 
       - name: "Add / commit / push"
         id: commit-and-push
         if: ${{ steps.update-versions.outputs.updated == '1' }}
         run: |
-          git config user.name "${{ env.COMMIT_AUTHOR_NAME }}"
-          git config user.email "${{ env.COMMIT_AUTHOR_EMAIL }}"
-          git add ${{ env.V_FILE }}
+          git config user.name "${COMMIT_AUTHOR_NAME}"
+          git config user.email "${COMMIT_AUTHOR_EMAIL}"
+          git add ${SUPPORTED_VERSION_FILE}
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
-            git diff --cached --color ${{ env.V_FILE }}
+            git diff --cached --color ${SUPPORTED_VERSION_FILE}
             git commit \
-              -m "${{ env.UPDATE_TITLE }} ($(date +'%Y-%m-%d'))" \
-              -m "See ${{ env.SERVER_URL }}/${{ env.REPO_NAME }}/actions/runs/${{ env.RUN_ID }}/job/${{ job.check_run_id }}";
-            git push --set-upstream origin "${{ env.UPDATE_BRANCH }}";
+              -m "${UPDATE_TITLE} ($(date +'%Y-%m-%d'))" \
+              -m "See ${SERVER_URL}/${REPO_NAME}/actions/runs/${RUN_ID}/job/${{ job.check_run_id }}";
+            git push --set-upstream origin "${UPDATE_BRANCH}";
             ISSUE_NEEDED=1
           else
             echo "Nothing to commit !";
@@ -80,10 +80,10 @@ jobs:
         env:
           ISSUE_TITLE: "[AUTO] ${{ env.UPDATE_TITLE }}"
           PR_TITLE: ${{ env.UPDATE_TITLE }}
-          BODY_FILE: ${{ runner.temp }}/body-file.txt
+          BODY_TMP_FILE: ${{ runner.temp }}/body-file.txt
           GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_URL=$(gh issue list --search "state:open author:@me \"${{ env.ISSUE_TITLE }}\"" --json url --jq '.[0].url')
+          ISSUE_URL=$(gh issue list --search "state:open author:@me \"${ISSUE_TITLE}\"" --json url --jq '.[0].url')
           if [[ -z "${ISSUE_URL}" ]]; then
             # In order to create the PR with a body stating that it fixes the newly created issue, the issue id is required !
             # => First create the issue, then retrieve its id and create the proper link to create the PR
@@ -91,7 +91,7 @@ jobs:
             ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
             
             echo "Creating new issue"
-            gh issue create --title "${{ env.ISSUE_TITLE }}" --body "${ISSUE_BODY_HEADER}" --assignee "${{ env.ISSUE_ASSIGNEE }}" > issue_url.txt
+            gh issue create --title "${ISSUE_TITLE}" --body "${ISSUE_BODY_HEADER}" --assignee "${ISSUE_ASSIGNEE}" > issue_url.txt
             
             ISSUE_URL=$(cat issue_url.txt)
             if [[ -z "${ISSUE_URL}" ]]; then
@@ -105,19 +105,19 @@ jobs:
             fi
             
             echo "Update issue with proper link to create the PR"
-            CREATE_PR_URL="https://github.com/${{ env.REPO_NAME }}/compare/${{ env.UPDATE_BRANCH }}?quick_pull=1"
+            CREATE_PR_URL="https://github.com/${REPO_NAME}/compare/${UPDATE_BRANCH}?quick_pull=1"
             # Manage PR's title
-            CREATE_PR_URL="${CREATE_PR_URL}&title=$(jq -rn --arg x "${{ env.PR_TITLE }}" '$x|@uri')"
+            CREATE_PR_URL="${CREATE_PR_URL}&title=$(jq -rn --arg x "${PR_TITLE}" '$x|@uri')"
             # Manage PR's body
             CREATE_PR_URL="${CREATE_PR_URL}&body=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')"
             # Manage PR's labels
-            CREATE_PR_URL="${CREATE_PR_URL}&labels=$(jq -rn --arg x "${{ env.PR_LABELS }}" '$x|@uri')"
+            CREATE_PR_URL="${CREATE_PR_URL}&labels=$(jq -rn --arg x "${PR_LABELS}" '$x|@uri')"
             
-            echo "${ISSUE_BODY_HEADER}" > ${{ env.BODY_FILE }}
-            echo "" >> ${{ env.BODY_FILE }}
-            echo "Create PR [there](${CREATE_PR_URL})" >> ${{ env.BODY_FILE }}
+            echo "${ISSUE_BODY_HEADER}" > ${BODY_TMP_FILE}
+            echo "" >> ${BODY_TMP_FILE}
+            echo "Create PR [there](${CREATE_PR_URL})" >> ${BODY_TMP_FILE}
 
-            gh issue edit "${ISSUE_URL}" --body-file "${{ env.BODY_FILE }}"
+            gh issue edit "${ISSUE_URL}" --body-file "${BODY_TMP_FILE}"
           else
             echo "Issue already exists: ${ISSUE_URL}"
           fi
