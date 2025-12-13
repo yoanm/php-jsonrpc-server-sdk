@@ -18,6 +18,7 @@ build:
       # Starting at v3.17.0, no coverage file is generated due to XDebug driver badly managed
       - title: PHP 8.2 - Fix XDebug driver badly managed by behat
         command: composer update behat/behat -W --with "behat/behat:<3.17.0"
+        idle_timeout: 240
   tests:
     stop_on_failure: true
     override:
