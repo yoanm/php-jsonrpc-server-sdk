@@ -29,7 +29,7 @@ jobs:
       contents: write
       issues: write
     env:
-      UPDATE_BRANCH: auto/feature/update-php-supported-version
+      UPDATE_BRANCH: auto/update-supported-versions/php
       UPDATE_TITLE: "Update PHP supported versions"
       ISSUE_ASSIGNEE: "yoanm"
       PR_LABELS: "with-nightly-tests"
@@ -63,7 +63,9 @@ jobs:
           if [ $(git diff --cached --name-only | wc -l) -gt 0 ]; then
             echo "Pushing updated files:"
             git diff --cached --color ${{ env.V_FILE }}
-            git commit -m "${{ env.UPDATE_TITLE }} ($(date +'%Y-%m-%d'))" -m "See ${{ env.SERVER_URL }}/${{ env.REPO_NAME }}/actions/runs/${{ env.RUN_ID }}";
+            git commit \
+              -m "${{ env.UPDATE_TITLE }} ($(date +'%Y-%m-%d'))" \
+              -m "See ${{ env.SERVER_URL }}/${{ env.REPO_NAME }}/actions/runs/${{ env.RUN_ID }}";
             git push --set-upstream origin "${{ env.UPDATE_BRANCH }}";
             ISSUE_NEEDED=1
           else
@@ -81,12 +83,13 @@ jobs:
           BODY_FILE: ${{ runner.temp }}/body-file.txt
           GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
           ISSUE_URL=$(gh issue list --search "state:open author:@me \"${{ env.ISSUE_TITLE }}\"" --json url --jq '.[0].url')
           if [[ -z "${ISSUE_URL}" ]]; then
             # In order to create the PR with a body stating that it fixes the newly created issue, the issue id is required !
             # => First create the issue, then retrieve its id and create the proper link to create the PR
           
+            ISSUE_BODY_HEADER="Supported versions file needs to be updated !"
+            
             echo "Creating new issue"
             gh issue create --title "${{ env.ISSUE_TITLE }}" --body "${ISSUE_BODY_HEADER}" --assignee "${{ env.ISSUE_ASSIGNEE }}" > issue_url.txt
             
@@ -102,11 +105,17 @@ jobs:
             fi
             
             echo "Update issue with proper link to create the PR"
-            PR_ENCODED_TITLE=$(jq -rn --arg x "${{ env.PR_TITLE }}" '$x|@uri')
-            PR_BODY_ENCODED=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')
+            CREATE_PR_URL="https://github.com/${{ env.REPO_NAME }}/compare/${{ env.UPDATE_BRANCH }}?quick_pull=1"
+            # Manage PR's title
+            CREATE_PR_URL="${CREATE_PR_URL}&title=$(jq -rn --arg x "${{ env.PR_TITLE }}" '$x|@uri')"
+            # Manage PR's body
+            CREATE_PR_URL="${CREATE_PR_URL}&body=$(jq -rn --arg x "Fix #${ISSUE_ID}" '$x|@uri')"
+            # Manage PR's labels
+            CREATE_PR_URL="${CREATE_PR_URL}&labels=$(jq -rn --arg x "${{ env.PR_LABELS }}" '$x|@uri')"
+            
             echo "${ISSUE_BODY_HEADER}" > ${{ env.BODY_FILE }}
             echo "" >> ${{ env.BODY_FILE }}
-            echo "Create PR [there](https://github.com/${{ env.REPO_NAME }}/compare/${{ env.UPDATE_BRANCH }}?quick_pull=1&assignees=${{ env.ISSUE_ASSIGNEE }}&labels=${{ env.PR_LABELS }}&title=${PR_ENCODED_TITLE}&body=${PR_BODY_ENCODED})" >> ${{ env.BODY_FILE }}
+            echo "Create PR [there](${CREATE_PR_URL})" >> ${{ env.BODY_FILE }}
 
             gh issue edit "${ISSUE_URL}" --body-file "${{ env.BODY_FILE }}"
           else
