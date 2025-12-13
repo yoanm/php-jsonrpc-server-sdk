@@ -38,6 +38,7 @@ class FakeEndpointCreator
             'basic-method-with-params' => new BasicMethodWithRequiredParams(),
             'method-that-throw-params-validation-exception' => new MethodWithParamsValidationError(),
             'method-that-throw-an-exception-during-execution' => new MethodThatThrowExceptionDuringExecution(),
+            // phpcs:ignore Generic.Files.LineLength
             'method-that-throw-a-custom-jsonrpc-exception-during-execution' => new MethodThatThrowJsonRpcExceptionDuringExecution(),
         ];
         $jsonRpcResponseErrorNormalizer = $enableJsonRpcResponseErrorNormalizer

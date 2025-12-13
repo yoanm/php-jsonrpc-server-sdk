@@ -7,7 +7,8 @@ use Yoanm\JsonRpcServer\Domain\Exception\JsonRpcExceptionInterface;
  * JsonRpcResponseErrorNormalizer prepares response data for the "unexpected" errors occur during request processing.
  *
  * It handles "internal server error" appearance in the response.
- * Instance of this class should be attached to {@see \Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer} only in "debug" mode,
+ * Instance of this class should be attached to {@see \Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer}
+ * only in "debug" mode,
  * since it will expose vital internal information to the API consumer.
  *
  * @see \Yoanm\JsonRpcServer\App\Serialization\JsonRpcResponseNormalizer::normalizeError()
@@ -34,8 +35,11 @@ class JsonRpcResponseErrorNormalizer
      * @param bool $showTraceArguments whether to show trace arguments.
      * @param bool $simplifyTraceArguments whether to simplify trace arguments representation.
      */
-    public function __construct(int $maxTraceSize = 10, bool $showTraceArguments = true, bool $simplifyTraceArguments = true)
-    {
+    public function __construct(
+        int $maxTraceSize = 10,
+        bool $showTraceArguments = true,
+        bool $simplifyTraceArguments = true
+    ) {
         $this->maxTraceSize = $maxTraceSize;
         $this->showTraceArguments = $showTraceArguments;
         $this->simplifyTraceArguments = $simplifyTraceArguments;

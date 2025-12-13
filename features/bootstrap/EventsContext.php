@@ -98,7 +98,8 @@ class EventsContext implements Context
     }
 
     /**
-     * @Given /^I will replace "Action\\OnException" exception by a "(?P<count>-?\d+)" JSON-RPC exception with following message:$/
+     * @Given /^I will replace "Action\\OnException" exception by a "(?P<count>-?\d+)" \
+     * JSON-RPC exception with following message:$/
      */
     public function iWillReplaceOnexceptionExceptionByAJsonRpcExceptionWithFollowingMessage(
         $jsonRpcErrorCode,
@@ -127,7 +128,8 @@ class EventsContext implements Context
     }
 
     /**
-     * @Given /^I will replace "Action\\OnMethodFailure" exception by a "(?P<count>-?\d+)" JSON-RPC exception with following message:$/
+     * @Given /^I will replace "Action\\OnMethodFailure" exception by a "(?P<count>-?\d+)" \
+     * JSON-RPC exception with following message:$/
      */
     public function iWillReplaceOnmethodfailureExceptionByAJsonRpcExceptionWithFollowingMessage(
         $jsonRpcErrorCode,

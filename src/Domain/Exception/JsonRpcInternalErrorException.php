@@ -2,7 +2,8 @@
 namespace Yoanm\JsonRpcServer\Domain\Exception;
 
 /**
- * JsonRpcInternalErrorException represents unhandled error during JsonRpc method processing (e.g. "Internal server error").
+ * JsonRpcInternalErrorException represents unhandled error during JsonRpc method processing
+ * (e.g. "Internal server error").
  */
 class JsonRpcInternalErrorException extends JsonRpcException
 {

@@ -15,6 +15,7 @@ PHPUNIT_FUNCTIONAL_COVERAGE_FILE_PATH ?= ${PHPUNIT_COVERAGE_DIRECTORY}/functiona
 ### Phpcs
 PHPCS_REPORT_STYLE ?= full
 PHPCS_DISABLE_WARNING ?= "false"
+PHPCS_STANDARD_OPTION ?= "--standard=phpcs.xml.dist"
 #PHPCS_REPORT_FILE=
 #PHPCS_REPORT_FILE_OPTION=
 
@@ -96,7 +97,11 @@ test-functional:
 	./vendor/bin/behat ${BEHAT_COLOR_OPTION} ${BEHAT_OUTPUT_STYLE_OPTION} ${BEHAT_COVERAGE_OPTION} --no-snippets
 
 codestyle: create-build-directories
-	./vendor/bin/phpcs ${PHPCS_DISABLE_WARNING_OPTION} --standard=phpcs.xml.dist ${PHPCS_COLOR_OPTION} ${PHPCS_REPORT_FILE_OPTION} --report=${PHPCS_REPORT_STYLE}
+	./vendor/bin/phpcs ${PHPCS_DISABLE_WARNING_OPTION} ${PHPCS_STANDARD_OPTION} ${PHPCS_COLOR_OPTION} ${PHPCS_REPORT_FILE_OPTION} --report=${PHPCS_REPORT_STYLE}
+
+.PHONY: codestyle-fix
+codestyle-fix:
+	./vendor/bin/phpcbf ${PHPCS_DISABLE_WARNING_OPTION} ${PHPCS_STANDARD_OPTION} ${PHPCS_COLOR_OPTION} ${PHPCS_REPORT_FILE_OPTION}
 
 scrutinizer-phpunit:
 	XDEBUG_MODE=coverage ./vendor/bin/phpunit ${PHPUNIT_COLOR_OPTION} ${PHPUNIT_OUTPUT_STYLE_OPTION} --coverage-clover build/coverage-phpunit/scrutinizer.xml
