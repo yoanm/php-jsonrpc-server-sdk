@@ -35,7 +35,7 @@ jobs:
       PR_LABELS: "with-nightly-tests"
     steps:
       - name: "Checkout current repository"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
